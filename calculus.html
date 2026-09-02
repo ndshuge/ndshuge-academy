@@ -500,16 +500,13 @@ canvas{width:100%;background:#fffdf7;border:1px solid var(--line);border-radius:
       </div>
       <div id="badges" class="badge-row"></div>
     </div>
-    <div class="side-card">
-      <div class="side-card-t">📊 学习统计</div>
-      <div id="statsGrid"></div>
-    </div>
     <div id="quote">「怀疑一切，但算完这题再怀疑。」—— 正在给你批作业的笛卡尔</div>
     <div class="com-block">
       <a class="com-btn" href="https://github.com/ndshuge/ndshuge-academy" target="_blank" rel="noopener"><span class="ic">📦</span>GitHub 仓库<span class="go">↗</span></a>
       <button class="com-btn" onclick="openRank()"><span class="ic">🏆</span>学习排行榜<span class="go">→</span></button>
       <button class="com-btn" onclick="openFeedback()"><span class="ic">💬</span>给作者留言<span class="go">→</span></button>
       <button class="com-btn" onclick="openShare()"><span class="ic">📤</span>分享学院<span class="go">→</span></button>
+      <button class="com-btn" onclick="openCalendar()"><span class="ic">📅</span>打卡日历<span class="go">→</span></button>
       <button class="com-btn" onclick="openAuthor()"><span class="ic">👨‍💻</span>关于作者<span class="go">→</span></button>
     </div>
   </aside>
@@ -612,10 +609,6 @@ canvas{width:100%;background:#fffdf7;border:1px solid var(--line);border-radius:
         <div id="sbPanel" class="sb-panel"></div>
         <div id="sbMsg" class="sb-msg"></div>
         <p class="pg-hint">登录后学习进度自动同步到云端，换设备、换浏览器登录同一账号即恢复。</p>
-      </div>
-      <div class="card">
-        <h3>🕐 学习足迹</h3>
-        <div id="traceList"></div>
       </div>
     </section>
     <!-- 问答页 -->
@@ -3406,13 +3399,16 @@ function poolMove(key, correct){
 var studyLog = load('log', []);
 function logStudy(type, chId, chTitle){
   var now = Date.now();
+  var _d = new Date(now), _p = function(x){ return (x<10?'0':'')+x; };
+  var cat = _d.getFullYear()+'-'+_p(_d.getMonth()+1)+'-'+_p(_d.getDate())+' '+_p(_d.getHours())+':'+_p(_d.getMinutes())+':'+_p(_d.getSeconds());
   var last = studyLog.length ? studyLog[studyLog.length-1] : null;
   if(last && now - last.end < 30*60*1000 && last.ch === chId){
     last.end = now;
+    last.completed_at = cat;
     if(type === 'lesson') last.lessonN = (last.lessonN||0) + 1;
     else last.quizN = (last.quizN||0) + 1;
   } else {
-    studyLog.push({start: now, end: now, ch: chId, title: chTitle, lessonN: type==='lesson'?1:0, quizN: type==='quiz'?1:0});
+    studyLog.push({start: now, end: now, ch: chId, title: chTitle, lessonN: type==='lesson'?1:0, quizN: type==='quiz'?1:0, completed_at: cat});
   }
   if(studyLog.length > 3000) studyLog = studyLog.slice(-3000);
   store('log', studyLog);
@@ -4072,6 +4068,7 @@ function traceTodayCount(){
 }
 function renderTrace(){
   var el = $('#traceList');
+  if(!el) return;
   if(!studyLog.length){
     el.innerHTML = '<div class="card"><p style="color:var(--ink2)">还没有学习记录。去「章节课堂」打开一课，或做几道题，足迹会自动生成。</p></div>';
     return;
@@ -4760,6 +4757,47 @@ function openAuthor(){
   document.body.appendChild(wrap);
 }
 function closeAuthor(){ if(__authorWrap){ __authorWrap.remove(); __authorWrap=null; } }
+/* ===== 打卡日历（月度视图，四院统一）===== */
+var __calWrap = null;
+function openCalendar(){
+  if(__calWrap){ __calWrap.remove(); __calWrap=null; }
+  var wrap=document.createElement('div');
+  wrap.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:99998;display:flex;align-items:center;justify-content:center;padding:18px';
+  wrap.onclick=function(e){ if(e.target===wrap) closeCalendar(); };
+  var box=document.createElement('div');
+  box.style.cssText='background:#FBF7EE;border:1px solid #D8CFBE;border-radius:18px;padding:20px 22px;max-width:400px;width:100%;font-family:inherit;color:#2A2622;max-height:88vh;overflow:auto';
+  wrap.appendChild(box);
+  __calWrap=wrap;
+  var now=new Date();
+  var st={y:now.getFullYear(), m:now.getMonth()};
+  function daySet(){ try{ var g=JSON.parse(localStorage.getItem('daily_goal')||'{}'), o={}; Object.keys(g).forEach(function(k){ if(g[k]&&Object.keys(g[k]).length) o[k]=1; }); return o; }catch(e){ return {}; } }
+  function tKey(){ var x=new Date(); if(x.getHours()<4) x.setDate(x.getDate()-1); return x.getFullYear()+'-'+(x.getMonth()+1)+'-'+x.getDate(); }
+  function paint(){
+    var ds=daySet(), tk=tKey();
+    var t0=new Date(st.y,st.m,1), first=t0.getDay(), dim=new Date(st.y,st.m+1,0).getDate();
+    var cells='';
+    for(var i=0;i<first;i++) cells+='<div></div>';
+    var litCount=0;
+    for(var d=1;d<=dim;d++){
+      var key=st.y+'-'+(st.m+1)+'-'+d;
+      var lit=!!ds[key]; if(lit) litCount++;
+      var isT = key===tk;
+      cells+='<div style="height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:13px;'+(lit?'background:rgba(74,107,74,.88);color:#fff;font-weight:600':'background:#EFE9DC;color:#8a8577')+';'+(isT?'box-shadow:0 0 0 2px #B8860B inset;':'')+'">'+d+'</div>';
+    }
+    box.innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">'+
+      '<button onclick="calNav(-1)" style="border:1px solid #D8CFBE;background:transparent;border-radius:50%;width:32px;height:32px;cursor:pointer;font-size:18px;color:#3F6179">‹</button>'+
+      '<div style="font-weight:700;font-size:16px">📅 '+st.y+' 年 '+(st.m+1)+' 月</div>'+
+      '<button onclick="calNav(1)" style="border:1px solid #D8CFBE;background:transparent;border-radius:50%;width:32px;height:32px;cursor:pointer;font-size:18px;color:#3F6179">›</button></div>'+
+      '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center;font-size:11px;color:#6B6158;margin-bottom:4px">'+['日','一','二','三','四','五','六'].map(function(w){return '<div style="padding:2px 0">'+w+'</div>';}).join('')+'</div>'+
+      '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px">'+cells+'</div>'+
+      '<div style="margin-top:10px;font-size:12px;color:#6B6158;line-height:1.6">本月完成 <b style="color:#4A6B4A">'+litCount+'</b> 天 · 绿色=当天学完一节或做完一份卷（四院共通，凌晨 4 点结算）</div>'+
+      '<button onclick="closeCalendar()" style="margin-top:14px;width:100%;padding:11px;border:none;border-radius:12px;background:linear-gradient(135deg,#537D96,#3F6179);color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit">知道了</button>';
+  }
+  window.calNav=function(dm){ st.m+=dm; if(st.m<0){st.m=11;st.y--;} if(st.m>11){st.m=0;st.y++;} paint(); };
+  window.closeCalendar=function(){ if(__calWrap){ __calWrap.remove(); __calWrap=null; } };
+  paint();
+  document.body.appendChild(wrap);
+}
 (function(){
   /* 手机端默认收起（未手动展开过）；桌面按 sidefold 偏好 */
   var sf = load('sidefold', null);
@@ -5592,6 +5630,13 @@ function sbPushRank(h, s){
   }catch(e){}
 }
 function sbNotify(){ if(sbSession()) sbPush(false); }
+/* 切回前台且停留较久时静默同步（覆盖电脑页面长时间挂机的场景） */
+var __lastSyncT = Date.now();
+document.addEventListener('visibilitychange', function(){
+  if(document.visibilityState === 'visible' && sbSession() && Date.now() - __lastSyncT > 180000){
+    __lastSyncT = Date.now(); sbSyncFromCloud();
+  }
+});
 function sbRefresh(){
   var box = document.getElementById('sbPanel');
   var s = sbSession();
@@ -5939,7 +5984,7 @@ var PORTRAITS = {
     <div class="login-logo">🧮</div>
     <div class="login-title">🐭 鼠哥的微积分学院 🐿️</div>
     <div class="login-sub">登录后开始学习 · 进度多设备自动同步</div>
-    <div class="login-share">🔗 两个学院账号互通：一个账号，Python 学院和微积分学院通用，进度各自独立</div>
+    <div class="login-share">🔗 所有学院账号互通：注册一个账号，所有学院通用，进度各自独立</div>
     <div class="login-tabs">
       <button class="login-tab on" id="tabLogin" onclick="loginMode(false)">登 录</button>
       <button class="login-tab" id="tabSignup" onclick="loginMode(true)">注 册</button>
@@ -6014,7 +6059,7 @@ var PORTRAITS = {
         <div class="share-row"><span class="share-label">📖 学习链接</span><input class="share-inp" id="shCaSite" readonly onclick="this.select()"><button class="share-copy" onclick="copyShare(this)">复制</button><a class="share-open" id="shCaSiteA" target="_blank" rel="noopener">打开 ↗</a></div>
         <div class="share-row"><span class="share-label">📦 仓库</span><input class="share-inp" readonly value="https://github.com/ndshuge/ndshuge-academy" onclick="this.select()"><button class="share-copy" onclick="copyShare(this)">复制</button><a class="share-open" href="https://github.com/ndshuge/ndshuge-academy" target="_blank" rel="noopener">打开 ↗</a></div>
       </div>
-      <div class="share-tip">两个学院账号互通：注册一个账号，两个学院都能用，进度各自独立。</div>
+      <div class="share-tip">所有学院账号互通：注册一个账号，所有学院都能用，进度各自独立。</div>
     </div>
   </div>
 </div>

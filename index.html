@@ -207,7 +207,8 @@ var ACADEMIES = [
 ];
 function getLessons(prefix){
   try{
-    var v = JSON.parse(localStorage.getItem(prefix + 'lessons'));
+    // 读「章完成」数组（整章练习做完才计入），天然不超总章数；不用 lessons（那是课数，会超章数上限）
+    var v = JSON.parse(localStorage.getItem(prefix + 'ch'));
     if (Array.isArray(v)) return v.length;
     if (v && typeof v === 'object') return Object.keys(v).length;
     return 0;
