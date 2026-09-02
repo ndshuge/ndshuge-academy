@@ -696,17 +696,16 @@ var CHAPTERS = [
     '跳过概念直接敲代码：C 的很多坑（类型、内存）需要先有概念再去踩。'
   ],
   quiz:[
-    {type:'choice', q:'C 语言是哪个机构创造的？', options:['贝尔实验室','斯坦福大学','IBM','微软'], answer:0, explain:'1972 年贝尔实验室的丹尼斯·里奇创造 C，用于重写 UNIX。'},
-    {type:'choice', q:'C 语言属于哪类语言？', options:['解释型语言','编译型语言','脚本语言','网页标记语言'], answer:1, explain:'C 是编译型语言：源码先整体编译成机器码再运行，效率高、贴近硬件。'},
-    {type:'code', q:'输出这句话：Hello C world!', code:'#include <stdio.h>\nint main(void){\n    printf("Hello C world!\\n");\n    return 0;\n}', expect:'Hello C world!', hint:'printf 后面是圆括号，字符串用双引号包住，结尾加分号。'},
-    {type:'choice', q:'计算机只能直接执行哪种语言？', options:['C 语言','Python','机器语言（0和1）','汇编语言'], answer:2, explain:'CPU 只认识机器指令（二进制），C 等高级语言都要翻译成机器码。'},
-    {type:'choice', q:'C 语言的前身是？', options:['B 语言','Java','Pascal','Fortran'], answer:0, explain:'汤普森 1969 年发明 B 语言，里奇 1972 年在 B 的基础上创造了 C。'},
-    {type:'code', q:'输出：I love C', code:'#include <stdio.h>\nint main(void){\n    printf("I love C\\n");\n    return 0;\n}', expect:'I love C', hint:'printf 加字符串即可，记得分号和 return。'},
-    {type:'choice', q:'编译型语言相比解释型语言的优势是？', options:['写起来更快','运行效率高、贴近硬件','不需要编译器','语法更简单'], answer:1, explain:'编译型程序运行时不需要翻译，效率高，适合系统级开发。'},
-    {type:'fill', q:'补全代码：让程序输出 C 语言', template:'#include <stdio.h>\nint main(void){\n    printf("___1___\\n");\n    return 0;\n}', blanks:['填要输出的字符串'], ans:['C 语言'], expect:'C 语言', hint:'printf 引号里的内容就是输出。'},
-    {type:'choice', q:'ANSI C（C89/C90）标准发布于是哪一年？', options:['1972','1978','1989','1999'], answer:2, explain:'1989 年 ANSI 发布 C 标准（C89/C90），C99 是 1999 年。'},
-    {type:'code', q:'输出两行：Hello 和 world', code:'#include <stdio.h>\nint main(void){\n    printf("Hello\\n");\n    printf("world\\n");\n    return 0;\n}', expect:'Hello\nworld', hint:'每个 printf 输出一行，\\n 换行。'}
-  ],
+    {type:'choice', q:'给室友写一张「做番茄炒蛋」的纸条，和给计算机写一段程序，本质差别在哪？', options:['计算机更聪明，能猜你的意思','程序必须精确到每一步操作，任何歧义都会让计算机走偏——室友可以猜，机器不能','程序可以随便写，反正能跑','室友看得懂中文，计算机只看得懂英文'], answer:1, explain:'程序=给计算机的指令序列，每条指令必须明确无歧义。这是「写程序」和「写便条」的根本差别，也是第一章要先讲的概念。'},
+    {type:'choice', q:'计算机的 CPU 直接能执行的只有哪种形式？', options:['C 语言源码','高级语言','机器语言（0 和 1 的指令）','汇编语言'], answer:2, explain:'CPU 只认二进制机器指令。C 等高级语言写的源码，必须先被翻译成机器码才能运行——这就是需要编译器的根本原因。'},
+    {type:'choice', q:'C 语言属于编译型语言。它与 Python 这类解释型语言的关键区别是？', options:['C 更简单','翻译的时机：C 先把整份源码一次性编译成可执行文件再运行；Python 运行时一句句翻译','C 不需要翻译','Python 需要先编译'], answer:1, explain:'编译=事先整体翻译，解释=边跑边翻。C 编译出的可执行文件启动快、运行时不需要编译器在场；代价是改一行代码就要重新编译。'},
+    {type:'choice', q:'你改了一行源码，重新运行程序却发现输出毫无变化。最可能的原因是？', options:['电脑坏了','改了没保存','忘了重新编译，运行的是旧的 .exe','printf 失效了'], answer:2, explain:'编译型语言的经典坑：改源码 ≠ 改程序，必须重新编译链接生成新的可执行文件。C 入门第一课就要养成「改完必重编」的习惯。'},
+    {type:'choice', q:'为什么每个 C 程序都必须有 main 函数？', options:['没有它编译器会报错，仅此而已','操作系统运行程序时需要一个明确的入口，从这里开始执行','main 负责管理内存','写起来好看'], answer:1, explain:'main 是程序的入口约定：系统把控制权交给 main 开始执行。没有它，机器不知道从哪条指令跑起。'},
+    {type:'choice', q:'你的程序里用了 printf，但它不是你自己写的。链接（link）阶段在做的事是？', options:['检查语法','把 printf 的实现从库中取出，与你写好的目标代码合并成一个可执行文件','把源码翻译成汇编','删除没用的代码'], answer:1, explain:'编译把源码变成目标文件，链接再把库函数（如 printf）的实现合并进来生成可执行程序。少了链接这一步，程序就缺胳膊少腿。'},
+    {type:'choice', q:'为什么 C 语言会在贝尔实验室诞生？它与当时重写 UNIX 的需求有什么关系？', options:['纯属巧合','写系统程序需要一门既贴近硬件、又能方便移植到不同机器的语言，C 为此而生','贝尔实验室想卖编译器赚钱','为了替代 Java'], answer:1, explain:'C 的诞生是「干活干出来的」：里奇为了重写 UNIX，需要一门能直接操作内存与硬件、又不像汇编那样绑死某台机器的语言。理解背景，比背「谁发明」更能记住 C 的定位。'},
+    {type:'choice', q:'源码里有语法错误时，程序在哪个阶段会发现并报错？', options:['运行时才发现','编译时','买电脑时','运行一万次之后'], answer:1, explain:'语法错误在编译阶段就被编译器抓住——这是好事：错误暴露得越早，修起来越便宜。运行时错误（如除零）才是编译期发现不了的。'},
+    {type:'code', q:'输出这句话：Hello C world!', code:'#include <stdio.h>\nint main(void){\n    printf("Hello C world!\\n");\n    return 0;\n}', expect:'Hello C world!', hint:'printf 后是圆括号，字符串用双引号包住，结尾分号，别忘了 return 0。'}
+ ],
   dialogue:{q:'为什么学编程总从 C 开始？它比 Python 难这么多。',
     keys:['底层','原理','地基','指针','内存','机制','基础','理解'],
     model:'因为 C 离机器最近：你被迫理解内存、地址、类型、指针这些「程序的真相」。会 C 的人再学任何语言，都是看它怎么处理这些底层问题；只会高层语言的人，遇到内存泄漏、性能瓶颈时无从下手。难是难一点，但它是地基——地基稳了，楼随便盖。'},
