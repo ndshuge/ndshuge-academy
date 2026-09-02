@@ -1694,8 +1694,22 @@ function renderQuiz(c, container, mode){
       if(q.hint) qh+='<div style="font-size:12px;color:var(--muted);margin-top:6px">💡 '+q.hint+'</div>';
       qh+='</div>';
     } else {
-      qh += q.options.map(function(o,oi){return '<button class="opt" data-q="'+key+'" data-i="'+oi+'" onclick="checkChoice(this)"'+(done?' disabled':'')+'>'+String.fromCharCode(65+oi)+'. '+o+'</button>'}).join('') +
-        '<div class="fb"></div><div class="explain"><b>解析：</b>'+q.explain+'</div></div>';
+      var mypick = done ? (load('ans', {})[key]) : undefined;
+      var wasOk = done ? (quizStat[key] === 1) : false;
+      var fbTxt = '';
+      if(done){
+        var letter = mypick !== undefined ? String.fromCharCode(65+mypick) : '';
+        fbTxt = wasOk ? '✓ 已答对' : ('✗ 答错了（你选了' + (letter ? ' '+letter : '') + '）');
+      }
+      qh += q.options.map(function(o,oi){
+        var cls = '';
+        if(done){
+          if(oi === q.answer) cls += ' correct';
+          if(oi === mypick && !wasOk) cls += ' wrong';
+        }
+        return '<button class="opt'+cls+'" data-q="'+key+'" data-i="'+oi+'" onclick="checkChoice(this)"'+(done?' disabled':'')+'>'+String.fromCharCode(65+oi)+'. '+o+'</button>';
+      }).join('') +
+        '<div class="fb'+(done?' show '+(wasOk?'ok':'no'):'')+'"'+(done?'':' style="display:none"')+'>'+fbTxt+'</div><div class="explain'+(done?' show':'')+'"><b>解析：</b>'+q.explain+'</div></div>';
     }
     return qh;
   }).join('');
@@ -1733,6 +1747,7 @@ function checkChoice(btn){
     quizStat[key]=0; sessionLog('lesson', c, key, false);
     statRecordQ(false);
   }
+  var ap = load('ans', {}); ap[key] = +btn.dataset.i; store('ans', ap);
   quiz.querySelector('.explain').classList.add('show');
   saveQuiz(); renderProgress();
   if(curPage==='wrong'){ renderWrong(); }
@@ -2205,7 +2220,17 @@ function renderExam(id){
       var tag3 = edone ? (quizStat[key] === 1 ? '<span class="hall-done-tag">✓ 已通过</span>' : '<span class="hall-done-tag" style="background:#8B2C1F">✗ 已做（错）</span>') : '';
       html+='<div class="codebox" data-key="'+key+'"'+(q.expect?' data-expect="'+esc(q.expect)+'"':'')+'>'+'<div class="cb-head"><span class="lb">✏️ 写代码</span>'+(edone ? tag3 : '')+(q.expect?'<span class="lb">期望：'+esc(q.expect.split('|').join(' 或 '))+'</span>':'')+'</div><textarea class="cm-target" spellcheck="false" data-starter="'+esc(starter3)+'"'+(edone?' readonly':'')+'>'+esc(showCode3)+'</textarea><div class="cb-foot"><button class="run" onclick="runCode(this)"'+(edone?' disabled title="已做，不能修改"':'')+'>▶ 运行</button><button class="see-ans" onclick="showAns(this)" data-ans="'+esc(q.code||'')+'"'+(edone?' disabled title="已做"':'')+'>👁 查看答案</button><div class="cout"></div></div><div class="vrd"></div></div></div>';
     } else {
-      html+=q.options.map(function(o,oi){return '<button class="opt" data-q="'+key+'" data-i="'+oi+'" onclick="checkExam(this)">'+String.fromCharCode(65+oi)+'. '+o+'</button>'}).join('')+'<div class="fb"></div><div class="explain"><b>解析：</b>'+q.explain+'</div></div>';
+      var st0 = quizStat[key];
+      var mpp = (st0 !== undefined) ? load('ans', {})[key] : undefined;
+      var fbTxt2 = '';
+      if(st0 !== undefined){ fbTxt2 = st0 === 1 ? '✓ 已通过' : '✗ 上次答错（可重做）'; }
+      html+=q.options.map(function(o,oi){
+        var cls='';
+        if(st0 === 1){ if(oi === q.answer) cls=' correct'; }
+        else if(st0 === 0){ if(oi === q.answer) cls=' correct'; if(oi === mpp) cls+=' wrong'; }
+        var dis = (st0 === 1) ? ' disabled' : '';
+        return '<button class="opt'+cls+'" data-q="'+key+'" data-i="'+oi+'" onclick="checkExam(this)"'+dis+'>'+String.fromCharCode(65+oi)+'. '+o+'</button>';
+      }).join('')+'<div class="fb'+(st0!==undefined?' show '+(st0===1?'ok':'no'):'')+'"'+(st0!==undefined?'':' style="display:none"')+'>'+fbTxt2+'</div><div class="explain'+(st0!==undefined?' show':'')+'"><b>解析：</b>'+q.explain+'</div></div>';
     }
   });
   $('#examBox').innerHTML=html;
@@ -2224,6 +2249,7 @@ function checkExam(btn){
   fb.textContent = ok ? '✓ 考试题通过！' : '✗ 错了。考试题不记错题本，看解析后重做一遍。';
   fb.className='fb show '+(ok?'ok':'no');
   quiz.querySelector('.explain').classList.add('show');
+  var ap = load('ans', {}); ap[key] = +btn.dataset.i; store('ans', ap);
   quizStat[key]=ok?1:0; sessionLog('exam', c, key, ok);
   statRecordQ(ok);
   if(ok){ hallDone[key]=1; quiz.classList.add('done'); saveQuiz(); renderProgress(); }
@@ -2247,7 +2273,14 @@ function renderWrong(){
       var wcode = (usercode && usercode[key] !== undefined) ? usercode[key] : starter4;
       html+='<div class="codebox" data-key="'+key+'"'+(w.q.expect?' data-expect="'+esc(w.q.expect)+'"':'')+'>'+'<div class="cb-head"><span class="lb">✏️ 重写代码 <span style="font-size:11px;color:var(--muted)">（你上次写的：）</span></span></div><textarea class="cm-target" spellcheck="false" data-starter="'+esc(starter4)+'">'+esc(wcode)+'</textarea><div class="cb-foot"><button class="run" onclick="runCode(this)">▶ 运行</button><button class="see-ans" onclick="showAns(this)" data-ans="'+esc(w.q.code||'')+'">👁 查看答案</button><div class="cout"></div></div><div class="vrd"></div></div><div class="reason">💡 '+w.q.hint+'</div>';
     } else {
-      html+=w.q.options.map(function(o,oi){return '<button class="opt" data-q="'+key+'" data-i="'+oi+'" onclick="checkChoice(this)">'+String.fromCharCode(65+oi)+'. '+o+'</button>'}).join('')+'<div class="fb"></div><div class="explain"><b>解析：</b>'+w.q.explain+'</div>';
+      var wans = load('ans', {})[key];
+      var wok = quizStat[key];
+      html+=w.q.options.map(function(o,oi){
+        var cls='';
+        if(oi === w.q.answer) cls=' correct';
+        if(oi === wans && wok === 0) cls+=' wrong';
+        return '<button class="opt'+cls+'" data-q="'+key+'" data-i="'+oi+'" onclick="checkChoice(this)">'+String.fromCharCode(65+oi)+'. '+o+'</button>';
+      }).join('')+'<div class="fb"></div><div class="explain show"><b>解析：</b>'+w.q.explain+'</div>';
     }
     html+='</div>';
   });

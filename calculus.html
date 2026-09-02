@@ -3706,7 +3706,9 @@ function renderQuiz(c, container, mode){
         return '<div class="opt" data-o="'+oi+'">'+String.fromCharCode(65+oi)+'. '+parseMath(o)+'</div>';
       }).join('')+'</div>';
     } else {
-      qh += '<div class="fillrow"><input placeholder="输入答案（备用）"><button>批改</button></div>';
+      var pv = quizPick[key];
+      var doneIn = mode !== 'hall' && quizStat[key] !== undefined && pv !== undefined;
+      qh += '<div class="fillrow"><input placeholder="输入答案（备用）" value="'+esc(pv||'')+'"'+(doneIn?' disabled':'')+'><button'+(doneIn?' disabled':'')+'>批改</button></div>';
     }
     qh += '<div class="verdict"></div></div>';
     return qh;
@@ -3774,6 +3776,7 @@ function renderQuiz(c, container, mode){
         qz.dataset.lock = '1';
         var ok = q.accept.some(function(a){ return numEq(a, val); });
         storeCorrect(key, ok);
+        storePick(key, val);
         poolMove(key, ok);
         todayRecord(ok);
         statRecordQ(ok);
@@ -4545,7 +4548,8 @@ function bindExam(scope){
     var prev = quizStat[key];
     if(prev !== undefined){
       qz.dataset.lock = '1';
-      qz.querySelectorAll('.opt').forEach(function(o){ o.classList.add('lock'); if(+o.dataset.o === q.answer) o.classList.add('ok'); });
+      var pk = quizPick[key];
+      qz.querySelectorAll('.opt').forEach(function(o){ o.classList.add('lock'); if(+o.dataset.o === q.answer) o.classList.add('ok'); if(prev === 0 && pk !== undefined && +o.dataset.o === pk) o.classList.add('bad'); });
       var v = qz.querySelector('.verdict');
       v.className = 'verdict show ' + (prev === 1 ? 'right' : 'wrong');
       v.innerHTML = '<div class="cm">'+(prev === 1 ? '✓ 已答对' : '✗ 上次答错（此卷可重置后重做）')+'</div><div class="ex">'+parseMath(q.explain)+'</div>';
@@ -4559,6 +4563,7 @@ function bindExam(scope){
         if(!ok) qz.querySelectorAll('.opt')[q.answer].classList.add('ok');
         qz.querySelectorAll('.opt').forEach(function(o){o.classList.add('lock')});
         quizStat[key] = ok ? 1 : 0; store('quizStat', quizStat);
+        storePick(key, oi);
         sessionLog('exam', CHAPTERS[cid-1], key, ok);
         poolMove(key, ok);
         todayRecord(ok);
