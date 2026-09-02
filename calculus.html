@@ -431,8 +431,13 @@ canvas{width:100%;background:#fffdf7;border:1px solid var(--line);border-radius:
   #main{padding:24px 18px 60px}
   #side.collapsed{display:none}
 }
-.side-fab{position:fixed; left:14px; bottom:18px; width:46px; height:46px; border-radius:50%; border:1px solid var(--line); background:var(--card); color:var(--blue); font-size:18px; cursor:pointer; box-shadow:0 4px 14px rgba(0,0,0,.18); z-index:9998; align-items:center; justify-content:center; display:none; transition:transform .15s}
-.side-fab:hover{transform:scale(1.1)}
+/* ===== 四院统一：退出学院 ===== */
+.exit-academy{display:flex;align-items:center;justify-content:center;gap:6px;margin:0 0 2px;border:1.5px solid var(--line);border-radius:980px;padding:8px 12px;font-size:12.5px;color:var(--ink2);text-decoration:none;cursor:pointer;transition:.18s;letter-spacing:.5px;background:transparent;flex-shrink:0}
+.exit-academy:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-bg)}
+.side-fab,.exit-fab{position:fixed;bottom:18px;height:42px;border-radius:980px;border:1px solid var(--line);background:var(--card);color:var(--blue);font-size:13.5px;font-weight:600;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.18);z-index:9997;align-items:center;justify-content:center;display:none;transition:transform .15s;gap:5px;padding:0 16px;line-height:1;text-decoration:none}
+.side-fab{left:12px}
+.exit-fab{right:12px}
+.side-fab:hover,.exit-fab:hover{transform:scale(1.1)}
 </style>
 </head>
 <body>
@@ -441,6 +446,7 @@ canvas{width:100%;background:#fffdf7;border:1px solid var(--line);border-radius:
   <aside id="side">
     <button id="sideToggle" title="折叠/展开侧栏">«</button>
     <h1>🐭 鼠哥的微积分学院 🐿️<small>COLLÈGE DU CALCUL · 班纳读本 30 章</small></h1>
+    <a class="exit-academy" href="https://ndshuge.github.io/ndshuge-academy/" title="回到四学院门户">🚪 退出学院</a>
     <div class="divider"></div>
     <div id="userCard" class="user-card" onclick="userCardClick()">
       <div class="uc-ic">👤</div>
@@ -686,7 +692,8 @@ canvas{width:100%;background:#fffdf7;border:1px solid var(--line);border-radius:
     <button id="fabHome" title="回主页"><span class="fab-tip">回主页</span>⌂</button>
     <button id="fabBack" title="返回章节列表"><span class="fab-tip">返回</span>←</button>
   </div>
-  <button id="sideFab" class="side-fab" onclick="toggleSide()" title="展开侧栏">☰</button>
+  <button id="sideFab" class="side-fab" onclick="toggleSide()" title="展开侧栏">☰ 菜单</button>
+<a class="exit-fab" id="exitFab" href="https://ndshuge.github.io/ndshuge-academy/" title="回到四学院门户">🚪 退出学院</a>
 
 <script>
 /* ================= 工具 ================= */
@@ -4662,9 +4669,11 @@ if(sideToggle){
   var sideBusy = false, sideT1 = null, sideT2 = null;
   function sideFabSync(){
     var fab = document.getElementById('sideFab');
-    if(!fab) return;
+    var ef = document.getElementById('exitFab');
     var isMobile = window.innerWidth <= 860;
-    fab.style.display = (isMobile && sideEl.classList.contains('collapsed')) ? 'flex' : 'none';
+    var show = isMobile && sideEl.classList.contains('collapsed');
+    if(fab) fab.style.display = show ? 'flex' : 'none';
+    if(ef) ef.style.display = show ? 'flex' : 'none';
   }
   window.addEventListener('resize', sideFabSync);
   function sideClearTimers(){
@@ -4710,11 +4719,14 @@ if(sideToggle){
 }
 function toggleSide(){ var t = document.getElementById('sideToggle'); if(t) t.click(); }
 (function(){
-  /* 导航分组固定默认折叠（HTML 已写死 collapsed），每次打开都是收起状态 */
-  if(load('sidefold', 0)){
+  /* 手机端默认收起（未手动展开过）；桌面按 sidefold 偏好 */
+  var sf = load('sidefold', null);
+  var shouldFold = (window.innerWidth <= 860 && sf !== 0) || sf === 1;
+  if(shouldFold){
     var side = document.getElementById('side');
     if(side){ side.classList.add('collapsed'); if(sideToggle) sideToggle.textContent = '»'; }
     var fab = document.getElementById('sideFab'); if(fab){ fab.style.display = (window.innerWidth <= 860) ? 'flex' : 'none'; }
+    var ef = document.getElementById('exitFab'); if(ef){ ef.style.display = (window.innerWidth <= 860) ? 'flex' : 'none'; }
   }
 })();
 

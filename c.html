@@ -494,6 +494,15 @@ pre.code .lang{position:absolute;top:8px;right:12px;font-size:10px;color:#777;le
   #main{padding:24px 18px 60px}
   #side.collapsed{display:none}
 }
+/* ===== 四院统一：退出学院 ===== */
+.exit-academy{display:flex;align-items:center;justify-content:center;gap:6px;margin:0 0 2px;border:1.5px solid var(--line);border-radius:980px;padding:8px 12px;font-size:12.5px;color:var(--ink2);text-decoration:none;cursor:pointer;transition:.18s;letter-spacing:.5px;background:transparent;flex-shrink:0}
+.exit-academy:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-bg)}
+.exit-fab{position:fixed;right:14px;bottom:18px;width:46px;height:46px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--blue);font-size:17px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.18);z-index:9997;align-items:center;justify-content:center;display:none;transition:transform .15s;text-decoration:none}
+.exit-fab:hover{transform:scale(1.1)}
+/* 悬浮钮胶囊化（带文字，手机端显眼）*/
+.side-fab,.exit-fab{width:auto;height:42px;border-radius:980px;padding:0 16px;font-size:13.5px;font-weight:600;gap:5px;line-height:1}
+.side-fab{left:12px;right:auto}
+.exit-fab{right:12px;left:auto}
 .opt.sel{background:var(--blue-bg);border-color:var(--blue);color:var(--blue);font-weight:600}
 .fill-code{font-family:var(--mono);font-size:13px;line-height:1.9;padding:14px 16px;background:#282c34;color:#d4d7de;border-radius:10px;overflow-x:auto;white-space:pre}
 .fill-code input.fill-in{width:76px;margin:0 2px;padding:2px 6px;border:1px solid #5b6b83;border-bottom:2px solid #61afef;background:#1e222a;color:#e5c07b;font-family:var(--mono);font-size:13px;border-radius:5px;outline:none;text-align:center}
@@ -514,6 +523,7 @@ pre.code .lang{position:absolute;top:8px;right:12px;font-size:10px;color:#777;le
   <aside id="side">
     <button id="sideToggle" title="折叠/展开侧栏">«</button>
     <h1>🐭 鼠哥的 C 语言学院 🐯<small>C ACADEMY · 谭浩强《C程序设计（第5版）》</small></h1>
+    <a class="exit-academy" href="https://ndshuge.github.io/ndshuge-academy/" title="回到四学院门户">🚪 退出学院</a>
     <div class="divider"></div>
     <div id="userCard" class="user-card" onclick="userCardClick()">
       <div class="uc-ic">👤</div>
@@ -2997,9 +3007,10 @@ function setFabVisible(v){
   var sideBusy = false, sideT1 = null, sideT2 = null;
   function sideFabSync(){
     var fab = document.getElementById('sideFab');
-    if(!fab) return;
+    var ef = document.getElementById('exitFab');
     var isMobile = window.innerWidth <= 860;
-    fab.style.display = isMobile ? 'flex' : 'none';
+    if(fab) fab.style.display = isMobile ? 'flex' : 'none';
+    if(ef) ef.style.display = isMobile ? 'flex' : 'none';
   }
   window.addEventListener('resize', sideFabSync);
   function sideClearTimers(){
@@ -4922,7 +4933,8 @@ setTimeout(function(){ if(!__crtReady && !__crtBusy) ensureCrt(function(){}); },
     <button id="fabHome" title="回主页"><span class="fab-tip">回主页</span>⌂</button>
     <button id="fabBack" title="返回上一页"><span class="fab-tip">返回</span>←</button>
   </div>
-<button id="sideFab" class="side-fab" onclick="toggleSide()" title="展开侧栏">☰</button>
+<button id="sideFab" class="side-fab" onclick="toggleSide()" title="展开侧栏">☰ 菜单</button>
+<a class="exit-fab" id="exitFab" href="https://ndshuge.github.io/ndshuge-academy/" title="回到四学院门户">🚪 退出学院</a>
 <div class="modal-mask" id="progressModal" style="display:none" onclick="closeManageModal()">
   <div class="modal-card" onclick="event.stopPropagation()">
     <div class="modal-head">📁 管理账号与进度<button class="modal-x" onclick="closeManageModal()">✕</button></div>
