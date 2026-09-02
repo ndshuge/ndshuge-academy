@@ -7,7 +7,7 @@
 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🐭 鼠哥的芯片战争读书学院 🧠 · 已授 36 章（四院集成站）</title>
+<title>🐭 鼠哥的芯片战争读书学院 🧠 · 已授 36 章</title>
 <style>
 :root{
   --bg:#F5EFE4; --card:#FBF7EE; --ink:#2A2622; --ink2:#4A433C; --muted:#6B6158;
@@ -691,6 +691,17 @@ function pick(a){return a[Math.floor(Math.random()*a.length)]}
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 function store(k,v){try{localStorage.setItem((k==='sb_session'?'academy_':'chip_')+k, JSON.stringify(v))}catch(e){}}
 function load(k,d){try{var v=JSON.parse(localStorage.getItem((k==='sb_session'?'academy_':'chip_')+k)); return v===null?d:v}catch(e){return d}}
+/* 每日目标登记（全站共享键 daily_goal，以 4:00 为界）：act='l' 学完一章 / act='e' 做完一份卷 */
+function dailyGoal(act){
+  try{
+    var t = new Date(); if(t.getHours() < 4) t.setDate(t.getDate()-1);
+    var d = t.getFullYear()+'-'+(t.getMonth()+1)+'-'+t.getDate();
+    var g = JSON.parse(localStorage.getItem('daily_goal')||'{}');
+    g[d] = g[d]||{}; g[d]['chip'] = g[d]['chip']||{};
+    g[d]['chip'][act] = Date.now();
+    localStorage.setItem('daily_goal', JSON.stringify(g));
+  }catch(e){}
+}
 
 /* ================= 公式渲染（迷你 LaTeX，离线可用） ================= */
 function parseMath(s){
@@ -15121,7 +15132,7 @@ function autoSyncLessons(){
       });
     });
   });
-  if(changed){ store('lessons', lessonsDone); renderPlan(); }
+  if(changed){ store('lessons', lessonsDone); dailyGoal('l'); renderPlan(); }
 }
 
 /* ================= 渲染：计划页 ================= */
@@ -16196,6 +16207,9 @@ function bindExam(scope){
         sessionLog('exam', CHAPTERS[cid-1], key, ok);
         poolMove(key, ok);
         todayRecord(ok);
+        var _ekN = CHAPTERS[cid-1].exam ? CHAPTERS[cid-1].exam.length : 0;
+        var _ekDone = Object.keys(quizStat).filter(function(k){ return k.indexOf('e'+cid+'_') === 0; }).length;
+        if(_ekN > 0 && _ekDone >= _ekN) dailyGoal('e');
         statRecordQ(ok);
         renderAll(); renderStats(); sbNotify();
         var v = qz.querySelector('.verdict');
@@ -17183,7 +17197,7 @@ function openRank(){
   fetch(SB_URL + '/rest/v1/leaderboard?select=user_id,username,avatar,pct,done,lessons,rank_name&order=pct.desc&app=eq.calculus&limit=100', { headers:h })
     .then(function(r){ return r.json(); })
     .then(function(rows){
-      if(!rows || !rows.length){ w.innerHTML = '<div class="rank-empty">还没有人上榜，快去学习成为第一名吧！🧠</div>'; return; }
+      if(!rows || !rows.length){ w.innerHTML = '<div class="rank-empty">还没有人上榜，快去学习成为第一名吧！🧮</div>'; return; }
       var me = sbSession().user.id;
       var medals = ['🥇','🥈','🥉'];
       w.innerHTML = rows.map(function(x,i){
@@ -17482,11 +17496,11 @@ renderLab();
         <div class="share-row"><span class="share-label">📦 仓库</span><input class="share-inp" readonly value="https://github.com/ndshuge/ndshuge-academy" onclick="this.select()"><button class="share-copy" onclick="copyShare(this)">复制</button><a class="share-open" href="https://github.com/ndshuge/ndshuge-academy" target="_blank" rel="noopener">打开 ↗</a></div>
       </div>
       <div class="share-item">
-        <div class="share-name">🧠 芯片战争学院</div>
+        <div class="share-name">🧮 芯片战争学院</div>
         <div class="share-row"><span class="share-label">📖 学习链接</span><input class="share-inp" id="shCaSite" readonly onclick="this.select()"><button class="share-copy" onclick="copyShare(this)">复制</button><a class="share-open" id="shCaSiteA" target="_blank" rel="noopener">打开 ↗</a></div>
         <div class="share-row"><span class="share-label">📦 仓库</span><input class="share-inp" readonly value="https://github.com/ndshuge/ndshuge-academy" onclick="this.select()"><button class="share-copy" onclick="copyShare(this)">复制</button><a class="share-open" href="https://github.com/ndshuge/ndshuge-academy" target="_blank" rel="noopener">打开 ↗</a></div>
       </div>
-      <div class="share-tip">四院一个链接：微积分 / Python / C / 芯片战争，登录一次四院通，进度各自独立。</div>
+      <div class="share-tip">四院账号互通：注册一个账号，四个学院都能用，进度各自独立。</div>
     </div>
   </div>
 </div>
