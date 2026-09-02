@@ -502,7 +502,7 @@ pre.code .lang{position:absolute;top:8px;right:12px;font-size:10px;color:#777;le
 /* 悬浮钮胶囊化（带文字，手机端显眼）*/
 .side-fab,.exit-fab{width:auto;height:42px;border-radius:980px;padding:0 16px;font-size:13.5px;font-weight:600;gap:5px;line-height:1}
 .side-fab{left:12px;right:auto}
-.exit-fab{right:12px;left:auto}
+.exit-fab{left:12px;right:auto;bottom:78px}
 .side-fab{flex-direction:row}
 .exit-fab{flex-direction:row}
 </style>
@@ -558,6 +558,7 @@ pre.code .lang{position:absolute;top:8px;right:12px;font-size:10px;color:#777;le
       <button class="com-btn" onclick="openRank()"><span class="ic">🏆</span>学习排行榜<span class="go">→</span></button>
       <button class="com-btn" onclick="openFeedback()"><span class="ic">💬</span>给作者留言<span class="go">→</span></button>
       <button class="com-btn" onclick="openShare()"><span class="ic">📤</span>分享学院<span class="go">→</span></button>
+      <button class="com-btn" onclick="openAuthor()"><span class="ic">👨‍💻</span>关于作者<span class="go">→</span></button>
     </div>
   </aside>
 
@@ -1255,36 +1256,47 @@ function statRecordQ(ok){
 }
 /* ===== 连续打卡：结算一章算打卡一天 ===== */
 function todayStr(){ var d = new Date(); if(d.getHours() < 4) d.setDate(d.getDate()-1); return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(); }
-function doCheckin(){
-  var days = load('checkin', []);
-  var t = todayStr();
-  if(days.indexOf(t) === -1){ days.push(t); store('checkin', days); }
+/* 打卡数据源统一：全站 daily_goal（四院任一「整章练习完成 l / 整卷完成 e」都计当天打卡，跨院连续不断签） */
+function acadDaySet(){
+  try{
+    var g = JSON.parse(localStorage.getItem('daily_goal')||'{}'), out = {};
+    Object.keys(g).forEach(function(d){ if(g[d] && Object.keys(g[d]).length) out[d] = 1; });
+    var leg = load('checkin', []);
+    if(leg && leg.length) leg.forEach(function(x){ out[x] = 1; });
+    return out;
+  }catch(e){ return {}; }
 }
+function doCheckin(){ /* 打卡已由 daily_goal 统一记录（整章练习完成 l / 整卷完成 e），保留调用点兼容 */ }
 function calcStreak(){
-  var days = load('checkin', []);
-  if(!days || !days.length) return 0;
-  var set = {};
-  days.forEach(function(d){ set[d] = 1; });
-  var streak = 0;
-  var d = new Date();
-  if(!set[todayStr()]) d.setDate(d.getDate()-1); // 今天还没打，从昨天往前数
+  var set = acadDaySet();
+  var streak = 0, d = new Date();
+  if(!set[todayStr()]) d.setDate(d.getDate()-1);
   while(set[d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()]){ streak++; d.setDate(d.getDate()-1); }
   return streak;
 }
 function checkinBanner(){
   var st = calcStreak();
-  if(st > 0){
-    return '<div class="card" style="border-color:#D9A441;background:linear-gradient(135deg,#FDF6E3,#FBF7EE);box-shadow:0 3px 14px rgba(217,164,65,.22)">' +
+  var doneToday = !!acadDaySet()[todayStr()];
+  var card = 'border-color:#D9A441;background:linear-gradient(135deg,#FDF6E3,#FBF7EE);box-shadow:0 3px 14px rgba(217,164,65,.22)';
+  if(doneToday){
+    return '<div class="card" style="'+card+'">' +
       '<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">' +
       '<span style="font-size:26px">🔥</span>' +
-      '<span style="font-size:16px;font-weight:700;color:#8a6d1f">已连续打卡 <b style="font-size:22px;color:#B8860B">'+st+'</b> 天</span>' +
-      '<span style="font-size:13px;color:#a08a5a">'+(st>=7?'一周以上了，这火苗旺得可以烤肉了。':'做一题就打卡，别让小火苗断咯。')+'</span></div></div>';
+      '<span style="font-size:16px;font-weight:700;color:#8a6d1f">今日打卡 ✓ · 连续 <b style="font-size:22px;color:#B8860B">'+st+'</b> 天</span>' +
+      '<span style="font-size:13px;color:#a08a5a">'+(st>=7?'一周以上了，这火苗旺得可以烤肉了。':'明天继续，别让小火苗断咯。')+'</span></div></div>';
   }
-  return '<div class="card" style="border-color:#D9A441;background:linear-gradient(135deg,#FDF6E3,#FBF7EE);box-shadow:0 3px 14px rgba(217,164,65,.22)">' +
+  if(st > 0){
+    return '<div class="card" style="'+card+'">' +
+      '<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">' +
+      '<span style="font-size:26px">⏳</span>' +
+      '<span style="font-size:16px;font-weight:700;color:#8a6d1f">已连续 <b style="font-size:22px;color:#B8860B">'+st+'</b> 天 · 今天还没完成</span>' +
+      '<span style="font-size:13px;color:#a08a5a">学完一章练习或做完一份卷，点亮今日打卡。</span></div></div>';
+  }
+  return '<div class="card" style="'+card+'">' +
     '<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">' +
     '<span style="font-size:26px">🔥</span>' +
     '<span style="font-size:16px;font-weight:700;color:#8a6d1f">今天还没打卡</span>' +
-    '<span style="font-size:13px;color:#a08a5a">做一题就点亮小火苗，连续打卡记录你的坚持。</span></div></div>';
+    '<span style="font-size:13px;color:#a08a5a">学完一章练习或做完一份卷，点亮今日打卡。四院共通，跨学院不断签。</span></div></div>';
 }
 var studyTimerStart = null;
 function studyTimerEnter(){ if(studyTimerStart === null) studyTimerStart = Date.now(); }
@@ -1478,6 +1490,32 @@ function setFabVisible(v){
   sideFabSync();
 })();
 function toggleSide(){ document.getElementById('sideToggle').click(); }
+/* ===== 关于作者（四院统一弹窗）===== */
+var __authorWrap = null;
+function openAuthor(){
+  if(__authorWrap){ __authorWrap.remove(); __authorWrap=null; }
+  var wrap=document.createElement('div');
+  wrap.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:99999;display:flex;align-items:center;justify-content:center;padding:18px';
+  wrap.onclick=function(e){ if(e.target===wrap) closeAuthor(); };
+  var box=document.createElement('div');
+  box.style.cssText='background:#FBF7EE;border:1px solid #D8CFBE;border-radius:18px;padding:24px;max-width:540px;width:100%;max-height:86vh;overflow:auto;box-shadow:0 14px 50px rgba(0,0,0,.28);font-family:inherit;color:#2A2622;line-height:1.7';
+  box.innerHTML='<div style="display:flex;gap:14px;align-items:center;margin-bottom:14px">' +
+    '<div style="width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,#537D96,#3F6179);display:flex;align-items:center;justify-content:center;font-size:30px;flex-shrink:0">🐭</div>' +
+    '<div><div style="font-weight:700;font-size:19px;letter-spacing:.5px">鼠哥 · 学院发起人</div>' +
+    '<div style="font-size:12px;color:#6B6158;margin-top:2px">西安交通大学 准大一新生</div></div></div>' +
+    '<p style="font-size:13.5px;color:#4A433C;margin:0 0 12px">打乒乓、敲架子鼓（十级）。开学前想做的事：<b>把同学们聚到一个地方，把大学第一年的硬课一起啃下来</b>。</p>' +
+    '<div style="font-size:13.5px;color:#4A433C;line-height:1.9"><b style="color:#2A2622">为什么会有这一座座学院？</b><br>' +
+    '高数光看 PDF 学不动，想要一个「做题马上批改、错题自己长记性」的地方 → 第一座 <b>微积分学院</b>诞生。<br>' +
+    '同学说也想学编程 → <b>Python 学院</b>：浏览器里直接写代码、即时判题。<br>' +
+    '接着 <b>C 语言学院</b>（50 章，浏览器里真编译真运行）、<b>芯片战争学院</b>（选择题读透《芯片战争》）陆续加入。<br>' +
+    '最后四院合一，成了现在的 <b>鼠哥学院</b>：一个链接，四门硬课，一群同学。</div>' +
+    '<div style="margin-top:12px;font-size:12.5px;color:#6B6158">每座学院的引擎与内容由拉里·佩奇搭建，方向与组织由鼠哥把关。同学们有任何想法，学院里「💬 给作者留言」随时说。</div>' +
+    '<button onclick="closeAuthor()" style="margin-top:18px;width:100%;padding:12px;border:none;border-radius:12px;background:linear-gradient(135deg,#537D96,#3F6179);color:#fff;font-size:14.5px;font-weight:600;cursor:pointer;font-family:inherit;letter-spacing:1px">知道了，去学习</button>';
+  wrap.appendChild(box);
+  __authorWrap = wrap;
+  document.body.appendChild(wrap);
+}
+function closeAuthor(){ if(__authorWrap){ __authorWrap.remove(); __authorWrap=null; } }
 
 /* ================= 统计与徽章 ================= */
 function badgeStatus(){
@@ -2487,6 +2525,23 @@ function hideClearConfirm(){
   var box=document.getElementById('clearConfirm');
   if(box){ box.style.display='none'; var m=document.getElementById('clearMsg'); if(m) m.style.display='none'; var inp=document.getElementById('clearInput'); if(inp) inp.value=''; }
 }
+/* 云端同步清除：登录状态下把本院云端命名空间一并清掉（防清除后同步回灌） */
+function sbClearCloud(){
+  try{
+    var s = sbSession(); if(!s || !s.user) return;
+    sbEnsureToken().then(function(ok){
+      if(!ok) return;
+      var h = sbAuthHeaders(); if(!h) return;
+      fetch(SB_URL + '/rest/v1/progress?select=data&user_id=eq.' + s.user.id, { headers:h })
+        .then(function(r){ return r.json(); })
+        .then(function(rows){
+          var data = (rows && rows.length && rows[0].data) ? rows[0].data : {};
+          if(data.python) delete data.python;
+          return fetch(SB_URL + '/rest/v1/progress?user_id=eq.' + s.user.id, { method:'PATCH', headers:h, body: JSON.stringify({ data: data }) });
+        }).catch(function(){});
+    });
+  }catch(e){}
+}
 function doClearProgress(){
   var inp=document.getElementById('clearInput');
   var word = inp ? inp.value.trim() : '';
@@ -2497,8 +2552,9 @@ function doClearProgress(){
     return;
   }
   // 只清学习数据，保留界面偏好（折叠状态等）
-  var learnKeys = ['lessons','ch','hall','qstat','usercode','wrong','fixed','log'];
+  var learnKeys = ['lessons','ch','hall','qstat','usercode','wrong','fixed','log','ans'];
   learnKeys.forEach(function(k){ localStorage.removeItem('pyc_'+k); });
+  sbClearCloud();
   location.reload();
 }
 
