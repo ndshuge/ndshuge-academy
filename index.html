@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<title>🐭 鼠哥的四学院 · 一个链接学完四门课</title>
+<style>
+:root{
+  --bg:#F5EFE4; --card:#FBF7EE; --ink:#2A2622; --ink2:#4A433C; --muted:#6B6158;
+  --blue:#537D96; --blue2:#3F6179; --blue-bg:rgba(83,125,150,.08);
+  --green:#4A6B4A; --red:#8B2C1F; --orange:#9D5F4D;
+  --gold:#B8860B; --gold-bg:rgba(184,134,11,.10);
+  --line:#D8CFBE; --shadow:0 2px 12px rgba(80,70,50,.08);
+  --radius:14px;
+}
+*{box-sizing:border-box; margin:0; padding:0}
+html,body{min-height:100%}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'SF Pro SC','PingFang SC','Segoe UI','Microsoft YaHei',sans-serif;
+  background:var(--bg); color:var(--ink); line-height:1.7; -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1060px; margin:0 auto; padding:48px 28px 72px}
+
+/* ===== Hero ===== */
+.hero{
+  background:linear-gradient(135deg,#2f2a20,#4a412c); border-radius:20px; padding:44px 40px 38px;
+  color:#fff; position:relative; overflow:hidden; margin-bottom:34px;
+  box-shadow:0 6px 24px rgba(60,50,30,.18);
+}
+.hero::after{
+  content:''; position:absolute; right:-60px; top:-60px; width:240px; height:240px; border-radius:50%;
+  background:radial-gradient(circle, rgba(212,169,42,.28), transparent 65%);
+}
+.hero .kick{font-size:12px; letter-spacing:3px; color:#d4a92a; font-weight:700; margin-bottom:12px; text-transform:uppercase}
+.hero h1{font-family:Georgia,'Songti SC',serif; font-size:34px; font-weight:600; letter-spacing:1px; line-height:1.35}
+.hero h1 .sub{display:block; font-size:16px; color:#d8cfbe; font-family:inherit; letter-spacing:2px; font-weight:400; margin-top:6px}
+.hero p{margin-top:16px; color:#c9bfa8; font-size:14px; max-width:640px}
+.hero .stats{display:flex; gap:28px; margin-top:26px; flex-wrap:wrap}
+.hero .stat .n{font-size:22px; font-weight:700; color:#ffd76e; font-variant-numeric:tabular-nums}
+.hero .stat .l{font-size:11px; color:#a89a78; letter-spacing:1px; margin-top:2px}
+
+/* ===== 学院卡片 ===== */
+.grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:20px}
+.academy{
+  background:var(--card); border:1px solid var(--line); border-radius:18px; padding:24px 24px 20px;
+  display:flex; flex-direction:column; transition:.22s; position:relative; overflow:hidden;
+  box-shadow:var(--shadow);
+}
+.academy:hover{transform:translateY(-3px); box-shadow:0 8px 26px rgba(80,70,50,.14); border-color:rgba(83,125,150,.4)}
+.academy.building{opacity:.88}
+.academy.building::before{
+  content:'建设中'; position:absolute; top:14px; right:-34px; transform:rotate(38deg);
+  background:var(--orange); color:#fff; font-size:10px; letter-spacing:2px; padding:3px 38px; font-weight:600;
+}
+.academy .top{display:flex; align-items:center; gap:14px; margin-bottom:14px}
+.academy .ic{
+  width:54px; height:54px; border-radius:15px; display:flex; align-items:center; justify-content:center;
+  font-size:26px; flex-shrink:0; color:#fff;
+}
+.ic-calc{background:linear-gradient(135deg,#537D96,#3F6179)}
+.ic-py{background:linear-gradient(135deg,#4A6B4A,#2f4a2f)}
+.ic-chip{background:linear-gradient(135deg,#5a4d28,#3a3018)}
+.ic-c{background:linear-gradient(135deg,#9D5F4D,#6b3f30)}
+.academy h2{font-size:19px; font-weight:700; letter-spacing:.5px}
+.academy .tag{font-size:11px; color:var(--muted); margin-top:2px; letter-spacing:.5px}
+.academy .desc{font-size:13px; color:var(--ink2); margin-bottom:16px; min-height:44px}
+.academy .bar{height:7px; background:rgba(0,0,0,.08); border-radius:4px; overflow:hidden; margin-bottom:8px}
+.academy .bar i{display:block; height:100%; width:0%; background:linear-gradient(90deg,var(--blue),#8fc3de); border-radius:4px; transition:.5s}
+.academy.py .bar i{background:linear-gradient(90deg,#4A6B4A,#7da37d)}
+.academy.chip .bar i{background:linear-gradient(90deg,#5a4d28,#d4a92a)}
+.academy.c .bar i{background:linear-gradient(90deg,#9D5F4D,#c99a85)}
+.academy .prog{display:flex; justify-content:space-between; align-items:baseline; font-size:11.5px; color:var(--muted); margin-bottom:18px}
+.academy .prog b{color:var(--ink); font-variant-numeric:tabular-nums}
+.academy .prog .pct{color:var(--blue); font-weight:700; font-size:13px}
+.academy .go{
+  margin-top:auto; text-align:center; border:none; border-radius:12px; padding:12px 16px; cursor:pointer;
+  font-family:inherit; font-size:14px; font-weight:600; letter-spacing:2px; color:#fff; text-decoration:none; display:block;
+  background:linear-gradient(135deg,#537D96,#3F6179); transition:.2s;
+}
+.academy.py .go{background:linear-gradient(135deg,#4A6B4A,#2f4a2f)}
+.academy.chip .go{background:linear-gradient(135deg,#5a4d28,#3a3018)}
+.academy.c .go{background:linear-gradient(135deg,#9D5F4D,#6b3f30)}
+.academy .go:hover{filter:brightness(1.1); transform:translateY(-1px)}
+.academy.building .go{opacity:.5; pointer-events:none}
+/* 今日达标：绿框 */
+.academy.day-ok{border-color:var(--green); box-shadow:0 0 0 2.5px rgba(74,107,74,.4), 0 6px 20px rgba(74,107,74,.12)}
+.academy.day-ok:hover{box-shadow:0 0 0 2.5px rgba(74,107,74,.5), 0 8px 26px rgba(74,107,74,.2)}
+.day{font-size:11.5px; margin-bottom:14px; letter-spacing:.3px}
+.day.ok{color:var(--green); font-weight:700}
+.day.part{color:var(--orange)}
+.day.none{color:#b5ab97}
+
+/* ===== 说明 ===== */
+.note{margin-top:36px; background:var(--card); border:1px solid var(--line); border-radius:16px; padding:20px 24px}
+.note h3{font-size:14px; letter-spacing:1px; color:var(--blue); margin-bottom:10px; font-weight:700}
+.note ul{list-style:none; display:grid; gap:7px}
+.note li{font-size:12.5px; color:var(--ink2); padding-left:20px; position:relative}
+.note li::before{content:'▸'; position:absolute; left:2px; color:var(--gold)}
+.foot{margin-top:34px; text-align:center; font-size:11.5px; color:var(--muted); letter-spacing:1px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero">
+    <div class="kick">🐭 鼠哥 · 同学互助学习站</div>
+    <h1>鼠哥的四学院
+      <span class="sub">一个链接 · 学完微积分 / Python / 芯片 / C 语言</span>
+    </h1>
+    <p>四个学院，四个入口，一份进度。打开浏览器就能学，不用下载、不用装环境、不用登录（进度自动存在你的浏览器里）。</p>
+    <div class="stats" id="heroStats">
+      <div class="stat"><div class="n" id="stTotal">—</div><div class="l">已开学院</div></div>
+      <div class="stat"><div class="n" id="stDone">—</div><div class="l">已学课程</div></div>
+      <div class="stat"><div class="n" id="stPct">—</div><div class="l">总体进度</div></div>
+    </div>
+  </div>
+
+  <div class="grid">
+
+    <!-- 微积分学院 -->
+    <div class="academy calc" id="ac-calc">
+      <div class="top">
+        <div class="ic ic-calc">🧮</div>
+        <div>
+          <h2>微积分学院</h2>
+          <div class="tag">普林斯顿微积分读本 · 30 章</div>
+        </div>
+      </div>
+      <div class="desc">从函数到积分，跟着笛卡尔和历代数学家把微积分真正看懂：每章讲义 + 互动实验 + 练习小卷 + 错题闭环。</div>
+      <div class="bar"><i id="bar-calc"></i></div>
+      <div class="prog"><span>已学 <b id="n-calc">0</b> / 30 章</span><span class="pct" id="pct-calc">0%</span></div>
+      <div class="day none" id="day-calc"></div>
+      <a class="go" href="calculus.html">进入微积分学院 →</a>
+    </div>
+
+    <!-- Python 学院 -->
+    <div class="academy py" id="ac-py">
+      <div class="top">
+        <div class="ic ic-py">🐍</div>
+        <div>
+          <h2>Python 学院</h2>
+          <div class="tag">《从入门到实践》· 14 章</div>
+        </div>
+      </div>
+      <div class="desc">浏览器里直接写代码、即时判题：从 print 到类，五大战役打下来，你就能自己写程序了。带账号与排行榜。</div>
+      <div class="bar"><i id="bar-py"></i></div>
+      <div class="prog"><span>已学 <b id="n-py">0</b> / 14 章</span><span class="pct" id="pct-py">0%</span></div>
+      <div class="day none" id="day-py"></div>
+      <a class="go" href="python.html">进入 Python 学院 →</a>
+    </div>
+
+    <!-- 芯片战争学院 -->
+    <div class="academy chip building" id="ac-chip">
+      <div class="top">
+        <div class="ic ic-chip">🔌</div>
+        <div>
+          <h2>芯片战争学院</h2>
+          <div class="tag">读透《芯片战争》· 8 部分</div>
+        </div>
+      </div>
+      <div class="desc">用选择题把一本书读透：从冷战芯片到 AI 时代的算力争夺，每一章都是历史、技术、地缘政治的交汇点。</div>
+      <div class="bar"><i id="bar-chip"></i></div>
+      <div class="prog"><span>已学 <b id="n-chip">0</b> 课</span><span class="pct" id="pct-chip">—</span></div>
+      <div class="day none" id="day-chip"></div>
+      <a class="go" href="chip.html">进入芯片战争学院 →</a>
+    </div>
+
+    <!-- C 语言学院 -->
+    <div class="academy c" id="ac-c">
+      <div class="top">
+        <div class="ic ic-c">⌨️</div>
+        <div>
+          <h2>C 语言学院</h2>
+          <div class="tag">谭浩强《C程序设计（第五版）》· 50 章 500 题 + 小考</div>
+        </div>
+      </div>
+      <div class="desc">C 是离机器最近的语言：内存、指针、地址。浏览器里真编译真运行，和 Python 学院一个体验，零安装。</div>
+      <div class="bar"><i id="bar-c"></i></div>
+      <div class="prog"><span>已学 <b id="n-c">0</b> 课</span><span class="pct" id="pct-c">—</span></div>
+      <div class="day none" id="day-c"></div>
+      <a class="go" href="c.html">进入 C 语言学院 →</a>
+    </div>
+
+  </div>
+
+  <div class="note">
+    <h3>📌 使用说明</h3>
+    <ul>
+      <li>进度存在你自己的浏览器里（localStorage），换设备/浏览器时，在各学院侧边栏用「📤 导出进度 / 📥 导入进度」搬走。</li>
+      <li>四个学院账号互通：在任一学院注册登录后，其他学院不用重复登录（联调中，以各院实际提示为准）。</li>
+      <li>微积分、Python、C、芯片战争全部开放；新书会持续加入。</li>
+      <li>有建议直接在各学院内「💬 给作者留言」，鼠哥看得到。</li>
+    </ul>
+  </div>
+
+  <div class="foot">© 2026 鼠哥的四学院 · 同学互助，一起变强 🐿️</div>
+</div>
+
+<script>
+// ===== 各院进度键与章节总数（四院联通：同域 localStorage 前缀隔离）=====
+var ACADEMIES = [
+  { id:'calc', prefix:'pjc_',  total:30, bar:'bar-calc',  n:'n-calc',  pct:'pct-calc'  },
+  { id:'py',   prefix:'pyc_',  total:14, bar:'bar-py',    n:'n-py',    pct:'pct-py'    },
+  { id:'chip', prefix:'chip_', total:36, bar:'bar-chip',  n:'n-chip',  pct:'pct-chip'  },
+  { id:'c',    prefix:'cc_',   total:54, bar:'bar-c',     n:'n-c',     pct:'pct-c'     }
+];
+function getLessons(prefix){
+  try{
+    var v = JSON.parse(localStorage.getItem(prefix + 'lessons'));
+    if (Array.isArray(v)) return v.length;
+    if (v && typeof v === 'object') return Object.keys(v).length;
+    return 0;
+  }catch(e){ return 0; }
+}
+var doneTotal = 0, totalTotal = 0;
+ACADEMIES.forEach(function(a){
+  var done = getLessons(a.prefix);
+  var elN = document.getElementById(a.n), elBar = document.getElementById(a.bar), elPct = document.getElementById(a.pct);
+  elN.textContent = done;
+  if (a.total > 0){
+    var pct = Math.min(100, Math.round(done / a.total * 100));
+    elBar.style.width = pct + '%';
+    elPct.textContent = pct + '%';
+    doneTotal += Math.min(done, a.total); totalTotal += a.total;
+  } else {
+    elBar.style.width = (done > 0 ? 100 : 0) + '%';
+    elPct.textContent = done + ' 课';
+  }
+});
+document.getElementById('stTotal').textContent = '4';
+document.getElementById('stDone').textContent = doneTotal;
+document.getElementById('stPct').textContent = totalTotal ? Math.round(doneTotal / totalTotal * 100) + '%' : '—';
+// ===== 今日达标（4:00 为界）：学了课 + 做了卷 → 绿框 =====
+function todayStr(){
+  var t = new Date(); if(t.getHours() < 4) t.setDate(t.getDate()-1);
+  return t.getFullYear()+'-'+(t.getMonth()+1)+'-'+t.getDate();
+}
+ACADEMIES.forEach(function(a){
+  if(a.id === 'chip' || a.id === 'c') return;
+  var st = {l:false, e:false};
+  try{
+    var g = JSON.parse(localStorage.getItem('daily_goal')||'{}');
+    var d = g[todayStr()];
+    if(d && d[a.id]){ st.l = !!d[a.id]['l']; st.e = !!d[a.id]['e']; }
+  }catch(e){}
+  var el = document.getElementById('day-' + a.id), card = document.getElementById('ac-' + a.id);
+  if(!el) return;
+  if(st.l && st.e){
+    el.textContent = '✅ 今日达标：学一节 + 做一份卷子';
+    el.className = 'day ok';
+    card.classList.add('day-ok');
+  } else if(st.l){
+    el.textContent = '⏳ 今日已学一节，还差做一份卷子';
+    el.className = 'day part';
+  } else if(st.e){
+    el.textContent = '⏳ 今日做了卷子，还差学一节';
+    el.className = 'day part';
+  } else {
+    el.textContent = '今日目标：学一节 + 做一份卷子';
+    el.className = 'day none';
+  }
+});
+</script>
+</body>
+</html>
