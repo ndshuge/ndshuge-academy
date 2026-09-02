@@ -510,6 +510,9 @@ pre.code .lang{position:absolute;top:8px;right:12px;font-size:10px;color:#777;le
 .fill-tips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 0;font-size:12px;color:var(--muted)}
 .fill-tips span{background:var(--blue-bg);border:1px solid rgba(59,110,165,.2);padding:3px 9px;border-radius:980px}
 .fillbox .fill-code{margin:10px 0 2px}
+
+/* 手机端保底：胶囊强制显示（不依赖 JS） */
+@media (max-width:860px){ .side-fab,.exit-fab{display:flex !important} }
 </style>
 <!-- CodeMirror 5（VSCode 同源编辑器内核，动态加载）-->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/lib/codemirror.min.css">

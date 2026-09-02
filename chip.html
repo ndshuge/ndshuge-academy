@@ -439,6 +439,9 @@ canvas{width:100%;background:#fffdf7;border:1px solid var(--line);border-radius:
 .controls .val{color:var(--blue);font-weight:600;min-width:44px}
 .controls input[type=range]{width:230px;accent-color:var(--blue)}
 .status{margin-top:10px;font-size:13px;color:var(--ink2);background:var(--blue-bg);border:1px solid rgba(83,125,150,.2);border-radius:10px;padding:8px 12px}
+
+/* 手机端保底：胶囊强制显示（不依赖 JS） */
+@media (max-width:860px){ .side-fab,.exit-fab{display:flex !important} }
 </style>
 </head>
 <body>
