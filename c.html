@@ -759,10 +759,10 @@ var CHAPTERS = [
     {type:'choice', q:'hello.c 中 #include <stdio.h> 的作用是？', options:['定义 main 函数','引入标准输入输出头文件','声明变量','结束程序'], answer:1, explain:'stdio.h 里声明了 printf、scanf 等标准函数的原型。'},
     {type:'fill', q:'补全代码：输出 Hello', template:'#include <stdio.h>\nint main(void){\n    ___1___("Hello\\n");\n    return 0;\n}', blanks:['填输出函数名'], ans:['printf'], expect:'Hello', hint:'printf'},
     {type:'code', q:'输出：Hello C world!', code:'#include <stdio.h>\nint main(void){\n    printf("Hello C world!\\n");\n    return 0;\n}', expect:'Hello C world!', hint:'printf 加字符串。'},
-    {type:'choice', q:'printf 后面的括号里应该写？', options:['数字','要输出的内容','变量类型','关键字'], answer:1, explain:'printf(内容) 把内容送到屏幕，内容通常是字符串（双引号包裹）。'},
+    {type:'choice', q:'printf("5+3"); 这段代码运行后会输出什么？', options:['8','5+3','53','报错'], answer:1, explain:'引号里的内容会被原样输出，printf 不会替你算 5+3；想先算后输出要写成 printf("%d", 5+3)。这是新手第一课最容易搞混的点。'},
     {type:'choice', q:'printf("A\\nB") 会输出？', options:['A\\nB','A 和 B 各一行','AB','A n B'], answer:1, explain:'\\n 是换行符，A\\nB 输出 A 换行 B。'},
     {type:'code', q:'输出：你好，C！', code:'#include <stdio.h>\nint main(void){\n    printf("你好，C！\\n");\n    return 0;\n}', expect:'你好，C！', hint:'printf 直接输出中文也可以。'},
-    {type:'choice', q:'C 语句的结束标志是？', options:['句号','分号','逗号','换行'], answer:1, explain:'分号是 C 语句的结束符，漏写会编译报错。'},
+    {type:'choice', q:'写代码时漏掉了语句末尾的分号，编译器会？', options:['照常运行，没事','在漏分号处报语法错误（提示缺分号），编译不过','只给个警告继续跑','程序会变慢'], answer:1, explain:'C 用分号分隔语句，漏了它编译器在语法检查阶段就会报错。报错不可怕，可怕的是不知道去哪看第一条报错。'},
     {type:'code', q:'用两个 printf 输出两行：第一行 123，第二行 456', code:'#include <stdio.h>\nint main(void){\n    printf("123\\n");\n    printf("456\\n");\n    return 0;\n}', expect:'123\n456', hint:'两个 printf，各自 \\n 换行。'},
     {type:'fill', q:'补全代码：在 main 里输出一行字', template:'#include <stdio.h>\nint main(void){\n    printf("学习C语言\\n");\n    ___1___ 0;\n}', blanks:['填返回语句，0 表示正常结束'], ans:['return'], expect:'学习C语言', hint:'return'},
     {type:'choice', q:'return 0; 表示？', options:['输出 0','正常结束并返回 0','定义变量','注释'], answer:1, explain:'return 0 表示 main 正常结束，0 代表成功。'}
@@ -1007,7 +1007,7 @@ var CHAPTERS = [
     '以为选择结构只能二选一：if-else if 可以多分支，但本质还是选择结构。'
   ],
   quiz:[
-    {type:'choice', q:'三种基本结构不包括？', options:['顺序','选择','循环','跳转（goto）'], answer:3, explain:'三种基本结构：顺序、选择、循环。goto 跳转会破坏结构化。'},
+    {type:'choice', q:'结构化编程为什么排斥 goto 语句？', options:['goto 运行起来更慢','goto 让执行流随意乱跳，程序像一团乱麻，难读难改难验证','用了 goto 会编译报错','goto 实现不了循环'], answer:1, explain:'顺序、选择、循环三种结构之所以够用，是因为它们让程序「从头到尾可读」。goto 一跳，结构就散了——这是结构化编程运动的核心动机。'},
     {type:'choice', q:'「从上到下依次执行」属于？', options:['选择结构','顺序结构','循环结构','嵌套结构'], answer:1, explain:'顺序结构就是按书写顺序逐条执行。'},
     {type:'code', q:'输出：三种结构', code:'#include <stdio.h>\nint main(void){\n    printf("顺序 选择 循环\\n");\n    return 0;\n}', expect:'顺序 选择 循环', hint:'printf 输出。'},
     {type:'choice', q:'N-S 图的特点是？', options:['有箭头','没有箭头，强制结构化','只有圆形','不能画循环'], answer:1, explain:'N-S 图去掉了箭头，用嵌套方框表达结构。'},
@@ -1139,7 +1139,7 @@ var CHAPTERS = [
     {type:'choice', q:'char 类型占几字节？', options:['1','2','4','8'], answer:0, explain:'char 1 字节（8 位）。'},
     {type:'fill', q:'补全代码：声明浮点变量', template:'#include <stdio.h>\nint main(void){\n    ___1___ pi = 3.14159;\n    printf("%f\\n", pi);\n    return 0;\n}', blanks:['填双精度类型关键字'], ans:['double'], expect:'3.141590', hint:'double'},
     {type:'code', q:'输出：int 4 字节，char 1 字节', code:'#include <stdio.h>\nint main(void){\n    printf("int %d char %d\\n", (int)sizeof(int), (int)sizeof(char));\n    return 0;\n}', expect:'int 4 char 1', hint:'sizeof 查大小。'},
-    {type:'choice', q:'字符常量 \'A\' 占几字节？', options:['1','2','4','取决于字符串'], answer:0, explain:'字符常量 \'A\' 是 1 字节；字符串 "A" 占 2 字节（含 \\0）。'},
+    {type:'choice', q:'在 C 里写 AB（一对单引号包住两个字符）合法吗？', options:['合法，两个字符占两字节','不合法，单引号里只能放一个字符','合法，占一字节','由编译器决定'], answer:1, explain:'单引号包一个字符是字符常量；包多个字符是多字符常量，行为未定义。想存多个字符请用双引号字符串。'},
     {type:'choice', q:'unsigned int 的范围约是？', options:['0 到 21亿','0 到 42亿','-21亿 到 21亿','0 到 10亿'], answer:1, explain:'无符号整型只有非负，范围翻倍到约 0~42 亿。'},
     {type:'code', q:'输出 double 占的字节数', code:'#include <stdio.h>\nint main(void){\n    printf("%d\\n", (int)sizeof(double));\n    return 0;\n}', expect:'8', hint:'double 8 字节。'},
     {type:'choice', q:'int a = 3.9; a 的值是？', options:['4','3','3.9','报错'], answer:1, explain:'浮点赋给 int 会截断小数部分，3.9 变 3。'}
@@ -1183,7 +1183,7 @@ var CHAPTERS = [
     {type:'code', q:'定义常量 DAYS=7，输出它', code:'#include <stdio.h>\n#define DAYS 7\nint main(void){\n    printf("%d\\n", DAYS);\n    return 0;\n}', expect:'7', hint:'#define 后直接用 DAYS。'},
     {type:'fill', q:'补全代码：声明常量', template:'#include <stdio.h>\nint main(void){\n    ___1___ int MAX = 100;\n    printf("%d\\n", MAX);\n    return 0;\n}', blanks:['填 const 关键字'], ans:['const'], expect:'100', hint:'const'},
     {type:'code', q:'输出两个变量交换后的结果：x=7, y=9', code:'#include <stdio.h>\nint main(void){\n    int x = 7, y = 9, t;\n    t = x; x = y; y = t;\n    printf("%d %d\\n", x, y);\n    return 0;\n}', expect:'9 7', hint:'三行交换。'},
-    {type:'choice', q:'变量名命名风格建议？', options:['全部大写','小写+下划线（snake_case）','随机字母','带空格'], answer:1, explain:'C 惯例是小写加下划线，如 student_score。'},
+    {type:'choice', q:'以下哪个是合法的 C 变量名？', options:['2x','int','_count','my-name'], answer:2, explain:'数字不能开头，关键字（如 int）不能用，连字符不是合法字符；下划线开头合法。合法的名字不一定好，但非法的名字连编译都过不了。'},
     {type:'code', q:'定义变量 age=18 并输出', code:'#include <stdio.h>\nint main(void){\n    int age = 18;\n    printf("%d\\n", age);\n    return 0;\n}', expect:'18', hint:'声明初始化输出。'}
   ],
   dialogue:{q:'变量名长短有讲究吗？叫 a 和叫 total_score 有区别吗？',
@@ -1303,7 +1303,7 @@ var CHAPTERS = [
     {type:'choice', q:'(int)3.99 的值是？', options:['4','3','3.99','报错'], answer:1, explain:'强制转 int 是截断，不是四舍五入，3.99 变 3。'},
     {type:'choice', q:'double d = 5/2; d 的值是？', options:['2.5','2.0','2','5'], answer:1, explain:'5/2 先做整数除法得 2，再转 double 得 2.0。'},
     {type:'code', q:'输出 7/2 的精确值（2 位小数）', code:'#include <stdio.h>\nint main(void){\n    printf("%.2f\\n", 7.0/2);\n    return 0;\n}', expect:'3.50', hint:'7.0/2 = 3.5。'},
-    {type:'choice', q:'隐式转换的方向是？', options:['大转小','小转大','随机','不转换'], answer:1, explain:'小类型自动转大类型：char→int→float→double。'},
+    {type:'choice', q:'int a = 5; double d = 2.5; a + d 的结果是什么类型？', options:['int（得 7）','double（得 7.5）','char','编译报错'], answer:1, explain:'不同类型混合运算时，小的类型会自动往大的类型转（int 转 double），所以 5 先变成 5.0 再加 2.5，结果是 double 的 7.5。'},
     {type:'fill', q:'补全代码：强制转 double 再除', template:'#include <stdio.h>\nint main(void){\n    int a = 7, b = 2;\n    double r = ___1___a / b;\n    printf("%.1f\\n", r);\n    return 0;\n}', blanks:['填强制转换语法'], ans:['(double)'], expect:'3.5', hint:'(double)a'},
     {type:'code', q:'输出 (int)3.99 的结果', code:'#include <stdio.h>\nint main(void){\n    printf("%d\\n", (int)3.99);\n    return 0;\n}', expect:'3', hint:'截断为 3。'},
     {type:'choice', q:'int n = 7 + 3.5; n 的值是？', options:['10','10.5','11','报错'], answer:0, explain:'7+3.5=10.5，赋给 int 截断为 10。'},
@@ -1342,7 +1342,7 @@ var CHAPTERS = [
     '浮点用 == 比较：有精度误差，应比较 |a-b| < 1e-6。'
   ],
   quiz:[
-    {type:'choice', q:'表达式 5 > 3 的值是？', options:['5','3','1','0'], answer:2, explain:'真用 1 表示。'},
+    {type:'choice', q:'C 语言里 5 > 3 这个表达式的值是？', options:['true','1','0','5'], answer:1, explain:'C 没有专门的布尔类型，关系表达式成立时结果是整数 1，不成立是 0。这也是为什么 if(5>3) 能直接当条件用。'},
     {type:'choice', q:'a=1, b=2，a>b || a<b 的值？', options:['0','1','2','语法错误'], answer:1, explain:'a<b 为真，|| 一边真就真。'},
     {type:'code', q:'输出 3<5 和 3==5（空格隔开）', code:'#include <stdio.h>\nint main(void){\n    printf("%d %d\\n", 3<5, 3==5);\n    return 0;\n}', expect:'1 0', hint:'真 1，假 0。'},
     {type:'choice', q:'if (a = 5) 的问题？', options:['合法且正确','把 5 赋给 a，条件恒真','编译必错','a 不存在'], answer:1, explain:'= 是赋值，a=5 表达式的值是 5（非零即真）。要用 ==。'},
@@ -1807,7 +1807,7 @@ var CHAPTERS = [
     {type:'code', q:'输出数组 {3,1,4,1,5} 的第一个和最后一个元素', code:'#include <stdio.h>\nint main(void){\n    int a[5] = {3, 1, 4, 1, 5};\n    printf("%d %d\\n", a[0], a[4]);\n    return 0;\n}', expect:'3 5', hint:'a[0] 和 a[4]。'},
     {type:'choice', q:'int a[5]={1,2}; 其余元素的值？', options:['随机','0','垃圾','报错'], answer:1, explain:'初始化不足时自动补 0。'},
     {type:'code', q:'遍历输出数组 {7,2,8,1}（空格隔开）', code:'#include <stdio.h>\nint main(void){\n    int a[4] = {7, 2, 8, 1};\n    for (int i = 0; i < 4; i++) printf("%d ", a[i]);\n    return 0;\n}', expect:'7 2 8 1', hint:'for 遍历。'},
-    {type:'choice', q:'数组名 a 表示？', options:['a[0] 的值','首元素地址','数组长度','最后一个元素'], answer:1, explain:'数组名是首元素地址（常量指针）。'},
+    {type:'choice', q:'int a[8]; sizeof(a) / sizeof(a[0]) 的值是？', options:['1','8','32','取决于平台'], answer:1, explain:'整个数组占的字节数除以一个元素占的字节数，正好是元素个数 8。这是遍历数组时自动算长度的常用写法。'},
     {type:'fill', q:'补全代码：倒序输出数组', template:'#include <stdio.h>\nint main(void){\n    int a[4] = {1, 2, 3, 4};\n    for (int i = ___1___; i >= 0; i--) {\n        printf("%d ", a[i]);\n    }\n    return 0;\n}', blanks:['填初始下标：最后一个元素'], ans:['3'], expect:'4 3 2 1', hint:'3（a[3] 是最后一个）。'},
     {type:'code', q:'把数组 {1,2,3} 每个元素乘以 2 后输出', code:'#include <stdio.h>\nint main(void){\n    int a[3] = {1, 2, 3};\n    for (int i = 0; i < 3; i++) printf("%d ", a[i] * 2);\n    return 0;\n}', expect:'2 4 6', hint:'a[i]*2。'},
     {type:'choice', q:'a[5] 越界（长度 5）会？', options:['报错','访问数组外内存（未定义行为）','自动扩展','返回 0'], answer:1, explain:'C 不检查越界，越界访问是未定义行为。'},
@@ -2680,7 +2680,7 @@ var CHAPTERS = [
     '模式记混："r" 不能写，"w" 不能读。'
   ],
   quiz:[
-    {type:'choice', q:'"a" 模式的含义？', options:['清空后写','追加到末尾','只读','读写'], answer:1, explain:'append：追加，不清空。'},
+    {type:'choice', q:'以 a（追加）模式打开一个已存在的文件，新写入的内容会？', options:['覆盖文件开头','接在文件末尾追加','先把文件清空再写','直接报错'], answer:1, explain:'a 是 append：文件指针定位到末尾，新内容往后接。想覆盖写用 w（会先清空），想只读用 r。选错模式可能把辛苦存的数据冲掉。'},
     {type:'choice', q:'"w" 模式打开已存在的文件会？', options:['保留内容','清空内容','报错','追加'], answer:1, explain:'"w" 清空重建。'},
     {type:'code', q:'用 "a" 模式写日志：输出"已追加"', code:'#include <stdio.h>\nint main(void) {\n    FILE *fp = fopen("log.txt", "a");\n    if (fp == NULL) return 1;\n    fprintf(fp, "log\\n");\n    fclose(fp);\n    printf("已追加\\n");\n    return 0;\n}', expect:'已追加', hint:'"a" 追加。'},
     {type:'choice', q:'只想读文件内容，用什么模式？', options:['"w"','"r"','"a"','"r+"'], answer:1, explain:'"r" 只读。'},
@@ -2727,7 +2727,7 @@ var CHAPTERS = [
     {type:'code', q:'写两个整数到文件，读回来求和', code:'#include <stdio.h>\nint main(void) {\n    FILE *fp = fopen("d.txt", "w");\n    fprintf(fp, "%d %d", 10, 20);\n    fclose(fp);\n    int a, b;\n    fp = fopen("d.txt", "r");\n    fscanf(fp, "%d %d", &a, &b);\n    fclose(fp);\n    printf("%d\\n", a + b);\n    return 0;\n}', expect:'30', hint:'10+20=30。'},
     {type:'choice', q:'fscanf 读到文件末尾返回？', options:['0','EOF','NULL','-1 都对'], answer:1, explain:'EOF（通常 -1）。'},
     {type:'code', q:'循环读文件求和：文件含 1 2 3 4', code:'#include <stdio.h>\nint main(void) {\n    FILE *fp = fopen("n.txt", "w");\n    for (int i = 1; i <= 4; i++) fprintf(fp, "%d\\n", i);\n    fclose(fp);\n    int n, sum = 0;\n    fp = fopen("n.txt", "r");\n    while (fscanf(fp, "%d", &n) != EOF) sum += n;\n    fclose(fp);\n    printf("%d\\n", sum);\n    return 0;\n}', expect:'10', hint:'1+2+3+4=10。'},
-    {type:'choice', q:'fscanf 读 int 需要？', options:['值','& 地址','指针','数组'], answer:1, explain:'和 scanf 一样要 &。'},
+    {type:'choice', q:'给 int 变量 a 用 fscanf 读入一个整数，参数应该写？', options:['a','&a','*a','"%d"'], answer:1, explain:'scanf 家族要往变量里写值，必须传地址 &a，函数才能通过指针把读到的数放进去——只传 a 是把 a 的值当地址用，会崩溃或乱写。'},
     {type:'fill', q:'补全代码：读一个整数', template:'#include <stdio.h>\nint main(void) {\n    FILE *fp = fopen("d.txt", "w");\n    fprintf(fp, "42");\n    fclose(fp);\n    int n;\n    fp = fopen("d.txt", "r");\n    fscanf(fp, "%d", ___1___);\n    fclose(fp);\n    printf("%d\\n", n);\n    return 0;\n}', blanks:['填取地址'], ans:['&n'], expect:'42', hint:'&n'},
     {type:'code', q:'写入 3 个数并读回输出第三个', code:'#include <stdio.h>\nint main(void) {\n    FILE *fp = fopen("t.txt", "w");\n    fprintf(fp, "%d %d %d", 7, 8, 9);\n    fclose(fp);\n    int a, b, c;\n    fp = fopen("t.txt", "r");\n    fscanf(fp, "%d %d %d", &a, &b, &c);\n    fclose(fp);\n    printf("%d\\n", c);\n    return 0;\n}', expect:'9', hint:'第三个是 9。'},
     {type:'choice', q:'写文件 + 读文件应该用？', options:['同一个 fp','先关再开（w→r）','两个文件','不行'], answer:1, explain:'"w" 写完 fclose，再 "r" 打开读。'},

@@ -1,0 +1,15 @@
+{
+  "name": "鼠哥学院",
+  "short_name": "鼠哥学院",
+  "description": "四个学院，一个链接：微积分 / Python / C 语言 / 芯片战争",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F5EFE4",
+  "theme_color": "#3F6179",
+  "lang": "zh-CN",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

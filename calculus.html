@@ -720,6 +720,8 @@ function clearDailyGoal(id){
 function parseMath(s){
   if(s===undefined||s===null) return '';
   s=String(s); var i=0, out='';
+  /* 裸 Σ/∫ 的上下标写法归一为 \sum/\int（教材式垂直叠放渲染） */
+  s = s.replace(/Σ_/g,'\\sum_').replace(/∫_/g,'\\int_').replace(/Σ\^/g,'\\sum^').replace(/∫\^/g,'\\int^');
   function readGroup(){
     var depth=0, j=i;
     while(j<s.length){ if(s[j]==='{')depth++; if(s[j]==='}'){depth--; if(depth===0)break;} j++; }
@@ -735,8 +737,8 @@ function parseMath(s){
         switch(cmd){
           case 'frac': {var a=readGroup(),b=readGroup(); out+='<span class="fr" style="display:inline-block;vertical-align:middle;text-align:center;margin:0 2px"><span style="display:block;border-bottom:1px solid currentColor;padding:0 4px">'+parseMath(a)+'</span><span style="display:block;padding:0 4px">'+parseMath(b)+'</span></span>'; break;}
           case 'lim': {var sub=''; if(s[i]==='_'){i++; sub=s[i]==='{'?readGroup():(s[i++]||'');} out+='<i>lim</i>'+(sub?'<sub>'+parseMath(sub)+'</sub>':''); break;}
-          case 'int': {var lw='',up=''; if(s[i]==='_'){i++; lw=s[i]==='{'?readGroup():(s[i++]||'');} if(s[i]==='^'){i++; up=s[i]==='{'?readGroup():(s[i++]||'');} out+='<span style="font-size:1.35em">∫</span>'+(up?'<sup>'+parseMath(up)+'</sup>':'')+(lw?'<sub>'+parseMath(lw)+'</sub>':''); break;}
-          case 'sum': {var lw2='',up2=''; if(s[i]==='_'){i++; lw2=s[i]==='{'?readGroup():(s[i++]||'');} if(s[i]==='^'){i++; up2=s[i]==='{'?readGroup():(s[i++]||'');} out+='<span style="font-size:1.25em">Σ</span>'+(up2?'<sup>'+parseMath(up2)+'</sup>':'')+(lw2?'<sub>'+parseMath(lw2)+'</sub>':''); break;}
+          case 'int': {var lw='',up=''; if(s[i]==='_'){i++; lw=s[i]==='{'?readGroup():(s[i++]||'');} if(s[i]==='^'){i++; up=s[i]==='{'?readGroup():(s[i++]||'');} out+='<span style="display:inline-flex;align-items:center;vertical-align:middle;margin:0 1px"><span style="font-size:1.35em">∫</span>'+(lw||up?'<span style="display:inline-flex;flex-direction:column;align-items:center;font-size:.7em;line-height:1.08;margin-left:2px">'+(up?'<span>'+parseMath(up)+'</span>':'<span>&nbsp;</span>')+(lw?'<span style="border-top:1px solid currentColor;padding:0 1px">'+parseMath(lw)+'</span>':'')+'</span>':'')+'</span>'; break;}
+          case 'sum': {var lw2='',up2=''; if(s[i]==='_'){i++; lw2=s[i]==='{'?readGroup():(s[i++]||'');} if(s[i]==='^'){i++; up2=s[i]==='{'?readGroup():(s[i++]||'');} out+='<span style="display:inline-flex;align-items:center;vertical-align:middle;margin:0 1px"><span style="font-size:1.25em">Σ</span>'+(lw2||up2?'<span style="display:inline-flex;flex-direction:column;align-items:center;font-size:.72em;line-height:1.08;margin-left:2px">'+(up2?'<span>'+parseMath(up2)+'</span>':'<span>&nbsp;</span>')+(lw2?'<span style="border-top:1px solid currentColor;padding:0 1px">'+parseMath(lw2)+'</span>':'')+'</span>':'')+'</span>'; break;}
           case 'sqrt': {var r=readGroup(); out+='√<span style="border-top:1px solid currentColor;padding:0 3px">'+parseMath(r)+'</span>'; break;}
           case 'pi': out+='π'; break;
           case 'theta': out+='θ'; break;

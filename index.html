@@ -5,6 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <title>🐭 鼠哥学院 · 一个链接学完四门课</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#3F6179">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <style>
 :root{
   --bg:#F5EFE4; --card:#FBF7EE; --ink:#2A2622; --ink2:#4A433C; --muted:#6B6158;
@@ -200,6 +205,10 @@ body{
 </div>
 
 <script>
+// ===== PWA：注册 Service Worker（Android/桌面可安装、离线缓存首页）=====
+if('serviceWorker' in navigator){
+  window.addEventListener('load', function(){ navigator.serviceWorker.register('sw.js').catch(function(){}); });
+}
 // ===== 各院进度键与章节总数（四院联通：同域 localStorage 前缀隔离）=====
 var ACADEMIES = [
   { id:'calc', prefix:'pjc_',  total:30, bar:'bar-calc',  n:'n-calc',  pct:'pct-calc'  },
