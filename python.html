@@ -505,6 +505,9 @@ pre.code .lang{position:absolute;top:8px;right:12px;font-size:10px;color:#777;le
 .exit-fab{left:12px;right:auto;bottom:78px}
 .side-fab{flex-direction:row}
 .exit-fab{flex-direction:row}
+
+/* 手机端：fabNav 圆钮隐藏，避免与退出学院按钮重叠（退出独占右下、菜单独占左下） */
+@media (max-width:860px){ .fab-nav{display:none !important} }
 </style>
 <!-- CodeMirror 5（VSCode 同源编辑器内核，动态加载）-->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/lib/codemirror.min.css">

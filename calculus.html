@@ -438,6 +438,9 @@ canvas{width:100%;background:#fffdf7;border:1px solid var(--line);border-radius:
 .side-fab{left:12px}
 .exit-fab{left:12px;right:auto;bottom:78px}
 .side-fab:hover,.exit-fab:hover{transform:scale(1.1)}
+
+/* 手机端：fabNav 圆钮隐藏，避免与退出学院按钮重叠（退出独占右下、菜单独占左下） */
+@media (max-width:860px){ .fab-nav{display:none !important} }
 </style>
 </head>
 <body>
