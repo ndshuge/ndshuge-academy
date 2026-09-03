@@ -1,5 +1,5 @@
-/* 鼠哥学院 PWA Service Worker：缓存优先 + 网络更新（同源页面离线可开） */
-var C = 'academy-v1';
+/* 鼠哥学院 PWA Service Worker v2：网络优先（有网拿最新，离线回退缓存） */
+var C = 'academy-v2';
 
 self.addEventListener('install', function(e) {
   self.skipWaiting();
@@ -17,18 +17,15 @@ self.addEventListener('fetch', function(e) {
   var req = e.request;
   if (req.method !== 'GET') return;
   var u = req.url;
-  if (u.indexOf(self.location.origin) !== 0) return;          // 跨域（CDN 等）不拦截
+  if (u.indexOf(self.location.origin) !== 0) return;
   e.respondWith(
-    caches.open(C).then(function(cache) {
-      return cache.match(req).then(function(hit) {
-        var network = fetch(req).then(function(resp) {
-          if (resp && resp.ok && resp.type === 'basic') {
-            try { cache.put(req, resp.clone()); } catch (err) {}
-          }
-          return resp;
-        }).catch(function() { return hit; });
-        return hit || network;
-      });
+    fetch(req).then(function(resp) {
+      if (resp && resp.ok && resp.type === 'basic') {
+        try { caches.open(C).then(function(c) { c.put(req, resp.clone()); }); } catch (err) {}
+      }
+      return resp;
+    }).catch(function() {
+      return caches.match(req);
     })
   );
 });

@@ -3497,7 +3497,12 @@ function autoSyncLessons(){
       });
     });
   });
-  if(changed){ store('lessons', lessonsDone); dailyGoal('l'); var _cd = false; CHAPTERS.forEach(function(c){ if(chIsDone(c) && chDone.indexOf(c.id) === -1){ chDone.push(c.id); _cd = true; } }); if(_cd) store('ch', chDone); renderPlan(); }
+  if(changed){ store('lessons', lessonsDone); dailyGoal('l'); }
+  /* 章完成对账（无条件）：练习全做完的章自动补入 chDone，旧数据/各入口口径统一 */
+  var _cd = false;
+  CHAPTERS.forEach(function(c){ if(chIsDone(c) && chDone.indexOf(c.id) === -1){ chDone.push(c.id); _cd = true; } });
+  if(_cd) store('ch', chDone);
+  if(changed) renderPlan();
 }
 
 /* ================= 渲染：计划页 ================= */
