@@ -3517,7 +3517,7 @@ function renderPlan(){
     }).join('');
     return '<div class="week'+(allDone?' checked':'')+'" title="进度自动跟随学习"><span class="wk">'+w.wk+'</span><span class="wd">'+esc(w.title)+'</span><span class="st">'+doneN+'/'+w.lessons.length+' 课'+(allDone?' · 周完成':'')+'</span><div class="subs">'+rows+'</div></div>';
   }).join('');
-  $('#planCnt').textContent = lessonsDone.length + '/' + TOTAL_LESSONS;
+  $('#planCnt').textContent = chDone.length + '/' + CHAPTERS.length;
 }
 /* 学习计划只读：进度自动跟随学习，学到哪亮到哪，不支持手动勾选 */
 
@@ -4153,7 +4153,7 @@ function calcStats(){
   var examTotal = CHAPTERS.filter(function(c){ return c.exam; }).length;
   var examFull = CHAPTERS.filter(function(c){ return c.exam && examStatus(c).full; }).length;
   var wrongN = fixedPool.length + wrongPool.length;
-  var base = doneL/totalL*0.35 + doneC/totalC*0.25 + (examTotal ? examFull/examTotal*0.2 : 0);
+  var base = doneC/totalC*0.5 + (examTotal ? examFull/examTotal*0.3 : 0);
   var pct;
   if(wrongN){
     // 有错题：四维全算（错题订正 = 已订正/总错题）
@@ -4477,10 +4477,10 @@ function renderHome(){
   var doneL = s.doneL, totalL = s.totalL, doneC = s.doneC, totalC = s.totalC;
   var examTotal = s.examTotal, examFull = s.examFull;
   var cards = [
-    {ic:'📜', t:'学习计划', v:doneL+'/'+totalL, d:'课程进度', go:'plan'},
-    {ic:'🎓', t:'章节课堂', v:doneC+'/'+totalC, d:'章节已学', go:'lesson'},
-    {ic:'📝', t:'小卷练习', v:'已做 '+examFull+'/'+examTotal, d:'已做卷数', go:'exam'},
-    {ic:'📕', t:'错题集', v:s.wrongPool ? s.wrongPool+' 题' : '✅ 已清空', d:'待订正 · 已订正 '+s.fixedPool, go:'wrong'}
+    {ic:'🎓', t:'章节课堂', v:doneC+'/'+totalC, d:'整章练习做完即结算 · 去学第 '+(doneC<totalC?doneC+1:totalC)+' 章', go:'lesson'},
+    {ic:'📝', t:'小卷练习', v:'已做 '+examFull+'/'+examTotal, d:'答完即结算 · 不要求满分', go:'exam'},
+    {ic:'📕', t:'错题集', v:s.wrongPool ? s.wrongPool+' 题' : '✅ 已清空', d:'待订正 · 已订正 '+s.fixedPool, go:'wrong'},
+    {ic:'🎖', t:'荣誉墙', v:rank.name, d:'称号与徽章 · 打卡日历在侧栏', go:'honor'}
   ];
   var next;
   if(s.wrongPool){
@@ -4504,7 +4504,7 @@ function renderHome(){
     '<div class="home-hero">'+
       '<div class="greet">'+greet+'</div>'+
       '<h2>🐭 鼠哥的微积分学院 🐿️</h2>'+
-      '<div class="sub">已修 '+doneL+'/'+totalL+' 课 · 已攻下 '+doneC+'/'+totalC+' 章</div>'+
+      '<div class="sub">已学章节 '+doneC+'/'+totalC+' · 已做小卷 '+examFull+'/'+examTotal+'</div>'+
       '<div class="rank-line"><span class="rk">'+rank.name+'</span><span class="pct-big">总进度 '+pct+'%</span></div>'+
       '<div class="rank-line" style="margin-top:6px;font-size:12.5px;color:#cbbd9c">'+(rank.next ? '距「'+rank.next+'」还差 '+rank.remain+'%' : '已达最高荣誉')+'</div>'+
       '<div class="home-bar"><i style="width:'+pct+'%"></i></div>'+
@@ -4649,6 +4649,7 @@ function renderAll(){
   $('#traceCnt').textContent = s.todayCount ? '今日 '+s.todayCount : '';
   renderWrongNav();
   $('#examCnt').textContent = s.examTotal ? ('已做 '+s.examFull+'/'+s.examTotal) : '';
+  try{ store('examDone', s.examFull || 0); }catch(e){}
   // 徽章：侧栏小圆点 + 计数
   // 徽章：侧栏只显示计数（圆点已去掉，详情进荣誉墙）
   var bd = badgeState(s);
@@ -4671,8 +4672,7 @@ function renderAll(){
   }
   // 学习进度四条细分
   var sub = [
-    {t:'课程', v:s.doneL, n:s.totalL, tip:'已学课数 / 总课数'},
-    {t:'章节', v:s.doneC, n:s.totalC, tip:'已学章数（本章全部练习做完）'},
+    {t:'章节', v:s.doneC, n:s.totalC, tip:'已学章节（整章做完/结算）'},
     {t:'小卷', v:s.examFull, n:s.examTotal, tip:'已做卷数（答完即可结算）'},
     {t:'错题订正', v:s.fixedPool, n:s.wrongN, tip:'已订正 / 总错题'}
   ];

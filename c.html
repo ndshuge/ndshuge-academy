@@ -2939,6 +2939,8 @@ function logExamDone(c){
   if(studyLog.some(function(l){ return (''+l.x).indexOf('卷子') > -1 && (''+l.x).indexOf(c.no) > -1; })) return;
   logStudy('📝 第 ' + c.no + ' 章卷子完成');
   dailyGoal('e');
+  var _ef2 = CHAPTERS.filter(function(c2){ return c2.exam && c2.exam.every(function(q,i){ return quizStat['ex_'+c2.id+'_'+i] !== undefined; }); }).length;
+  store('examDone', _ef2);
 }
 function logStudyTick(){ CHAPTERS.forEach(function(c){ logLessonDone(c); logExamDone(c); }); }
 
@@ -3169,7 +3171,8 @@ function openCalendar(){
 /* ================= 统计与徽章 ================= */
 function badgeStatus(){
   return BADGES.map(function(b){
-    var got = b.need.every(function(k){return lessonsDone.indexOf(k)>-1});
+    var _chId = parseInt(String(b.need && b.need[0]).split('_')[0], 10);
+    var got = !isNaN(_chId) && chDone.indexOf(_chId) > -1;
     return {b:b, got:got};
   });
 }
@@ -3195,7 +3198,8 @@ function calcStats(){
   var examFull = CHAPTERS.filter(function(c){ return c.exam && c.exam.every(function(q,i){ return hallDone['ex_'+c.id+'_'+i] !== undefined; }); }).length;
   var wrongN = wrongPool.length + fixedPool.length;
   var fixedN = fixedPool.length;
-  var pct = Math.round((doneL/totalL*0.35 + (totalC?doneC/totalC*0.25:0) + (examTotal?examFull/examTotal*0.2:0) + (wrongN?fixedN/wrongN*0.2:0)) * 100);
+  var _baseW = (doneC/totalC*0.5 + (examTotal?examFull/examTotal*0.3:0));
+  var pct = wrongN ? Math.min(100, Math.round((_baseW + fixedN/wrongN*0.2) * 100)) : Math.round(_baseW/0.8*100);
   return {doneL:doneL, totalL:totalL, doneC:doneC, totalC:totalC, examFull:examFull, examTotal:examTotal, fixedN:fixedN, wrongN:wrongN, pct:Math.min(100,pct)};
 }
 function renderProgress(){
@@ -3218,9 +3222,8 @@ function renderProgress(){
     } else { rb.style.width = '100%'; }
   }
   var sub = [
-    {t:'课程', v:s.doneL, n:s.totalL, tip:'已学课数 / 总课数'},
-    {t:'章节', v:s.doneC, n:s.totalC, tip:'已学章数（本章全部练习做完）'},
-    {t:'考试', v:s.examFull, n:s.examTotal, tip:'满分卷数（全对才计入）'},
+    {t:'章节', v:s.doneC, n:s.totalC, tip:'已学章节（整章做完/结算）'},
+    {t:'考试', v:s.examFull, n:s.examTotal, tip:'已做卷数（答完即结算）'},
     {t:'错题订正', v:s.fixedN, n:s.wrongN, tip:'已订正 / 总错题'}
   ];
   $('#progSub').innerHTML = sub.map(function(x){

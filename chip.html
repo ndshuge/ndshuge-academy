@@ -443,6 +443,15 @@ canvas{width:100%;background:#fffdf7;border:1px solid var(--line);border-radius:
 /* 手机端保底：胶囊强制显示（不依赖 JS） */
 @media (max-width:860px){ .side-fab,.exit-fab{display:flex !important} }
 /* ============ Apple 壳（iOS / macOS 双形态，2026-09-03） ============ */
+:root{
+  --accent:#007AFF;--accent2:#0A84FF;--bg:#F2F2F7;--card:#FFFFFF;
+  --ink:#1D1D1F;--ink2:#3C3C43;--muted:#86868B;
+  --line:rgba(60,60,67,.14);--fill:#E9E9EE;--sep:rgba(60,60,67,.1);
+  --green:#34C759;--red:#FF3B30;--gold:#FF9500;--glass:rgba(250,250,252,.62);
+  --r-s:10px;--r-m:14px;--r-l:20px;
+  --sh-card:0 1px 2px rgba(0,0,0,.04),0 3px 12px rgba(0,0,0,.05);
+  --sh-float:0 12px 32px rgba(0,0,0,.18);
+}
 :root{--curve:.32,.72,0,1;--pop:.34,1.56,.64,1}
 /* Mac 桌面皮肤 */
 @media (min-width:861px){
@@ -467,7 +476,7 @@ canvas{width:100%;background:#fffdf7;border:1px solid var(--line);border-radius:
   .card:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(0,0,0,.08)}
 }
 /* iOS 底部 TabBar */
-.tabbar{display:none}
+.tabbar{display:flex}
 @media (max-width:860px){
   body{background:#F2F2F7;padding-bottom:0}
   .tabbar{display:flex;justify-content:center;gap:10px;position:fixed;left:0;right:0;bottom:0;background:rgba(249,249,251,.88);backdrop-filter:blur(24px) saturate(1.6);-webkit-backdrop-filter:blur(24px) saturate(1.6);border-top:.5px solid rgba(0,0,0,.14);z-index:12000;padding:5px 0 calc(10px + env(safe-area-inset-bottom))}
@@ -548,21 +557,12 @@ canvas{width:100%;background:#fffdf7;border:1px solid var(--line);border-radius:
   .tq-row button,.tq-row a{background:#fff;border-radius:11px;padding:9px 3px;font-family:inherit;font-size:11px;color:#3A3A3C;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;box-shadow:0 1px 3px rgba(0,0,0,.05);border:none;text-decoration:none;min-width:0}
   .tq-row .qi{font-size:20px}
 }
-/* macOS 菜单栏（仅桌面） */
+/* macOS 菜单栏：不显示（桌面走底部 Dock，见 17 条方向） */
 .menubar{display:none}
 @media (min-width:861px){
-  .menubar{display:flex;align-items:center;gap:16px;position:fixed;top:0;left:0;right:0;height:28px;background:rgba(246,246,248,.9);border-bottom:.5px solid rgba(0,0,0,.12);z-index:20000;padding:0 14px;font-size:13px;color:#1D1D1F;-webkit-user-select:none;user-select:none}
-  .menubar .dots{display:flex;gap:7px}
-  .menubar .dots i{width:12px;height:12px;border-radius:50%;display:block}
-  .menubar .dots .r{background:#FF5F57}.menubar .dots .y{background:#FEBC2E}.menubar .dots .g{background:#28C840}
-  .menubar .app{font-weight:700}
-  .menubar .mit{color:#5A5A5E}
-  .menubar .sp{flex:1}
-  .menubar .mright{display:flex;align-items:center;gap:12px;font-size:12px}
-  .menubar .batt{width:22px;height:11px;border:1px solid rgba(0,0,0,.4);border-radius:3px;position:relative}
-  .menubar .batt::after{content:'';position:absolute;left:1px;top:1px;bottom:1px;width:75%;background:rgba(0,0,0,.5);border-radius:1px}
-  body{padding-top:28px}
-  #side{top:28px;height:calc(100vh - 28px)}
+  body{padding-top:0}
+  #side{top:0;height:calc(100vh - 70px)}
+  #main{padding-bottom:88px}
 }
 /* 侧栏今日目标 widget */
 .tkcard{margin:4px 2px 8px;background:rgba(255,255,255,.7);border-radius:12px;padding:12px 14px;border:.5px solid rgba(0,0,0,.07)}
@@ -571,6 +571,17 @@ canvas{width:100%;background:#fffdf7;border:1px solid var(--line);border-radius:
 .tkcard .tkc-s{font-size:11px;color:#8E8E93;margin-top:4px;line-height:1.5}
 .tkcard .tkc-p{height:4px;background:rgba(0,0,0,.08);border-radius:2px;margin-top:9px;overflow:hidden}
 .tkcard .tkc-p i{display:block;height:100%;background:linear-gradient(90deg,#3F6179,#007AFF);border-radius:2px;transition:width .6s var(--curve)}
+/* 学习页 big 章节课堂 + 快捷行（样张语言） */
+.big-entry{display:flex;align-items:center;gap:16px;background:#fff;border:.5px solid var(--line);border-radius:20px;padding:20px 22px;margin:16px 0 10px;cursor:pointer;box-shadow:var(--sh-card);transition:transform .2s cubic-bezier(.34,1.56,.64,1),box-shadow .2s}
+.big-entry:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(0,0,0,.14)}
+.big-entry:active{transform:scale(.985)}
+.be-ic{width:58px;height:58px;border-radius:18px;background:rgba(10,132,255,.12);display:flex;align-items:center;justify-content:center;font-size:30px;flex-shrink:0}
+.be-t{font-size:20px;font-weight:800;letter-spacing:-.2px}
+.be-d{font-size:13px;color:var(--muted);margin-top:3px;line-height:1.5}
+.be-chev{margin-left:auto;font-size:26px;color:#C7C7CC;flex-shrink:0}
+.home-minis{display:flex;gap:8px;flex-wrap:wrap;margin:2px 0 4px}
+.home-minis button{border:none;background:#fff;border-radius:14px;padding:11px 16px;font-family:inherit;font-size:13.5px;font-weight:600;color:var(--ink);cursor:pointer;box-shadow:var(--sh-card);flex:1;min-width:110px;text-align:center;transition:transform .15s}
+.home-minis button:active{transform:scale(.97)}
 /* 练习域内导航条 */
 .p-nav{display:flex;gap:6px;margin:0 0 14px;flex-wrap:wrap}
 .p-nav button{border:none;background:rgba(0,0,0,.05);border-radius:980px;padding:7px 16px;font-family:inherit;font-size:13px;color:#5A5A5E;cursor:pointer;transition:background .18s var(--curve),color .18s var(--curve)}
@@ -11207,7 +11218,7 @@ function renderPlan(){
     }).join('');
     return '<div class="week'+(allDone?' checked':'')+'" title="进度自动跟随学习"><span class="wk">'+w.wk+'</span><span class="wd">'+esc(w.title)+'</span><span class="st">'+doneN+'/'+w.lessons.length+' 课'+(allDone?' · 周完成':'')+'</span><div class="subs">'+rows+'</div></div>';
   }).join('');
-  $('#planCnt').textContent = lessonsDone.length + '/' + TOTAL_LESSONS;
+  $('#planCnt').textContent = chDone.length + '/' + CHAPTERS.length;
 }
 /* 学习计划只读：进度自动跟随学习，学到哪亮到哪，不支持手动勾选 */
 
@@ -11639,7 +11650,7 @@ function settleChapter(c, pageEl){
   var allCorrect = correct >= total;
   var doneL = lessonsDone.length, totalL = TOTAL_LESSONS;
   var doneC = CHAPTERS.filter(chIsDone).length, totalC = CHAPTERS.length;
-  var overall = Math.round((doneL/totalL*0.6 + doneC/totalC*0.4)*100);
+  var overall = Math.round((doneC/totalC)*100);
   var settle = { pct:pct, correct:correct, total:total, dur:dur, allCorrect:allCorrect, overall:overall, ts:Date.now() };
   var settleKey = 'settle_'+c.id;
   settleStore[settleKey] = settle;
@@ -11839,11 +11850,11 @@ function curRank(pct){
 function calcStats(){
   var doneL = lessonsDone.length, totalL = TOTAL_LESSONS;
   var doneC = chDone.length, totalC = CHAPTERS.length;
-  var doneW = PLAN.filter(function(w){ return w.lessons.every(function(l){ return lessonsDone.indexOf(l.k) > -1; }); }).length;
+  var doneW = chDone.length;
   var examTotal = CHAPTERS.filter(function(c){ return c.exam; }).length;
   var examFull = CHAPTERS.filter(function(c){ return c.exam && examStatus(c).full; }).length;
   var wrongN = fixedPool.length + wrongPool.length;
-  var base = doneL/totalL*0.35 + doneC/totalC*0.25 + (examTotal ? examFull/examTotal*0.2 : 0);
+  var base = doneC/totalC*0.5 + (examTotal ? examFull/examTotal*0.3 : 0);
   var pct;
   if(wrongN){
     // 有错题：四维全算（错题订正 = 已订正/总错题）
@@ -11856,20 +11867,20 @@ function calcStats(){
 }
 /* 徽章 14 枚（战役 8 + 动态 6） */
 var BADGES = [
-  {n:'材料学徒', d:'完成第一部分（第 5 周 光刻战役）', c:function(s){ return s.doneW>=5; }},
-  {n:'开关手', d:'完成第二部分（第 10 周 美国电路）', c:function(s){ return s.doneW>=10; }},
-  {n:'集成匠', d:'完成第三部分（第 15 周 领导力丧失）', c:function(s){ return s.doneW>=15; }},
-  {n:'起飞乘客', d:'完成第四部分（第 20 周 美国复苏）', c:function(s){ return s.doneW>=20; }},
-  {n:'光刻学徒', d:'完成第五部分（第 25 周 集成世界）', c:function(s){ return s.doneW>=25; }},
-  {n:'代工学徒', d:'完成第六部分（第 30 周 离岸创新）', c:function(s){ return s.doneW>=30; }},
-  {n:'断供老兵', d:'完成第七部分（第 35 周 中国的挑战）', c:function(s){ return s.doneW>=35; }},
-  {n:'芯片史官', d:'完成第八部分（第 40 周 芯片扼流圈）', c:function(s){ return s.doneW>=40; }},
+  {n:'材料学徒', d:'完成第一部分 · 达第 5 章', c:function(s){ return s.doneW>=5; }},
+  {n:'开关手', d:'完成第二部分 · 达第 10 章', c:function(s){ return s.doneW>=10; }},
+  {n:'集成匠', d:'完成第三部分 · 达第 15 章', c:function(s){ return s.doneW>=15; }},
+  {n:'起飞乘客', d:'完成第四部分 · 达第 20 章', c:function(s){ return s.doneW>=20; }},
+  {n:'光刻学徒', d:'完成第五部分 · 达第 25 章', c:function(s){ return s.doneW>=25; }},
+  {n:'代工学徒', d:'完成第六部分 · 达第 30 章', c:function(s){ return s.doneW>=30; }},
+  {n:'断供老兵', d:'完成第七部分 · 达第 35 章', c:function(s){ return s.doneW>=35; }},
+  {n:'芯片史官', d:'完成第八部分 · 全书 36 章通关', c:function(s){ return s.doneW>=36; }},
   {n:'卷子初满', d:'任意一章小卷已做（答完即结算）', c:function(s){ return s.examFull>=1; }},
   {n:'卷子全满', d:'全部小卷已做', c:function(s){ return s.examTotal>0 && s.examFull>=s.examTotal; }},
   {n:'错题清零', d:'错题全部订正', c:function(s){ return s.wrongPool===0 && s.fixedPool>0; }},
   {n:'学习启航', d:'累计学习 5 次', c:function(s){ return s.studyCount>=5; }},
   {n:'今日打卡', d:'今日完成一章练习或一份卷（四院共通）', c:function(s){ try{ var g=JSON.parse(localStorage.getItem('daily_goal')||'{}'); var t=new Date(); if(t.getHours()<4) t.setDate(t.getDate()-1); var k=t.getFullYear()+'-'+(t.getMonth()+1)+'-'+t.getDate(); var d0=g[k]; return !!(d0 && d0.chip && (d0.chip.l||d0.chip.e)); }catch(e){ return false; } }},
-  {n:'毕业学士', d:'全册通关（全书章节全通）', c:function(s){ return s.doneL>=s.totalL && s.doneC>=s.totalC; }}
+  {n:'毕业学士', d:'全册通关（全书章节全通）', c:function(s){ return s.doneC>=s.totalC; }}
 ];
 function badgeState(s){ return BADGES.map(function(b){ return {n:b.n, d:b.d, got:b.c(s)}; }); }
 /* 今日答题统计（跨天自动重置） */
@@ -12170,7 +12181,7 @@ function renderHome(){
   var wrongN = s.wrongPool + s.fixedPool;
   var cards = [
     {ic:'🎓', t:'章节课堂', v:doneC+'/'+totalC, d:'整章练习做完即结算 · 去学第 '+(doneC<totalC?doneC+1:totalC)+' 章', go:'lesson'},
-    {ic:'🏛', t:'练习大厅', v:studyLog.length+' 次', d:'即时批改 · 大厅结算，累计学习 '+studyLog.length+' 次', go:'hall'},
+    {ic:'🏛', t:'练习大厅', v:s.todayCount+' 次', d:'今日练习 · 即时批改，答完自动结算', go:'hall'},
     {ic:'📝', t:'小卷练习', v:examFull+'/'+examTotal, d:'答完即结算 · 不要求满分', go:'exam'},
     {ic:'📕', t:'错题集', v:s.wrongPool ? s.wrongPool+' 题' : '✅ 已清空', d:'待订正 '+s.wrongPool+' · 已订正 '+s.fixedPool, go:'wrong'},
     {ic:'🎖', t:'荣誉墙', v:rank.name, d:'当前称号 · 徽章 '+badgeState(s).filter(function(x){return x.got;}).length+'/'+BADGES.length, go:'honor'},
@@ -12199,7 +12210,7 @@ function renderHome(){
     '<div style="display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin:2px 0 4px">'+
       '<div><div style="font-size:11px;letter-spacing:2px;color:#86868B;font-weight:600">CHIP WAR ACADEMY · 芯片战争读书学院</div>'+
       '<h1 style="font-size:32px;font-weight:800;letter-spacing:-.5px;margin:4px 0 0">芯片战争学院</h1>'+
-      '<div style="font-size:14px;color:#8E8E93;margin-top:3px">已修 '+doneL+'/'+totalL+' 课 · 已攻下 '+doneC+'/'+totalC+' 章 · 总进度 '+pct+'%'+(rank.next?' · 距「'+rank.next+'」还差 '+rank.remain+'%':'')+'</div></div>'+
+      '<div style="font-size:14px;color:#8E8E93;margin-top:3px">已学章节 '+doneC+'/'+totalC+' · 已做小卷 '+examFull+'/'+examTotal+' · 总进度 '+pct+'%'+(rank.next?' · 距「'+rank.next+'」还差 '+rank.remain+'%':'')+'</div></div>'+
       (doneToday ? '<div style="background:#FDF3DC;color:#8a6d1f;border-radius:20px;padding:8px 16px;font-size:13px;font-weight:700">🔥 今日已打卡</div>' : '')+
     '</div>'+
     banner +
@@ -12208,14 +12219,11 @@ function renderHome(){
       '<div style="font-size:16px;font-weight:700;margin-top:5px;line-height:1.45">'+next.tx+'</div>'+
       '<div style="font-size:12.5px;color:#8E8E93;margin-top:4px">题目答完即结算 · 跨学院打卡不断签</div></div>'+
       '<div style="display:flex;align-items:center;gap:14px">'+
-        '<div class="dring" style="--p:'+pct+'%"><i>'+pct+'%</i></div>'+
         '<button data-go="'+next.go+'" class="go-btn">'+next.btn+'</button>'+
       '</div>'+
     '</div>'+
-    '<div class="dash-grid">'+cards.map(function(c){
-      return '<div class="dash" data-go="'+c.go+'"><div class="dh"><span>'+c.ic+'</span><b>'+c.t+'</b></div><div class="dv">'+c.v+'</div><div class="dd">'+c.d+'</div></div>';
-    }).join('')+'</div>'+
-    '<div class="card"><h3>🏆 荣誉墙</h3><div class="hw-wall">'+wall+'</div></div>';
+    '<div class="big-entry" data-go="lesson"><div class="be-ic">🎓</div><div><div class="be-t">章节课堂</div><div class="be-d">'+totalC+' 章 · 整章做完即结算 · 已学章节 '+doneC+'/'+totalC+'</div></div><div class="be-chev">›</div></div>'+
+    '<div class="home-minis"><button data-go="plan">📜 学习计划</button><button data-go="hall">🏛 练习大厅</button><button onclick="openCalendar()">📅 打卡日历</button></div>';
   el.querySelectorAll('[data-go]').forEach(function(b){
     b.addEventListener('click', function(){ goPage(b.dataset.go); });
   });
@@ -12349,6 +12357,7 @@ function renderAll(){
   $('#traceCnt').textContent = s.todayCount ? '今日 '+s.todayCount : '';
   renderWrongNav();
   $('#examCnt').textContent = s.examTotal ? ('已做 '+s.examFull+'/'+s.examTotal) : '';
+  try{ store('examDone', s.examFull || 0); }catch(e){}
   // 徽章：侧栏小圆点 + 计数
   // 徽章：侧栏只显示计数（圆点已去掉，详情进荣誉墙）
   var bd = badgeState(s);
@@ -12384,9 +12393,8 @@ function renderAll(){
   if(_mc){ var _d = new Date(), _p2 = function(x){ return (x<10?'0':'')+x; }; _mc.textContent = _p2(_d.getHours()) + ':' + _p2(_d.getMinutes()); }
   // 学习进度四条细分
   var sub = [
-    {t:'课程', v:s.doneL, n:s.totalL, tip:'已学课数 / 总课数'},
-    {t:'章节', v:s.doneC, n:s.totalC, tip:'已学章数（本章全部练习做完）'},
-    {t:'小卷', v:s.examFull, n:s.examTotal, tip:'已做卷数（答完即可结算）'},
+    {t:'章节', v:s.doneC, n:s.totalC, tip:'已学章节（整章做完/结算）'},
+    {t:'小卷', v:s.examFull, n:s.examTotal, tip:'已做卷数（答完即结算）'},
     {t:'错题订正', v:s.fixedPool, n:s.wrongN, tip:'已订正 / 总错题'}
   ];
   $('#progSub').innerHTML = sub.map(function(x){
