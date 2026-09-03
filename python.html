@@ -591,6 +591,14 @@ function dailyGoal(act){
     localStorage.setItem('daily_goal', JSON.stringify(g));
   }catch(e){}
 }
+/* 清除本院在全局打卡日历里的记录（游客初始态） */
+function clearDailyGoal(id){
+  try{
+    var g = JSON.parse(localStorage.getItem('daily_goal')||'{}'), chg = false;
+    Object.keys(g).forEach(function(d){ if(g[d] && g[d][id]){ delete g[d][id]; chg = true; if(!Object.keys(g[d]).length) delete g[d]; } });
+    if(chg) localStorage.setItem('daily_goal', JSON.stringify(g));
+  }catch(e){}
+}
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 var KW=['def','class','return','if','elif','else','for','while','in','not','and','or','import','from','as','try','except','finally','with','lambda','pass','break','continue','True','False','None','global','nonlocal','yield','raise','assert','del','is'];
 var BF=['print','range','len','input','int','str','float','list','dict','tuple','set','sum','min','max','abs','round','sorted','enumerate','zip','type','super','open','repr','format','bool','frozenset','isinstance','iter','next','map','filter'];
@@ -2610,6 +2618,7 @@ function doClearProgress(){
   var learnKeys = ['lessons','ch','hall','qstat','usercode','wrong','fixed','log','ans'];
   learnKeys.forEach(function(k){ localStorage.removeItem('pyc_'+k); });
   sbClearCloud();
+  clearDailyGoal('py');
   location.reload();
 }
 

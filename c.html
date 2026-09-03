@@ -588,6 +588,25 @@ pre.code .lang{position:absolute;top:8px;right:12px;font-size:10px;color:#777;le
 function $(s){return document.querySelector(s)}
 function store(k,v){try{localStorage.setItem('cc_'+k, JSON.stringify(v))}catch(e){}}
 function load(k,d){try{var v=JSON.parse(localStorage.getItem('cc_'+k)); return v===null?d:v}catch(e){return d}}
+/* 每日目标登记（全站共享键 daily_goal，以 4:00 为界）：act='l' 学完一课 / act='e' 做完一份卷 */
+function dailyGoal(act){
+  try{
+    var t = new Date(); if(t.getHours() < 4) t.setDate(t.getDate()-1);
+    var d = t.getFullYear()+'-'+(t.getMonth()+1)+'-'+t.getDate();
+    var g = JSON.parse(localStorage.getItem('daily_goal')||'{}');
+    g[d] = g[d]||{}; g[d]['c'] = g[d]['c']||{};
+    g[d]['c'][act] = Date.now();
+    localStorage.setItem('daily_goal', JSON.stringify(g));
+  }catch(e){}
+}
+/* 清除本院在全局打卡日历里的记录（游客初始态） */
+function clearDailyGoal(id){
+  try{
+    var g = JSON.parse(localStorage.getItem('daily_goal')||'{}'), chg = false;
+    Object.keys(g).forEach(function(d){ if(g[d] && g[d][id]){ delete g[d][id]; chg = true; if(!Object.keys(g[d]).length) delete g[d]; } });
+    if(chg) localStorage.setItem('daily_goal', JSON.stringify(g));
+  }catch(e){}
+}
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 var KW=['include','define','ifdef','ifndef','endif','if','else','for','while','do','switch','case','break','continue','return','int','char','float','double','void','short','long','unsigned','signed','const','static','extern','struct','union','enum','typedef','sizeof','goto','register','volatile','default'];
 var BF=['printf','scanf','puts','gets','putchar','getchar','strlen','strcpy','strcat','strcmp','strncpy','strncat','strncmp','malloc','calloc','realloc','free','fopen','fclose','fprintf','fscanf','fgets','fputs','fgetc','fputc','feof','fseek','ftell','rewind','fread','fwrite','sqrt','pow','abs','main','EOF','NULL','stdin','stdout','stderr'];
@@ -2901,15 +2920,22 @@ function fmtMs(ms){
 function logLessonDone(c){
   if(!c.quiz || !c.quiz.length) return;
   if(chQuizDone(c) < chQuizCount(c)) return;
+  if(chDone.indexOf(c.id) === -1){ chDone.push(c.id); store('ch', chDone); if(typeof renderChSelect === 'function') renderChSelect(); }
   if(studyLog.some(function(l){ return (''+l.x).indexOf('学完第') > -1 && (''+l.x).indexOf(c.no) > -1; })) return;
   logStudy('📖 学完第 ' + c.no + ' 章「' + c.title + '」练习');
+  dailyGoal('l');
 }
 function logExamDone(c){
   if(!c.exam || !c.exam.length) return;
-  var full = c.exam.every(function(q,i){ return hallDone['ex_'+c.id+'_'+i] !== undefined; });
-  if(!full) return;
+  var allAns = c.exam.every(function(q,i){ return quizStat['ex_'+c.id+'_'+i] !== undefined; });
+  if(!allAns) return;
+  var changedH = false;
+  c.exam.forEach(function(q,i){ var k='ex_'+c.id+'_'+i; if(hallDone[k] === undefined){ hallDone[k]=1; changedH=true; } });
+  if(changedH) saveQuiz();
+  if(chDone.indexOf(c.id) === -1){ chDone.push(c.id); store('ch', chDone); if(typeof renderChSelect === 'function') renderChSelect(); }
   if(studyLog.some(function(l){ return (''+l.x).indexOf('卷子') > -1 && (''+l.x).indexOf(c.no) > -1; })) return;
-  logStudy('📝 第 ' + c.no + ' 章卷子满分通过');
+  logStudy('📝 第 ' + c.no + ' 章卷子完成');
+  dailyGoal('e');
 }
 function logStudyTick(){ CHAPTERS.forEach(function(c){ logLessonDone(c); logExamDone(c); }); }
 
@@ -3903,11 +3929,11 @@ function renderExamStatus(c){
     var st = quizStat['ex_'+c.id+'_'+i];
     if(st !== undefined){ answered++; if(st === 1) correct++; }
   });
-  var full = answered >= c.exam.length && correct >= c.exam.length;
+  var full = answered >= c.exam.length;
   box.innerHTML = '<div style="background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:var(--ink2);display:flex;gap:16px;flex-wrap:wrap;align-items:center">' +
     '<span>已答 <b style="color:var(--ink)">'+answered+'/'+c.exam.length+'</b> 题</span>' +
     '<span>答对 <b style="color:var(--ink)">'+correct+'</b> 题</span>' +
-    (full ? '<span>👑 本章考试全通！</span>' : '') + '</div>';
+    (full ? '<span>✅ 考试已答完，答完即通过</span>' : '') + '</div>';
 }
 function renderSettleResult(c){
   var box = document.getElementById('settleResult_'+c.id);
@@ -3965,7 +3991,7 @@ function settleCheck(c, isExam){
   var info = { pct: Math.round(correct/total*100), correct: correct, total: total, dur: dur, allCorrect: correct>=total, ts: Date.now(), exam: isExam, pop: true };
   settleStore['settle_'+c.id] = info;
   storeSettle();
-  if(allCorrect && chDone.indexOf(c.id) === -1){
+  if(chDone.indexOf(c.id) === -1){
     chDone.push(c.id); store('ch', chDone);
     if(curPage==='lesson' && !curCh) renderChSelect();
   }
@@ -4295,6 +4321,7 @@ function doClearProgress(){
   var learnKeys = ['lessons','ch','hall','qstat','sel','usercode','wrong','fixed','log','ans'];
   learnKeys.forEach(function(k){ localStorage.removeItem('cc_'+k); });
   sbClearCloud();
+  clearDailyGoal('c');
   location.reload();
 }
 

@@ -706,6 +706,14 @@ function dailyGoal(act){
     localStorage.setItem('daily_goal', JSON.stringify(g));
   }catch(e){}
 }
+/* 清除本院在全局打卡日历里的记录（游客初始态） */
+function clearDailyGoal(id){
+  try{
+    var g = JSON.parse(localStorage.getItem('daily_goal')||'{}'), chg = false;
+    Object.keys(g).forEach(function(d){ if(g[d] && g[d][id]){ delete g[d][id]; chg = true; if(!Object.keys(g[d]).length) delete g[d]; } });
+    if(chg) localStorage.setItem('daily_goal', JSON.stringify(g));
+  }catch(e){}
+}
 
 /* ================= 公式渲染（迷你 LaTeX，离线可用） ================= */
 function parseMath(s){
@@ -12484,6 +12492,7 @@ document.getElementById('btnClean').addEventListener('click', function(){
   btnOk.addEventListener('click', function(){
     if(ta.value.trim() !== '清除记录'){ msg.style.display='inline'; msg.textContent='输入的文字不对，请重新输入'; return; }
     keys.forEach(function(k){ localStorage.removeItem(k); });
+    clearDailyGoal('chip');
     sbClearCloud();
     wrap.remove();
     alert('已清除全部学习数据，学院回到初始状态。');
