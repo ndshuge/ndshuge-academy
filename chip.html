@@ -12710,8 +12710,22 @@ document.getElementById('btnClean').addEventListener('click', function(){
     keys.forEach(function(k){ localStorage.removeItem(k); });
     clearDailyGoal('chip');
     sbClearCloud();
+    /* 游客级清除：连本学院的排行榜/留言云端记录与登录态一起清 */
+    if(sbSession()){
+      try{
+        var _us = sbSession();
+        sbEnsureToken().then(function(_ok){
+          if(!_ok) return;
+          var _h = sbAuthHeaders(); if(!_h) return;
+          var _uid = _us.user.id;
+          fetch(SB_URL + '/rest/v1/leaderboard?user_id=eq.' + _uid + '&app=eq.chip', { method:'DELETE', headers:_h }).catch(function(){});
+          fetch(SB_URL + '/rest/v1/feedback?user_id=eq.' + _uid + '&app=eq.chip', { method:'DELETE', headers:_h }).catch(function(){});
+        });
+      }catch(e){}
+    }
+    sbClear();
     wrap.remove();
-    alert('已清除全部学习数据，学院回到初始状态。');
+    alert('已清除全部数据并退出登录，回到游客初始状态。');
     location.reload();
   });
   btnCancel.addEventListener('click', function(){ wrap.remove(); });

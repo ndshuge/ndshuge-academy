@@ -136,7 +136,7 @@ body{
       </div>
       <div class="desc">从函数到积分，跟着笛卡尔和历代数学家把微积分真正看懂：每章讲义 + 互动实验 + 练习小卷 + 错题闭环。</div>
       <div class="bar"><i id="bar-calc"></i></div>
-      <div class="prog"><span>已学 <b id="n-calc">0</b> / 30 章</span><span class="pct" id="pct-calc">0%</span></div>
+      <div class="prog"><span>已学 <b id="n-calc">0</b> 课 · 完成 <b id="cc-calc">0</b>/30 章</span><span class="pct" id="pct-calc">0%</span></div>
       <div class="day none" id="day-calc"></div>
       <a class="go" href="calculus.html">进入微积分学院 →</a>
     </div>
@@ -152,7 +152,7 @@ body{
       </div>
       <div class="desc">浏览器里直接写代码、即时判题：从 print 到类，五大战役打下来，你就能自己写程序了。带账号与排行榜。</div>
       <div class="bar"><i id="bar-py"></i></div>
-      <div class="prog"><span>已学 <b id="n-py">0</b> / 14 章</span><span class="pct" id="pct-py">0%</span></div>
+      <div class="prog"><span>已学 <b id="n-py">0</b> 课 · 完成 <b id="cc-py">0</b>/14 章</span><span class="pct" id="pct-py">0%</span></div>
       <div class="day none" id="day-py"></div>
       <a class="go" href="python.html">进入 Python 学院 →</a>
     </div>
@@ -168,7 +168,7 @@ body{
       </div>
       <div class="desc">用选择题把一本书读透：从冷战芯片到 AI 时代的算力争夺，每一章都是历史、技术、地缘政治的交汇点。</div>
       <div class="bar"><i id="bar-chip"></i></div>
-      <div class="prog"><span>已学 <b id="n-chip">0</b> / 36 章</span><span class="pct" id="pct-chip">0%</span></div>
+      <div class="prog"><span>已学 <b id="n-chip">0</b> 课 · 完成 <b id="cc-chip">0</b>/36 章</span><span class="pct" id="pct-chip">0%</span></div>
       <div class="day none" id="day-chip"></div>
       <a class="go" href="chip.html">进入芯片战争学院 →</a>
     </div>
@@ -184,7 +184,7 @@ body{
       </div>
       <div class="desc">C 是离机器最近的语言：内存、指针、地址。浏览器里真编译真运行，和 Python 学院一个体验，零安装。</div>
       <div class="bar"><i id="bar-c"></i></div>
-      <div class="prog"><span>已学 <b id="n-c">0</b> 课</span><span class="pct" id="pct-c">—</span></div>
+      <div class="prog"><span>已学 <b id="n-c">0</b> 课 · 完成 <b id="cc-c">0</b>/50 章</span><span class="pct" id="pct-c">0%</span></div>
       <div class="day none" id="day-c"></div>
       <a class="go" href="c.html">进入 C 语言学院 →</a>
     </div>
@@ -214,11 +214,18 @@ var ACADEMIES = [
   { id:'calc', prefix:'pjc_',  total:30, bar:'bar-calc',  n:'n-calc',  pct:'pct-calc'  },
   { id:'py',   prefix:'pyc_',  total:14, bar:'bar-py',    n:'n-py',    pct:'pct-py'    },
   { id:'chip', prefix:'chip_', total:36, bar:'bar-chip',  n:'n-chip',  pct:'pct-chip'  },
-  { id:'c',    prefix:'cc_',   total:54, bar:'bar-c',     n:'n-c',     pct:'pct-c'     }
+  { id:'c',    prefix:'cc_',   total:50, bar:'bar-c',     n:'n-c',     pct:'pct-c'     }
 ];
-function getLessons(prefix){
+function getLs(prefix){ /* 课/讲义完成数 */
   try{
-    // 读「章完成」数组（整章练习做完才计入），天然不超总章数；不用 lessons（那是课数，会超章数上限）
+    var v = JSON.parse(localStorage.getItem(prefix + 'lessons'));
+    if (Array.isArray(v)) return v.length;
+    if (v && typeof v === 'object') return Object.keys(v).length;
+    return 0;
+  }catch(e){ return 0; }
+}
+function getCh(prefix){ /* 章完成数（整章做完/结算） */
+  try{
     var v = JSON.parse(localStorage.getItem(prefix + 'ch'));
     if (Array.isArray(v)) return v.length;
     if (v && typeof v === 'object') return Object.keys(v).length;
@@ -227,17 +234,19 @@ function getLessons(prefix){
 }
 var doneTotal = 0, totalTotal = 0;
 ACADEMIES.forEach(function(a){
-  var done = getLessons(a.prefix);
+  var ls = getLs(a.prefix), ch = getCh(a.prefix);
   var elN = document.getElementById(a.n), elBar = document.getElementById(a.bar), elPct = document.getElementById(a.pct);
-  elN.textContent = done;
+  var elCc = document.getElementById('cc-' + a.id);
+  elN.textContent = ls;
+  if(elCc) elCc.textContent = ch;
   if (a.total > 0){
-    var pct = Math.min(100, Math.round(done / a.total * 100));
+    var pct = Math.min(100, Math.round(ch / a.total * 100));
     elBar.style.width = pct + '%';
     elPct.textContent = pct + '%';
-    doneTotal += Math.min(done, a.total); totalTotal += a.total;
+    doneTotal += ls; totalTotal += a.total;
   } else {
-    elBar.style.width = (done > 0 ? 100 : 0) + '%';
-    elPct.textContent = done + ' 课';
+    elBar.style.width = (ch > 0 ? 100 : 0) + '%';
+    elPct.textContent = ch + ' 章';
   }
 });
 document.getElementById('stTotal').textContent = '4';

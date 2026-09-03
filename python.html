@@ -2575,7 +2575,17 @@ function importData(){
     r.onload=function(){
       try{
         var d=JSON.parse(r.result);
-        Object.keys(d).forEach(function(k){ store(k,d[k]); });
+        /* 学院隔离：只接受本院键（无前缀白名单 或 pyc_ 前缀），拒绝其他学院前缀，防跨学院污染 */
+        var ALLOW = ['lessons','ch','hall','qstat','usercode','wrong','fixed','log','ans','sel','stat','tstat','checkin','settle','navfold','sidefold','quizPick','guest','profile'];
+        var n0 = 0, nSkip = 0;
+        Object.keys(d).forEach(function(k){
+          var key = k;
+          if(key.indexOf('pyc_') === 0) key = key.slice(4);
+          if(ALLOW.indexOf(key) === -1){ nSkip++; return; }
+          store(key, d[k]); n0++;
+        });
+        if(n0 === 0){ alert('没有找到本学院（Python）的进度数据，导入已忽略。'); return; }
+        if(nSkip) alert('导入成功 '+n0+' 项，已忽略 '+nSkip+' 项其他学院/未知数据。');
         location.reload();
       }catch(e){ alert('导入失败：文件格式不对'); }
     };
