@@ -571,6 +571,14 @@ canvas{width:100%;background:#fffdf7;border:1px solid var(--line);border-radius:
 .tkcard .tkc-s{font-size:11px;color:#8E8E93;margin-top:4px;line-height:1.5}
 .tkcard .tkc-p{height:4px;background:rgba(0,0,0,.08);border-radius:2px;margin-top:9px;overflow:hidden}
 .tkcard .tkc-p i{display:block;height:100%;background:linear-gradient(90deg,#3F6179,#007AFF);border-radius:2px;transition:width .6s var(--curve)}
+/* 练习域内导航条 */
+.p-nav{display:flex;gap:6px;margin:0 0 14px;flex-wrap:wrap}
+.p-nav button{border:none;background:rgba(0,0,0,.05);border-radius:980px;padding:7px 16px;font-family:inherit;font-size:13px;color:#5A5A5E;cursor:pointer;transition:background .18s var(--curve),color .18s var(--curve)}
+.p-nav button.on{background:#3F6179;color:#fff;font-weight:600}
+@media (max-width:860px){
+  .p-nav{overflow-x:auto;flex-wrap:nowrap;padding-bottom:2px;margin:2px -2px 12px}
+  .p-nav button{flex:none;padding:8px 15px;font-size:13px}
+}
 </style>
 
 </head>
@@ -600,31 +608,26 @@ canvas{width:100%;background:#fffdf7;border:1px solid var(--line);border-radius:
     <div class="divider"></div>
     <nav class="nav">
       <div class="nav-group">
-        <div class="nav-sep" data-gp="learn">学习 <span class="gp-arrow">▾</span></div>
+        <div class="nav-sep" data-gp="learn">📚 学习 <span class="gp-arrow">▾</span></div>
         <div class="nav-gp" id="gp-learn">
           <button data-page="home" class="on"><span>🏠 主页</span></button>
-          <button data-page="plan"><span>📜 学习计划</span><span class="sub" id="planCnt">0/17</span></button>
-          <button data-page="lesson"><span>🎓 章节课堂</span><span class="sub" id="chCnt">0/4</span></button>
+          <button data-page="plan"><span>📜 学习计划</span><span class="sub" id="planCnt"></span></button>
+          <button data-page="lesson"><span>🎓 章节课堂</span><span class="sub" id="chCnt"></span></button>
         </div>
       </div>
       <div class="nav-group">
-        <div class="nav-sep" data-gp="practice">修炼 <span class="gp-arrow">▾</span></div>
+        <div class="nav-sep" data-gp="practice">🎯 练习 <span class="gp-arrow">▾</span></div>
         <div class="nav-gp" id="gp-practice">
           <button data-page="hall"><span>🏛 练习大厅</span></button>
-          <button data-page="exam"><span>📝 小卷练习</span><span class="sub" id="examCnt"></span></button>
-        </div>
-      </div>
-      <div class="nav-group collapsed">
-        <div class="nav-sep" data-gp="state">状态 <span class="gp-arrow">▾</span></div>
-        <div class="nav-gp" id="gp-state">
-          <button data-page="honor"><span>🏆 荣誉墙</span></button>
+          <button data-page="exam"><span>📝 小卷</span><span class="sub" id="examCnt"></span></button>
           <button data-page="wrong"><span>📕 错题集</span><span class="sub" id="wrongCnt"></span></button>
           <button data-page="fixed"><span>✅ 已订正</span><span class="sub" id="fixedCnt"></span></button>
+          <button data-page="honor"><span>🏆 荣誉墙</span></button>
         </div>
       </div>
       <div class="nav-group collapsed">
-        <div class="nav-sep" data-gp="more">更多 <span class="gp-arrow">▾</span></div>
-        <div class="nav-gp" id="gp-more">
+        <div class="nav-sep" data-gp="mine">👤 我的 <span class="gp-arrow">▾</span></div>
+        <div class="nav-gp" id="gp-mine">
           <button data-page="trace"><span>🗂 管理账号与进度</span><span class="sub" id="traceCnt"></span></button>
           <button data-page="ask"><span>✍️ 问答批改</span></button>
           <button data-page="lab"><span>🔬 芯片实验室</span></button>
@@ -710,6 +713,7 @@ canvas{width:100%;background:#fffdf7;border:1px solid var(--line);border-radius:
     </section>
     <!-- 大厅页 -->
     <section class="page" id="page-hall">
+      <div class="p-nav"><button data-p="hall" class="on">练习大厅</button><button data-p="exam">小卷</button><button data-p="wrong">错题集</button><button data-p="fixed">已订正</button></div>
       <div class="page-head">
         <div class="kick">THE PRACTICE HALL</div>
         <h2>练习大厅</h2>
@@ -720,6 +724,7 @@ canvas{width:100%;background:#fffdf7;border:1px solid var(--line);border-radius:
     </section>
     <!-- 小卷页 -->
     <section class="page" id="page-exam">
+      <div class="p-nav"><button data-p="hall">练习大厅</button><button data-p="exam" class="on">小卷</button><button data-p="wrong">错题集</button><button data-p="fixed">已订正</button></div>
       <div class="page-head">
         <div class="kick">THE MINI EXAMS</div>
         <h2>小卷练习</h2>
@@ -730,6 +735,7 @@ canvas{width:100%;background:#fffdf7;border:1px solid var(--line);border-radius:
     </section>
     <!-- 错题集页 -->
     <section class="page" id="page-wrong">
+      <div class="p-nav"><button data-p="hall">练习大厅</button><button data-p="exam">小卷</button><button data-p="wrong" class="on">错题集</button><button data-p="fixed">已订正</button></div>
       <div class="page-head">
         <div class="kick">THE CORRECTION DESK</div>
         <h2>错题集</h2>
@@ -739,6 +745,7 @@ canvas{width:100%;background:#fffdf7;border:1px solid var(--line);border-radius:
     </section>
     <!-- 已订正页 -->
     <section class="page" id="page-fixed">
+      <div class="p-nav"><button data-p="hall">练习大厅</button><button data-p="exam">小卷</button><button data-p="wrong">错题集</button><button data-p="fixed" class="on">已订正</button></div>
       <div class="page-head">
         <div class="kick">THE FIXED POOL</div>
         <h2>已订正</h2>
@@ -767,6 +774,13 @@ canvas{width:100%;background:#fffdf7;border:1px solid var(--line);border-radius:
           <button onclick="openRank()"><span class="qi">🏆</span>排行榜</button>
           <button onclick="openFeedback()"><span class="qi">💬</span>留言</button>
           <button onclick="openAuthor()"><span class="qi">👨‍💻</span>关于作者</button>
+        </div>
+        <div class="tq-cap">其他</div>
+        <div class="tq-row">
+          <button onclick="goPage('honor')"><span class="qi">🏆</span>荣誉墙</button>
+          <button onclick="goPage('lab')"><span class="qi">🔬</span>实验室</button>
+          <button onclick="goPage('ask')"><span class="qi">✍️</span>问答</button>
+          <button onclick="openShare()"><span class="qi">📤</span>分享</button>
         </div>
       </div>
       <div class="card">
@@ -860,8 +874,7 @@ canvas{width:100%;background:#fffdf7;border:1px solid var(--line);border-radius:
 <a class="exit-fab" id="exitFab" href="https://ndshuge.github.io/ndshuge-academy/" title="回到四学院门户">🚪 退出学院</a>
 <div class="tabbar" id="tabBar">
   <button class="tb on" data-tab="learn"><span class="ti">📚</span><span>学习</span></button>
-  <button class="tb" data-tab="practice"><span class="ti">🎯</span><span>修炼</span></button>
-  <button class="tb" data-tab="state"><span class="ti">📊</span><span>收成</span></button>
+  <button class="tb" data-tab="practice"><span class="ti">🎯</span><span>练习</span></button>
   <button class="tb" data-tab="more"><span class="ti">👤</span><span>我的</span></button>
 </div>
 
@@ -12404,9 +12417,12 @@ function goPage(name, silent){
   var btn = document.querySelector('.nav button[data-page="'+name+'"]');
   if(btn) btn.classList.add('on');
   /* Apple TabBar 高亮同步 */
-  var _tabmap = {home:'learn',plan:'learn',lesson:'learn',hall:'practice',exam:'practice',honor:'state',wrong:'state',fixed:'state',trace:'more',ask:'more',lab:'more',about:'more'};
+  var _tabmap = {home:'learn',plan:'learn',lesson:'learn',hall:'practice',exam:'practice',wrong:'practice',fixed:'practice',honor:'practice',trace:'more',ask:'more',lab:'more',about:'more'};
   var _tabs = document.querySelectorAll('.tabbar .tb');
   if(_tabs.length) _tabs.forEach(function(t){ t.classList.toggle('on', t.dataset.tab === _tabmap[name]); });
+  /* 练习域内导航同步 */
+  var _pnavs = document.querySelectorAll('.p-nav button');
+  if(_pnavs.length) _pnavs.forEach(function(b){ b.classList.toggle('on', b.dataset.p === name); });
   document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('on'); });
   var pg = $('#page-'+name); if(pg) pg.classList.add('on');
   setFabVisible(name !== 'home');
@@ -12427,9 +12443,13 @@ document.querySelectorAll('.nav button').forEach(function(b){
 /* Apple TabBar 点击：按类跳默认页 */
 document.querySelectorAll('.tabbar .tb').forEach(function(tb){
   tb.addEventListener('click', function(){
-    var def = {learn:'home', practice:'hall', state:'wrong', more:'trace'};
+    var def = {learn:'home', practice:'hall', more:'trace'};
     goPage(def[tb.dataset.tab]);
   });
+});
+/* 练习域内导航点击 */
+document.querySelectorAll('.p-nav button').forEach(function(pb){
+  pb.addEventListener('click', function(){ goPage(pb.dataset.p); });
 });
 /* 导航分组折叠 + 侧栏折叠 */
 document.querySelectorAll('.nav-sep').forEach(function(sep){

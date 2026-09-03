@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Python 学院 · Apple 化演示（macOS / iOS 双形态）</title>
+<style>
+/* ============================================================
+   设计令牌 Design Tokens
+   双端共享底层血脉，数值分化。8px 网格。
+   字体栈带 Windows 回退（-apple-system / SF 只在 Apple 平台存在，
+   回退链末尾必须有 Segoe UI Variable，否则 Windows 上观感崩）
+   ============================================================ */
+:root{
+  /* 主色：Apple systemBlue */
+  --accent:#007AFF;
+  --accent-press:#0060DF;
+  --accent-soft:rgba(0,122,255,.12);
+
+  /* systemGray 灰阶（浅色） */
+  --bg:#F5F5F7;            /* 桌面内容区底 */
+  --bg-deep:#000000;       /* 移动深色底 */
+  --card:#FFFFFF;
+  --card2:#F2F2F7;         /* 分组表底 / 侧栏输入底 */
+  --ink:#1D1D1F;
+  --ink2:#3C3C43;          /* 次级文字（Apple 用透明度，这里给实色保证对比） */
+  --muted:#86868B;
+  --sep:rgba(60,60,67,.12);
+  --sep-strong:rgba(60,60,67,.22);
+  --sidebar-blur:rgba(246,246,248,.72);
+  --tabbar-blur:rgba(250,250,252,.8);
+  --glass-line:rgba(255,255,255,.5);
+  --hover:rgba(0,0,0,.045);
+  --press:rgba(0,0,0,.08);
+  --shadow-card:0 1px 2px rgba(0,0,0,.04), 0 4px 16px rgba(0,0,0,.06);
+  --shadow-float:0 8px 24px rgba(0,0,0,.12), 0 2px 6px rgba(0,0,0,.06);
+
+  /* 圆角：桌面克制小圆角，移动大圆角逼近 squircle 观感 */
+  --r-sm:6px;    /* 小件 */
+  --r-md:10px;   /* 桌面卡片 */
+  --r-lg:14px;   /* 桌面大卡 / 移动小组件 */
+  --r-xl:22px;   /* 移动大卡片 */
+  --r-cell:12px; /* 移动列 cell（Apple 官方 12） */
+
+  /* 间距 8px 网格 */
+  --pad-1:8px; --pad-2:16px; --pad-3:24px; --pad-4:32px; --pad-5:40px;
+
+  /* 字号：桌面紧凑，移动宽松 */
+  --fs-12:12px; --fs-13:13px; --fs-15:15px; --fs-17:17px;
+  --fs-20:20px; --fs-22:22px; --fs-28:28px; --fs-34:34px;
+  --lh:1.4; --lh-lo:1.5;
+
+  /* 触控热区下限（移动端 44pt，桌面可收紧） */
+  --tap:44px;
+
+  /* Apple 动效曲线 */
+  --ease-apple:cubic-bezier(.32,.72,0,1);
+  --ease-spring:cubic-bezier(.34,1.56,.64,1);
+}
+
+/* 深色模式：跟系统，可被预览工具手动覆盖 */
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme=light]){
+    --bg:#1E1E1E; --bg-deep:#000000;
+    --card:#1C1C1E; --card2:#2C2C2E;
+    --ink:#F5F5F7; --ink2:#C7C7CC; --muted:#8E8E93;
+    --sep:rgba(84,84,88,.55); --sep-strong:rgba(84,84,88,.75);
+    --sidebar-blur:rgba(38,38,40,.72);
+    --tabbar-blur:rgba(24,24,26,.72);
+    --glass-line:rgba(255,255,255,.08);
+    --hover:rgba(255,255,255,.06);
+    --press:rgba(255,255,255,.1);
+    --accent:#0A84FF; --accent-press:#409CFF; --accent-soft:rgba(10,132,255,.2);
+    --shadow-card:0 1px 2px rgba(0,0,0,.3), 0 4px 16px rgba(0,0,0,.3);
+    --shadow-float:0 8px 28px rgba(0,0,0,.5), 0 2px 8px rgba(0,0,0,.3);
+  }
+}
+:root[data-theme=dark]{
+  --bg:#1E1E1E; --bg-deep:#000000;
+  --card:#1C1C1E; --card2:#2C2C2E;
+  --ink:#F5F5F7; --ink2:#C7C7CC; --muted:#8E8E93;
+  --sep:rgba(84,84,88,.55); --sep-strong:rgba(84,84,88,.75);
+  --sidebar-blur:rgba(38,38,40,.72);
+  --tabbar-blur:rgba(24,24,26,.72);
+  --glass-line:rgba(255,255,255,.08);
+  --hover:rgba(255,255,255,.06);
+  --press:rgba(255,255,255,.1);
+  --accent:#0A84FF; --accent-press:#409CFF; --accent-soft:rgba(10,132,255,.2);
+  --shadow-card:0 1px 2px rgba(0,0,0,.3), 0 4px 16px rgba(0,0,0,.3);
+  --shadow-float:0 8px 28px rgba(0,0,0,.5), 0 2px 8px rgba(0,0,0,.3);
+}
+
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro SC","Segoe UI Variable","Segoe UI","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+  font-size:var(--fs-13); line-height:var(--lh);
+  color:var(--ink); background:var(--bg);
+  -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+  overscroll-behavior:none;
+  opacity:0;transition:opacity .2s ease;
+}
+body.ready{opacity:1}
+button{font-family:inherit;border:none;background:none;color:inherit;cursor:pointer}
+img{max-width:100%;display:block}
+.hidden{display:none!important}
+
+/* ============================================================
+   骨架 Shell：mac 形态（侧栏 + 内容） / ios 形态（全宽 + 底栏）
+   平台形态由 html[data-form=mac|ios] 决定，而非媒体查询：
+   真实部署时 data-form 由 JS 按宽度自动设置（见底部），
+   演示时可用预览工具强制切换。两种形态共用同一套 DOM。
+   ============================================================ */
+#app{display:flex;height:100dvh;overflow:hidden}
+#shell-main{flex:1;min-width:0;display:flex;flex-direction:column;position:relative}
+#content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;scroll-behavior:smooth}
+
+/* ---------- macOS 形态 ---------- */
+html[data-form=mac] #sidebar{
+  width:264px;flex:none;display:flex;flex-direction:column;
+  background:var(--sidebar-blur);
+  -webkit-backdrop-filter:blur(30px) saturate(1.4);backdrop-filter:blur(30px) saturate(1.4);
+  border-right:1px solid var(--sep);
+}
+/* iOS 形态默认隐藏侧栏与 mac 顶栏 */
+html[data-form=ios] #sidebar{display:none}
+html[data-form=ios] #macbar{display:none}
+html[data-form=mac] #tabbar{display:none}
+html[data-form=mac] #ios-title{display:none}
+
+/* ============================================================
+   macOS 形态细节：窗口顶栏（交通灯）、菜单栏、侧栏
+   ============================================================ */
+#macbar{
+  height:34px;flex:none;display:flex;align-items:center;gap:10px;
+  padding:0 14px;border-bottom:1px solid var(--sep);
+  background:var(--sidebar-blur);
+  -webkit-backdrop-filter:blur(30px) saturate(1.4);backdrop-filter:blur(30px) saturate(1.4);
+  -webkit-user-select:none;user-select:none;
+}
+/* 交通信号灯：纯氛围点缀，web 里没有真窗口可关 */
+.traffic{display:flex;gap:8px;align-items:center}
+.traffic i{width:12px;height:12px;border-radius:50%;display:block}
+.traffic i:nth-child(1){background:#FF5F57;box-shadow:inset 0 0 0 .5px rgba(0,0,0,.1)}
+.traffic i:nth-child(2){background:#FEBC2E;box-shadow:inset 0 0 0 .5px rgba(0,0,0,.1)}
+.traffic i:nth-child(3){background:#28C840;box-shadow:inset 0 0 0 .5px rgba(0,0,0,.1)}
+#macbar .menus{display:flex;gap:2px;align-items:center;font-size:var(--fs-13);font-weight:500}
+#macbar .menus button{padding:4px 9px;border-radius:5px;font-size:var(--fs-13)}
+#macbar .menus button:hover{background:var(--hover)}
+#macbar .menus button.on{background:var(--accent);color:#fff}
+#macbar .doc-title{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:var(--fs-12);color:var(--muted);font-weight:500}
+#macbar .doc-title b{color:var(--ink);font-weight:600}
+
+#sidebar .side-brand{
+  display:flex;align-items:center;gap:10px;padding:18px 18px 12px;
+}
+#sidebar .side-brand .logo{
+  width:30px;height:30px;border-radius:8px;flex:none;
+  background:linear-gradient(135deg,#0A84FF,#5E5CE6);
+  color:#fff;font-size:16px;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 2px 6px rgba(10,132,255,.35);
+}
+#sidebar .side-brand b{font-size:var(--fs-15);letter-spacing:.2px}
+#sidebar .side-brand small{display:block;font-size:var(--fs-12);color:var(--muted);font-weight:400;margin-top:1px}
+#side-nav{flex:1;overflow-y:auto;padding:6px 10px}
+.side-sep{
+  font-size:var(--fs-12);font-weight:600;color:var(--muted);
+  padding:14px 10px 5px;letter-spacing:.4px;
+}
+.side-item{
+  display:flex;align-items:center;gap:9px;width:100%;
+  padding:0 10px;height:32px;border-radius:7px;
+  font-size:var(--fs-13);color:var(--ink2);text-align:left;
+  transition:background .2s ease;
+}
+.side-item .ico{width:18px;text-align:center;font-size:14px;filter:saturate(.9)}
+.side-item:hover{background:var(--hover)}
+.side-item.on{background:var(--accent);color:#fff;font-weight:500}
+.side-item.on .ico{filter:none}
+.side-item .bdg{
+  margin-left:auto;font-size:11px;font-weight:600;color:var(--muted);
+  background:var(--card2);border-radius:8px;padding:1px 7px;
+}
+.side-item.on .bdg{background:rgba(255,255,255,.25);color:#fff}
+.side-item:active{transform:translateY(1px)}
+.side-foot{
+  padding:12px 16px 16px;border-top:1px solid var(--sep);
+  font-size:var(--fs-12);color:var(--muted);
+}
+.side-foot .prog-label{display:flex;justify-content:space-between;margin-bottom:6px}
+.side-foot .bar{height:5px;border-radius:3px;background:var(--card2);overflow:hidden}
+.side-foot .bar i{display:block;height:100%;width:46%;border-radius:3px;background:linear-gradient(90deg,#0A84FF,#5E5CE6)}
+.side-foot .streak{margin-top:8px;display:flex;align-items:center;gap:6px}
+
+/* ============================================================
+   macOS 内容区：白卡网格，紧凑密度
+   ============================================================ */
+html[data-form=mac] #content{padding:var(--pad-4) var(--pad-5) 60px}
+.page-head{display:none} /* mac 用 sidebar 定位，页头收敛 */
+html[data-form=mac] .view{max-width:940px;margin:0 auto;display:flex;flex-direction:column;gap:var(--pad-2)}
+.mac-h1{font-size:var(--fs-22);font-weight:700;letter-spacing:-.3px;margin-bottom:2px}
+.mac-sub{font-size:var(--fs-13);color:var(--muted);margin-bottom:var(--pad-2)}
+
+.mac-grid{display:grid;gap:var(--pad-2)}
+.g2{grid-template-columns:repeat(2,1fr)}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g4{grid-template-columns:repeat(4,1fr)}
+
+.card{
+  background:var(--card);border-radius:var(--r-md);
+  border:1px solid var(--sep);box-shadow:var(--shadow-card);
+  transition:transform .2s ease, box-shadow .2s ease, background .2s ease;
+}
+html[data-form=mac] .card.hoverlift:hover{
+  transform:translateY(-1px);
+  box-shadow:0 2px 4px rgba(0,0,0,.05), 0 8px 24px rgba(0,0,0,.08);
+}
+.card-pad{padding:var(--pad-2)}
+.card h4{font-size:var(--fs-15);font-weight:600;display:flex;align-items:center;gap:8px}
+.card .sub{font-size:var(--fs-12);color:var(--muted);margin-top:2px}
+.card .num{font-size:var(--fs-28);font-weight:700;letter-spacing:-.5px;margin-top:8px}
+.card .num small{font-size:var(--fs-13);color:var(--muted);font-weight:500;letter-spacing:0}
+
+/* 进度环 */
+.ring{width:64px;height:64px;border-radius:50%;flex:none;
+  background:conic-gradient(var(--accent) 0 68%, var(--card2) 68% 100%);
+  display:flex;align-items:center;justify-content:center;position:relative}
+.ring::before{content:"";position:absolute;inset:7px;border-radius:50%;background:var(--card)}
+.ring b{position:relative;font-size:var(--fs-15)}
+
+/* 战役行（Things 3 式：勾选圆 + 标题 + 进度） */
+.battle-row{
+  display:flex;align-items:center;gap:12px;padding:11px 14px;
+  border-bottom:1px solid var(--sep);
+}
+.battle-row:last-child{border-bottom:none}
+.b-check{
+  width:22px;height:22px;border-radius:50%;flex:none;position:relative;
+  border:1.5px solid var(--sep-strong);transition:all .2s var(--ease-apple);
+  background:transparent;cursor:pointer;
+}
+html[data-form=ios] .b-check{width:26px;height:26px}
+.b-check.done{background:var(--accent);border-color:var(--accent)}
+.b-check.done::after{content:"";position:absolute;left:50%;top:46%;width:9px;height:5px;
+  border-left:2px solid #fff;border-bottom:2px solid #fff;transform:translate(-50%,-50%) rotate(-45deg)}
+.b-check.curr{border-color:var(--accent)}
+.b-check.curr::after{content:"";position:absolute;inset:5px;border-radius:50%;background:var(--accent)}
+.battle-body{flex:1;min-width:0}
+.battle-body b{font-size:var(--fs-15);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.battle-body span{font-size:var(--fs-12);color:var(--muted)}
+.battle-pct{font-size:var(--fs-12);color:var(--muted);font-variant-numeric:tabular-nums;flex:none}
+
+/* 章节讲义网格项 */
+.ch-item{padding:var(--pad-2);cursor:pointer;position:relative;text-align:left}
+.ch-item .no{font-size:11px;font-weight:700;color:var(--accent);letter-spacing:.5px}
+.ch-item h4{margin-top:4px;font-size:var(--fs-15)}
+.ch-item .meta{display:flex;gap:6px;margin-top:8px;font-size:11px;color:var(--muted)}
+.ch-item .tag{background:var(--accent-soft);color:var(--accent);padding:2px 7px;border-radius:5px;font-weight:600}
+.ch-item:active{transform:scale(.985)}
+
+/* 大入口（学习 Hub 四大金刚） */
+.entry{
+  display:flex;align-items:center;gap:12px;padding:14px;cursor:pointer;text-align:left;
+}
+html[data-form=mac] .entry{min-height:78px}
+.entry .e-ico{
+  width:44px;height:44px;border-radius:12px;flex:none;
+  display:flex;align-items:center;justify-content:center;font-size:22px;
+}
+.entry b{font-size:var(--fs-15);display:flex;align-items:center;gap:6px}
+.entry .sub{font-size:var(--fs-12);color:var(--muted);margin-top:2px}
+.entry .arrow{margin-left:auto;color:var(--muted);font-size:18px;font-weight:300}
+.entry:active{transform:scale(.98)}
+
+/* ============================================================
+   iOS 形态细节：安全区、大标题滚动收缩、cell 表、底部 TabBar
+   ============================================================ */
+html[data-form=ios] body{background:var(--bg-deep)}
+html[data-form=ios] #content{
+  padding:calc(env(safe-area-inset-top,0px) + 6px) 0 calc(env(safe-area-inset-bottom,0px) + 96px);
+}
+html[data-form=ios] .view{
+  padding:0 16px;
+  animation:iosIn .34s var(--ease-apple);
+}
+@keyframes iosIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+/* 顶部大标题：随滚动收缩（标题在滚动容器里做视差） */
+html[data-form=ios] #ios-title{
+  display:block;padding:8px 20px 2px;position:sticky;top:0;z-index:20;
+  background:linear-gradient(var(--bg-deep) 72%,transparent);
+  -webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);
+  transition:background .2s ease;
+}
+html[data-form=ios] #ios-title h1{
+  font-size:34px;font-weight:700;letter-spacing:-.6px;line-height:1.15;
+}
+html[data-form=ios] #ios-title .date{font-size:13px;color:var(--muted);margin-top:2px}
+html[data-form=ios] #ios-title.scrolled h1{font-size:26px}
+html[data-form=ios] #ios-title.scrolled{background:var(--tabbar-blur);box-shadow:0 .5px 0 var(--sep)}
+
+/* iOS 列表 cell：圆角分组（Apple 风格单元格，左右 16 安全留白已由 .view 提供） */
+.ios-list{display:flex;flex-direction:column;gap:10px}
+.ios-group{display:flex;flex-direction:column;overflow:hidden;border-radius:var(--r-cell)}
+.ios-group .ghead{font-size:13px;color:var(--muted);padding:6px 16px 4px}
+.cell{
+  display:flex;align-items:center;gap:12px;width:100%;
+  background:var(--card);padding:0 16px;min-height:var(--tap);text-align:left;
+  position:relative;transition:transform .12s var(--ease-apple);
+}
+.cell + .cell::before{
+  content:"";position:absolute;left:16px;right:0;top:0;height:.5px;background:var(--sep);
+}
+html[data-form=ios] .cell{border-radius:0}
+html[data-form=ios] .cell:first-child{border-radius:var(--r-cell) var(--r-cell) 0 0}
+html[data-form=ios] .cell:last-child{border-radius:0 0 var(--r-cell) var(--r-cell)}
+html[data-form=ios] .cell:only-child{border-radius:var(--r-cell)}
+.cell .c-ico{
+  width:30px;height:30px;border-radius:7px;flex:none;
+  display:flex;align-items:center;justify-content:center;font-size:16px;
+}
+.cell b{font-size:var(--fs-17);font-weight:400;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cell .c-val{font-size:var(--fs-15);color:var(--muted);flex:none}
+.cell .c-arrow{color:var(--sep-strong);font-size:17px;font-weight:400;flex:none}
+html[data-form=ios] .cell:active{background:var(--press)}
+html[data-form=mac] .cell{min-height:40px}
+html[data-form=mac] .cell b{font-size:var(--fs-13)}
+
+/* iOS 大卡片（错题 / 荣誉 / hub 模块） */
+.big-card{
+  background:var(--card);border-radius:var(--r-xl);
+  padding:20px;display:flex;flex-direction:column;gap:12px;
+  box-shadow:var(--shadow-card);
+}
+.big-card h3{font-size:var(--fs-20);font-weight:700;letter-spacing:-.3px}
+.big-card .sub{font-size:var(--fs-15);color:var(--muted);line-height:var(--lh-lo)}
+
+/* iOS 底部 TabBar */
+#tabbar{
+  position:fixed;left:0;right:0;bottom:0;z-index:50;
+  display:none;
+  padding:8px 10px calc(env(safe-area-inset-bottom,0px) + 6px);
+  background:var(--tabbar-blur);
+  -webkit-backdrop-filter:blur(40px) saturate(1.6);backdrop-filter:blur(40px) saturate(1.6);
+  border-top:1px solid var(--sep);
+}
+html[data-form=ios] #tabbar{display:flex}
+.tab-btn{
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
+  min-height:52px;justify-content:center;border-radius:12px;
+  color:var(--muted);transition:color .2s ease;position:relative;
+}
+.tab-btn .t-ico{font-size:22px;line-height:1;filter:grayscale(.2);transition:transform .3s var(--ease-spring)}
+.tab-btn span{font-size:10px;font-weight:500;letter-spacing:.2px}
+.tab-btn.on{color:var(--accent)}
+.tab-btn.on .t-ico{transform:translateY(-1px) scale(1.06);filter:none}
+.tab-btn:active .t-ico{transform:scale(.92)}
+
+/* 通用组件 */
+.btn-primary{
+  background:var(--accent);color:#fff;border-radius:10px;
+  font-size:var(--fs-17);font-weight:600;min-height:var(--tap);
+  padding:0 22px;display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  box-shadow:0 2px 8px var(--accent-soft);
+  transition:transform .15s var(--ease-apple), background .2s ease;
+}
+.btn-primary:active{transform:scale(.97)}
+html[data-form=mac] .btn-primary{min-height:34px;font-size:var(--fs-13);border-radius:8px}
+.btn-primary.blue-bg{background:linear-gradient(135deg,#0A84FF,#5E5CE6);box-shadow:0 4px 14px rgba(10,132,255,.3)}
+.btn-secondary{
+  background:var(--card2);color:var(--accent);border-radius:10px;
+  font-size:var(--fs-17);font-weight:600;min-height:var(--tap);padding:0 20px;
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  transition:transform .15s var(--ease-apple), background .2s ease;
+}
+.btn-secondary:active{transform:scale(.97)}
+html[data-form=mac] .btn-secondary{min-height:34px;font-size:var(--fs-13);border-radius:8px}
+
+/* 题目卡 */
+.q-opt{
+  display:flex;align-items:center;gap:12px;width:100%;text-align:left;
+  background:var(--card);border:1px solid var(--sep);border-radius:var(--r-lg);
+  padding:14px 16px;font-size:var(--fs-17);transition:all .2s var(--ease-apple);
+}
+html[data-form=mac] .q-opt{font-size:var(--fs-13);padding:10px 14px}
+.q-opt .opt-key{
+  width:26px;height:26px;border-radius:50%;flex:none;
+  background:var(--card2);color:var(--muted);font-weight:600;font-size:14px;
+  display:flex;align-items:center;justify-content:center;
+}
+html[data-form=mac] .q-opt .opt-key{width:22px;height:22px;font-size:12px}
+.q-opt.correct{border-color:var(--accent);background:var(--accent-soft)}
+.q-opt.correct .opt-key{background:var(--accent);color:#fff}
+.q-opt.wrong{border-color:#FF3B30;background:rgba(255,59,48,.08)}
+.q-opt.wrong .opt-key{background:#FF3B30;color:#fff}
+.q-opt:active{transform:scale(.98)}
+
+/* 徽章 */
+.badge-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.badge-item{display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 4px;text-align:center}
+.badge-item .b-ico{
+  width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:26px;background:var(--card2);
+}
+.badge-item.locked .b-ico{filter:grayscale(1);opacity:.35}
+.badge-item b{font-size:var(--fs-12);font-weight:600}
+.badge-item span{font-size:11px;color:var(--muted)}
+
+/* 空态 */
+.empty{padding:56px 20px;text-align:center;color:var(--muted);font-size:var(--fs-15)}
+.empty .e-face{font-size:44px;margin-bottom:12px}
+
+/* ============================================================
+   演示工具条（只在演示版存在，真机改造时整个移除）
+   含：形态强制切换 / 深浅切换 / 平台判定与震动可用性实时读数
+   ============================================================ */
+#demo-bar{
+  position:fixed;right:14px;top:12px;z-index:99;
+  display:flex;align-items:center;gap:6px;
+  background:var(--card);border:1px solid var(--sep);
+  border-radius:12px;box-shadow:var(--shadow-float);
+  padding:6px 8px;font-size:12px;
+  -webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);
+}
+html[data-form=ios] #demo-bar{top:calc(env(safe-area-inset-top,0px) + 10px)}
+.demo-badge{
+  background:var(--accent-soft);color:var(--accent);font-weight:700;
+  font-size:10px;letter-spacing:.5px;border-radius:5px;padding:2px 6px;margin-right:2px;
+}
+.seg{display:flex;background:var(--card2);border-radius:8px;padding:2px}
+.seg button{padding:3px 10px;border-radius:6px;font-size:12px;color:var(--muted)}
+.seg button.on{background:var(--card);color:var(--accent);font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+#demo-readout{
+  font-size:11px;color:var(--muted);display:flex;align-items:center;gap:6px;
+  padding:0 6px;font-variant-numeric:tabular-nums;
+}
+#demo-readout .dot{width:7px;height:7px;border-radius:50%;background:#FF9F0A;flex:none}
+#demo-readout .dot.ok{background:#30D158}
+#demo-readout .dot.no{background:#98989D}
+#demo-readout .dot.vib{background:#FF453A}
+.vib-flag{font-weight:700;color:var(--accent)}
+
+@media (max-width:760px){
+  #demo-bar{right:8px;left:8px;top:8px;justify-content:space-between;flex-wrap:wrap}
+  .seg button{padding:4px 8px}
+}
+</style>
+</head>
+<body>
+<!-- 演示说明（真机改造版将移除整块 #demo-bar 与 #demo-note） -->
+<div id="demo-bar">
+  <span class="demo-badge">DEMO</span>
+  <div class="seg" id="formSeg">
+    <button data-form="mac">Mac</button>
+    <button data-form="ios">iPhone</button>
+  </div>
+  <div class="seg" id="themeSeg">
+    <button data-theme="light">☀️</button>
+    <button data-theme="dark">🌙</button>
+    <button data-theme="auto">自动</button>
+  </div>
+  <span id="demo-readout"><span class="dot" id="rdDot"></span><span id="rdText">探测中…</span></span>
+</div>
+<div style="height:0" id="demo-note"></div>
+
+<div id="app">
+  <!-- ============ macOS：侧栏 ============ -->
+  <aside id="sidebar">
+    <div class="side-brand">
+      <div class="logo">🐍</div>
+      <div><b>鼠哥的 Python 学院</b><small>PYTHON ACADEMY</small></div>
+    </div>
+    <nav id="side-nav"></nav>
+    <div class="side-foot">
+      <div class="prog-label"><span>学院进度</span><span id="footPct">46%</span></div>
+      <div class="bar"><i></i></div>
+      <div class="streak">🔥 连续打卡 <b id="footStreak">12</b> 天</div>
+    </div>
+  </aside>
+
+  <!-- ============ 主区域 ============ -->
+  <div id="shell-main">
+    <!-- macOS：窗口顶栏 -->
+    <div id="macbar">
+      <div class="traffic"><i></i><i></i><i></i></div>
+      <div class="menus">
+        <button class="on">学院</button><button>文件</button><button>编辑</button>
+        <button>窗口</button><button>帮助</button>
+      </div>
+      <div class="doc-title"><b id="macTitle">首页</b><span id="macSub">Overview</span></div>
+    </div>
+
+    <!-- iOS：滚动收缩大标题 -->
+    <div id="ios-title">
+      <h1 id="iosH1">首页</h1>
+      <div class="date" id="iosDate"></div>
+    </div>
+
+    <main id="content" onscroll="titleShrink(this)">
+      <div class="view" id="view"></div>
+    </main>
+  </div>
+
+  <!-- ============ iOS：底部 TabBar ============ -->
+  <nav id="tabbar"></nav>
+</div>
+
+<script>
+/* ============================================================
+   数据层（演示用假数据，结构与真实引擎同源：五大战役/真章名）
+   ============================================================ */
+var STAT = {
+  done:237, total:402, acc:81, wrong:12, fixed:9,
+  streak:12, badges:6, badgeTotal:9, todayPct:68,
+  planWeek:5, planTotal:11
+};
+
+var BATTLES = [
+  {n:'战役一 · 起步与变量', ch:'第 1~2 章', pct:100, state:'done'},
+  {n:'战役二 · 列表与逻辑', ch:'第 3~5 章', pct:62,  state:'curr'},
+  {n:'战役三 · 字典与函数', ch:'第 6~8 章', pct:0,   state:'todo'},
+  {n:'战役四 · 类、文件与测试', ch:'第 9~11 章', pct:0, state:'todo'},
+  {n:'战役五 · 三大项目', ch:'第 12~20 章', pct:0, state:'todo'}
+];
+
+var CHAPTERS = [
+  {no:'CH.1', title:'起步', tag:'已学', meta:'第 1 章 · 45 分钟', state:'done'},
+  {no:'CH.2', title:'变量和简单数据类型', tag:'已学', meta:'第 2 章 · 60 分钟', state:'done'},
+  {no:'CH.3', title:'列表简介', tag:'已学', meta:'第 3 章 · 55 分钟', state:'done'},
+  {no:'CH.4', title:'操作列表', tag:'学习中', meta:'第 4 章 · 70 分钟', state:'curr'},
+  {no:'CH.5', title:'if 语句', tag:'未学', meta:'第 5 章 · 50 分钟', state:'todo'},
+  {no:'CH.6', title:'字典', tag:'未学', meta:'第 6 章 · 65 分钟', state:'todo'},
+  {no:'CH.7', title:'用户输入和 while 循环', tag:'未学', meta:'第 7 章 · 60 分钟', state:'todo'},
+  {no:'CH.8', title:'函数', tag:'未学', meta:'第 8 章 · 75 分钟', state:'todo'},
+  {no:'CH.9', title:'类', tag:'未学', meta:'第 9 章 · 80 分钟', state:'todo'}
+];
+
+var WRONG = [
+  {q:'列表推导式与生成器表达式的区别', tag:'列表', wrong:2, ans:'❌ 点错了两次'},
+  {q:'字典视图（keys/values）的惰性求值', tag:'字典', wrong:1, ans:'❌ 视图动态反映变更'},
+  {q:'try/except 中 finally 的执行时机', tag:'异常', wrong:3, ans:'❌ finally 无条件执行'}
+];
+
+var BADGES = [
+  {ico:'🚀', n:'启程', locked:false},
+  {ico:'⚡', n:'百题斩', locked:false},
+  {ico:'🎯', n:'九成命中', locked:false},
+  {ico:'🔥', n:'十日连勤', locked:false},
+  {ico:'🧩', n:'列表大师', locked:false},
+  {ico:'🏛️', n:'架构师', locked:false},
+  {ico:'🐉', n:'屠龙者', locked:true},
+  {ico:'👑', n:'全知者', locked:true},
+  {ico:'🌌', n:'虚无论证', locked:true}
+];
+
+/* ============================================================
+   平台识别 + 震动闸门（评审修订版）
+   - 桌面标志：(hover:hover) and (pointer:fine)
+   - 震动仅当：(hover:none) and (pointer:coarse) 且非 Windows
+     ——Windows 触屏本几乎总报 fine，天然静默；iOS 无 Vibration API，判 false
+   - 震动只在用户手势回调里调用，绝不进加载/滚动/自动动画
+   ============================================================ */
+var isDesktop  = matchMedia('(hover: hover) and (pointer: fine)').matches;
+var isCoarse   = matchMedia('(hover: none) and (pointer: coarse)').matches;
+var isWin      = /win/i.test(navigator.platform || (navigator.userAgentData && navigator.userAgentData.platform) || '');
+var isTouchMobile = isCoarse && !isWin;
+var canVibrate = isTouchMobile && typeof navigator.vibrate === 'function';
+
+function vibrateTap(){
+  if(!canVibrate) return;                       // 闸门：非触屏移动真机直接 return
+  try{ navigator.vibrate(10); }catch(e){ /* 静默降级，绝不报错 */ }
+}
+
+/* ============================================================
+   形态控制：html[data-form] mac / ios
+   真机自动：宽度断点 860px（跟随设计文档），演示可被工具条强制覆盖
+   ============================================================ */
+var formOverride = null;   // null=自动, 'mac'/'ios'=强制
+
+function applyForm(){
+  var f = formOverride || (window.innerWidth >= 860 ? 'mac' : 'ios');
+  document.documentElement.setAttribute('data-form', f);
+  /* 演示工具条按钮态 */
+  document.querySelectorAll('#formSeg button').forEach(function(b){
+    b.classList.toggle('on', b.getAttribute('data-form') === f);
+  });
+  titleShrink(document.getElementById('content'));
+  refreshReadout();
+}
+
+/* ============================================================
+   主题：auto 跟系统，light/dark 手动覆盖
+   ============================================================ */
+var themeOverride = 'auto';
+function applyTheme(){
+  var root = document.documentElement;
+  if(themeOverride === 'auto'){
+    root.removeAttribute('data-theme');
+  }else{
+    root.setAttribute('data-theme', themeOverride);
+  }
+  document.querySelectorAll('#themeSeg button').forEach(function(b){
+    b.classList.toggle('on', b.getAttribute('data-theme') === themeOverride);
+  });
+}
+
+/* ============================================================
+   演示读数：当前平台判定 & 震动可用性（让 Windows 上的鼠哥直观看到闸门）
+   ============================================================ */
+function refreshReadout(){
+  var dot = document.getElementById('rdDot');
+  var txt = document.getElementById('rdText');
+  var form = document.documentElement.getAttribute('data-form');
+  var msgs = [];
+  msgs.push('形态:' + (form === 'mac' ? 'macOS' : 'iOS'));
+  if(isDesktop) msgs.push('pointer:fine');
+  if(isWin) msgs.push('win');
+  if(canVibrate)       { dot.className = 'dot ok';   txt.innerHTML = msgs.join(' · ') + ' · <span class="vib-flag">震动 开</span>'; }
+  else if(isTouchMobile){ dot.className = 'dot vib';  txt.innerHTML = msgs.join(' · ') + ' · <span class="vib-flag">真机才有马达</span>'; }
+  else                  { dot.className = 'dot no';   txt.innerHTML = msgs.join(' · ') + ' · 震动 静默'; }
+}
+
+/* ============================================================
+   导航模型：桌面侧栏三组 / iOS 底部四 Tab
+   收纳架构沿用设计文档：学习 / 修炼 / 收成 三域 + 「我的」统管人相关
+   ============================================================ */
+var NAVS = [
+  {id:'home',  ico:'🏠', t:'首页',     grp:'学院', tab:'学习', macTitle:'首页', macSub:'Overview · 行动中枢'},
+  {id:'plan',  ico:'🗺️', t:'学习计划', grp:'学院', tab:'学习', macTitle:'学习计划', macSub:'11 周 · 五大战役'},
+  {id:'lesson',ico:'📖', t:'课程讲义', grp:'学院', tab:'学习', macTitle:'课程讲义', macSub:'9 章课程体系已就位'},
+  {id:'hall',  ico:'🎯', t:'练习大厅', grp:'修炼场', tab:'修炼', macTitle:'练习大厅', macSub:'全学院抽题 · 237/402'},
+  {id:'exam',  ico:'📝', t:'章节考试', grp:'修炼场', tab:'修炼', macTitle:'章节考试', macSub:'每章一套题 · 检验真学会'},
+  {id:'lab',   ico:'🧪', t:'代码实验室', grp:'修炼场', tab:'修炼', macTitle:'代码实验室', macSub:'随便写，随便跑'},
+  {id:'wrong', ico:'❌', t:'错题本',  grp:'记录', tab:'收成', macTitle:'错题本', macSub:'12 道错题 · 订正后移入已订正'},
+  {id:'fixed', ico:'✅', t:'已订正',  grp:'记录', tab:'收成', macTitle:'已订正', macSub:'曾经错过、现已掌握'},
+  {id:'honor', ico:'🏆', t:'荣誉墙',  grp:'记录', tab:'收成', macTitle:'荣誉墙', macSub:'称号阶梯 · 徽章墙'},
+  {id:'mine',  ico:'👤', t:'我的',    grp:'记录', tab:'我的', macTitle:'我的', macSub:'账号 · 足迹 · 关于'}
+];
+var TABS = [ {id:'学习', ico:'📚'}, {id:'修炼', ico:'🎯'}, {id:'收成', ico:'📊'}, {id:'我的', ico:'👤'} ];
+
+function navFor(id){ for(var i=0;i<NAVS.length;i++) if(NAVS[i].id===id) return NAVS[i]; }
+
+/* ============================================================
+   视图渲染
+   ============================================================ */
+var view = document.getElementById('view');
+var VIEWS = {};
+var $ = function(s){ return document.querySelector(s); };
+
+/* ---------- 首页 Hub ---------- */
+VIEWS.home = function(){
+  var h = '<div class="mac-h1">早上好，鼠哥 👋</div><div class="mac-sub">今天是 2026-09-03 周四 · 距西交开学还有 N 天 · 卡文迪许在读</div>';
+  h += '<div class="mac-grid g2">';
+  /* 今日目标 widget */
+  h += '<div class="card card-pad" style="display:flex;gap:16px;align-items:center">'
+     +   '<div class="ring"><b>68%</b></div>'
+     +   '<div style="flex:1"><h4>今日目标</h4><div class="sub">讲义 1 节 · 练习 12 题 · 已过 68%</div>'
+     +   '<div style="display:flex;gap:8px;margin-top:12px"><button class="btn-primary" data-nav="lesson" style="font-size:12px;min-height:30px">继续学习</button></div></div>'
+     + '</div>';
+  /* 打卡卡 */
+  h += '<div class="card card-pad"><h4>🔥 打卡日历</h4><div class="sub">连续打卡 12 天 · 历史最长 23 天</div>'
+     + '<div id="calMini" style="display:flex;gap:5px;margin-top:12px"></div></div>';
+  h += '</div>';
+
+  /* 四大入口（讲义/大厅/错题/计划） */
+  h += '<div class="mac-grid g4" style="margin-top:16px">';
+  var EN = [
+    {id:'lesson', ico:'📖', bg:'rgba(0,122,255,.12)', t:'课程讲义', sub:'9 章体系 · 学到第 4 章'},
+    {id:'hall',   ico:'🎯', bg:'rgba(52,199,89,.14)', t:'练习大厅', sub:'237/402 题 · 正确率 81%'},
+    {id:'wrong',  ico:'❌', bg:'rgba(255,149,0,.14)', t:'错题本',   sub:'12 道待订正'},
+    {id:'plan',   ico:'🗺️', bg:'rgba(175,82,222,.13)', t:'学习计划', sub:'第 5 周 / 共 11 周'}
+  ];
+  EN.forEach(function(e){
+    h += '<div class="card entry" data-nav="'+e.id+'"><div class="e-ico" style="background:'+e.bg+'">'+e.ico+'</div>'
+       + '<div><b>'+e.t+'</b><div class="sub">'+e.sub+'</div></div><div class="arrow">›</div></div>';
+  });
+  h += '</div>';
+
+  /* 收成区 + 五大战役 */
+  h += '<div class="mac-grid g2" style="margin-top:16px">';
+  h += '<div class="card card-pad"><h4>🏆 收成</h4><div class="sub">称号「列表剑士」· 徽章 6/9</div>'
+     + '<div class="badge-grid" style="grid-template-columns:repeat(6,1fr);margin-top:6px">';
+  BADGES.slice(0,6).forEach(function(b){
+    h += '<div class="badge-item" style="padding:8px 2px"><div class="b-ico" style="width:44px;height:44px;font-size:20px">'+b.ico+'</div><b>'+b.n+'</b></div>';
+  });
+  h += '</div></div>';
+  h += '<div class="card card-pad"><h4>🗺️ 五大战役</h4><div class="sub">学到哪亮到哪 · 进度自动跟随</div>';
+  BATTLES.forEach(function(b){
+    h += '<div class="battle-row"><button class="b-check '+b.state+'" aria-label="战役状态"></button>'
+       + '<div class="battle-body"><b>'+b.n+'</b><span>'+b.ch+'</span></div>'
+       + '<div class="battle-pct">'+(b.state==='todo'?'':b.pct+'%')+'</div></div>';
+  });
+  h += '</div></div>';
+  view.innerHTML = h;
+  bindNav();
+  /* 迷你打卡条 */
+  var cal = document.getElementById('calMini');
+  if(cal){ var c=''; for(var i=11;i>=0;i--){ c += '<div style="width:20px;height:20px;border-radius:6px;background:'+(i<3?'linear-gradient(135deg,#FF9F0A,#FF375F)':'var(--accent)')+';opacity:'+(0.35+i*0.055)+';flex:none"></div>'; } cal.innerHTML=c; }
+};
+
+/* ---------- 学习计划（周视图，Things 3 式分层） ---------- */
+VIEWS.plan = function(){
+  var h = '<div class="mac-h1">学习计划</div><div class="mac-sub">马瑟斯《Python 编程：从入门到实践（第 3 版）》 · 11 周 · 学到第 5 周</div>';
+  h += '<div class="card"><div class="card-pad" style="display:flex;align-items:center;gap:14px">'
+     + '<div class="ring" style="width:52px;height:52px;background:conic-gradient(var(--accent) 0 45%, var(--card2) 45% 100%)"><b style="font-size:13px">45%</b></div>'
+     + '<div><h4>第五周 · 战役二：for / if 与列表操作</h4><div class="sub">本周剩余：讲义 2 节 · 练习 18 题 · 章节测验 1 场</div></div>'
+     + '<button class="btn-secondary" style="margin-left:auto;font-size:12px;min-height:30px" data-nav="lesson">看本周讲义</button></div></div>';
+  var weeks = [];
+  for(var w=1;w<=5;w++) weeks.push({done:true, t:'第 '+w+' 周 · '+BATTLES[w<=1?0:w<=3?1:w<=5?2:2].n.slice(0,12)+'…', sub:'计划内 · 已通关'});
+  for(var w=6;w<=11;w++) weeks.push({done:false, t:'第 '+w+' 周', sub:'未开始'});
+  h += '<div class="card" style="margin-top:16px;overflow:hidden">';
+  weeks.forEach(function(wk, i){
+    h += '<div class="battle-row"><button class="b-check '+(wk.done?'done':'')+'"></button>'
+       + '<div class="battle-body"><b>'+wk.t+'</b><span>'+(wk.done?'✓ 讲义+练习+测验 全绿':wk.sub)+'</span></div>'
+       + '<div class="battle-pct" style="color:'+(wk.done?'var(--accent)':'')+'">'+(i===4?'<span style="background:var(--accent-soft);color:var(--accent);padding:3px 9px;border-radius:6px;font-weight:600">进行中</span>':'')+'</div></div>';
+  });
+  h += '</div>';
+  view.innerHTML = h;
+  bindNav();
+};
+
+/* ---------- 课程讲义（卡片网格） ---------- */
+VIEWS.lesson = function(){
+  var h = '<div class="mac-h1">课程讲义</div><div class="mac-sub">9 章已就位 · 点开即读 · 读到第 4 章「操作列表」</div>';
+  h += '<div class="mac-grid g3">';
+  CHAPTERS.forEach(function(c, i){
+    var accent = c.state==='done' ? '' : (c.state==='curr' ? ' style="border:1px solid var(--accent)"' : ' style="opacity:.92"');
+    h += '<button class="card ch-item" data-nav="lab"'+accent+'><div class="no">'+c.no+'</div><h4>'+c.title+'</h4>'
+       + '<div class="meta"><span class="tag" style="'+(c.state==='done'?'background:rgba(52,199,89,.15);color:#30D158':c.state==='curr'?'':'opacity:.7')+'">'+c.tag+'</span><span style="line-height:1.8">'+c.meta+'</span></div></button>';
+  });
+  h += '<button class="card ch-item" style="border-style:dashed;justify-content:center;align-items:center;display:flex;flex-direction:column;gap:6px"><div style="font-size:22px">⋯</div><div class="sub">第 12~20 章 · 三大项目篇<br>随进度逐步开放</div></button>';
+  h += '</div>';
+  view.innerHTML = h;
+  bindNav();
+};
+
+/* ---------- 练习大厅（一道真实可点的题） ---------- */
+var QUIZ = {
+  stem:'下列哪个表达式会抛 <b>TypeError</b>？',
+  code:'a = [1, 2, 3]\nb = {"x": 1}',
+  opts:[
+    {t:'a[1] + b["x"]', ok:false},
+    {t:'a["1"]',        ok:true},
+    {t:'b.get("x")',    ok:false},
+    {t:'len(a) + len(b)',ok:false}
+  ],
+  note:'列表按下标取元素用整数；用字符串下标是给字典用的。类型用错了，Python 就甩你一个 TypeError。'
+};
+VIEWS.hall = function(){
+  var h = '<div class="mac-h1">练习大厅</div><div class="mac-sub">全学院抽题 · 已做 237/402 · 正确率 81% · 本题来自「第 4 章 · 操作列表」</div>';
+  h += '<div class="card card-pad" style="margin-bottom:14px">'
+     + '<div class="mac-grid g4" style="gap:10px">'
+     + ['今日已练 <b style="font-size:20px">24</b> 题','连续正确 <b style="font-size:20px;color:#30D158">13</b> 题','卡路里 <b style="font-size:20px">≈ 0</b> kcal','用时 <b style="font-size:20px">28</b> 分钟'].map(function(x,i){
+         return '<div style="padding:10px 14px;background:var(--card2);border-radius:10px;font-size:12px;color:var(--muted)">'+x+'</div>';
+       }).join('')
+     + '</div></div>';
+  h += '<div class="card card-pad" style="margin-bottom:16px"><div style="display:flex;gap:8px;flex-wrap:wrap" id="tagRow">'
+     + ['全部','列表','字典','函数','字符串','循环','异常'].map(function(t,i){
+         return '<button class="qtag" data-tag="'+i+'" style="'+(i===0?'background:var(--accent);color:#fff;':'background:var(--card2);color:var(--ink2);')+'padding:6px 14px;border-radius:20px;font-size:12px;font-weight:500">'+t+'</button>';
+       }).join('') + '</div></div>';
+  h += '<div class="card card-pad" id="quizCard" style="margin-bottom:16px">'
+     + '<div style="font-size:12px;color:var(--muted);margin-bottom:10px">Q · 单选题 · 已答对 0/1 · 计时中 00:12</div>'
+     + '<h4 style="font-size:17px;line-height:1.5">'+QUIZ.stem+'</h4>'
+     + '<pre style="background:var(--card2);border-radius:10px;padding:14px;font-size:13px;line-height:1.6;margin:12px 0;overflow:auto;font-family:ui-monospace,SFMono-Regular,Consolas,monospace">'+QUIZ.code+'</pre>'
+     + '<div style="display:flex;flex-direction:column;gap:10px" id="optBox">';
+  ['A','B','C','D'].forEach(function(k, i){
+    h += '<button class="q-opt" data-i="'+i+'"><span class="opt-key">'+k+'</span><span>'+QUIZ.opts[i].t+'</span></button>';
+  });
+  h += '</div><div id="qNote" class="hidden" style="margin-top:14px;padding:12px 14px;background:var(--accent-soft);border-radius:10px;font-size:13px;line-height:1.6"></div></div>';
+  h += '<div style="display:flex;gap:10px"><button class="btn-primary" data-nav="exam">下一题</button><button class="btn-secondary" data-nav="wrong">查看错题</button></div>';
+  view.innerHTML = h;
+  bindNav();
+  /* 选题交互：点击 → 判断 → 震动（真机才会震） */
+  var box = document.getElementById('optBox');
+  if(box) box.addEventListener('click', function(ev){
+    var btn = ev.target.closest('.q-opt'); if(!btn) return;
+    var i = +btn.getAttribute('data-i');
+    box.querySelectorAll('.q-opt').forEach(function(b){ b.classList.remove('correct','wrong'); b.style.pointerEvents='none'; });
+  /* 标签筛选：演示态交互（真实版由引擎接管） */
+  var tagRow = document.getElementById('tagRow');
+  if(tagRow) tagRow.addEventListener('click', function(ev){
+    var b = ev.target.closest('.qtag'); if(!b) return;
+    vibrateTap();
+    tagRow.querySelectorAll('.qtag').forEach(function(x){ x.style.background='var(--card2)'; x.style.color='var(--ink2)'; });
+    b.style.background='var(--accent)'; b.style.color='#fff';
+  });
+    var ok = QUIZ.opts[i].ok;
+    btn.classList.add(ok?'correct':'wrong');
+    vibrateTap();                       // 唯一震动入口：用户点击
+    var note = document.getElementById('qNote');
+    note.classList.remove('hidden');
+    note.innerHTML = (ok ? '✅ 正确。' : '❌ 错了，正确答案是 B。') + QUIZ.note;
+    document.getElementById('quizCard').style.borderColor = ok ? 'rgba(52,199,89,.5)' : 'rgba(255,59,48,.5)';
+  });
+};
+
+/* ---------- 错题本 / 已订正 ---------- */
+function wrongView(mode){
+  var isWrong = (mode==='wrong');
+  var list = isWrong ? WRONG : WRONG.slice(0,2).map(function(w){ w.fixed=true; return w; });
+  var h = '<div class="mac-h1">'+(isWrong?'错题本':'已订正')+'</div><div class="mac-sub">'+(isWrong?'12 道错题 · 订正后自动移入已订正':'9 道曾经错过、现已掌握的题')+'</div>';
+  if(!isWrong && !list.length){
+    h += '<div class="card empty"><div class="e-face">😌</div>暂无错题，继续保持</div>';
+    view.innerHTML = h; return;
+  }
+  var head = WRONG.map(function(w){ return '❌ '+w.q; }).join('<br>');
+  if(isWrong){
+    h += '<div class="card card-pad" style="margin-bottom:14px"><h4>📌 高频错因</h4><div class="sub" style="margin-top:8px;line-height:1.9">'+head+'</div></div>';
+  }
+  h += '<div class="mac-grid g2">';
+  (isWrong ? WRONG : WRONG.slice(0,2)).forEach(function(w){
+    h += '<div class="card card-pad"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'
+       + '<span style="font-size:11px;font-weight:700;color:var(--accent);background:var(--accent-soft);padding:3px 8px;border-radius:5px">'+w.tag+'</span>'
+       + '<span style="font-size:12px;color:var(--muted)">错了 '+w.wrong+' 次</span></div>'
+       + '<h4 style="font-size:15px;line-height:1.5">'+w.q+'</h4>'
+       + '<div class="sub" style="margin-top:8px">'+w.ans+'</div>'
+       + '<button class="btn-secondary" style="margin-top:14px;font-size:12px;min-height:32px">'+(isWrong?'✓ 我订正了':'复习一遍')+'</button></div>';
+  });
+  h += '</div>';
+  view.innerHTML = h;
+  bindNav();
+}
+VIEWS.wrong = function(){ wrongView('wrong'); };
+VIEWS.fixed = function(){ wrongView('fixed'); };
+
+/* ---------- 荣誉墙 ---------- */
+VIEWS.honor = function(){
+  var h = '<div class="mac-h1">荣誉墙</div><div class="mac-sub">称号阶梯 · 徽章墙 · 已解锁 6/9</div>';
+  h += '<div class="card card-pad" style="margin-bottom:14px;display:flex;align-items:center;gap:14px">'
+     + '<div style="width:54px;height:54px;border-radius:14px;background:linear-gradient(135deg,#FFD60A,#FF375F);display:flex;align-items:center;justify-content:center;font-size:28px;box-shadow:0 4px 12px rgba(255,59,48,.3)">⚔️</div>'
+     + '<div><h4>列表剑士</h4><div class="sub">称号 · 战役二通关后解锁</div><div style="margin-top:6px;font-size:12px;color:var(--muted)">下一阶：字典贤者（战役三）</div></div></div>';
+  h += '<div class="card card-pad"><h4>徽章墙</h4><div class="sub" style="margin-bottom:6px">每一枚都有来历，点亮即定格</div><div class="badge-grid">';
+  BADGES.forEach(function(b){
+    h += '<div class="badge-item '+(b.locked?'locked':'')+'"><div class="b-ico">'+b.ico+'</div><b>'+b.n+'</b><span>'+(b.locked?'未解锁':'已获得')+'</span></div>';
+  });
+  h += '</div></div>';
+  view.innerHTML = h;
+  bindNav();
+};
+
+/* ---------- 我的（iOS 设置式分组表） ---------- */
+VIEWS.mine = function(){
+  var h = '<div class="mac-h1">我的</div><div class="mac-sub">账号 · 足迹 · 关于</div>';
+  /* 账号大卡 */
+  h += '<div class="card" style="margin-bottom:14px;overflow:hidden"><div style="padding:20px;display:flex;gap:16px;align-items:center">'
+     + '<div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#0A84FF,#5E5CE6);display:flex;align-items:center;justify-content:center;font-size:28px;color:#fff;flex:none">🐹</div>'
+     + '<div><b style="font-size:18px">鼠哥</b><div class="sub">在线 · 数据已同步 · 跨设备漫游中</div></div>'
+     + '<button class="btn-secondary" style="margin-left:auto;font-size:12px;min-height:32px">管理账号</button></div></div>';
+  /* 分组 */
+  var groups = [
+    {head:'学习生活', items:[
+      {ico:'🔥', t:'打卡日历', v:'12 天', act:''},
+      {ico:'👣', t:'学习足迹', v:'47 条', act:''},
+      {ico:'🏅', t:'排行榜', v:'第 3 名', act:''},
+      {ico:'💬', t:'问答批改', v:'8 章已答', act:''}
+    ]},
+    {head:'系统', items:[
+      {ico:'🌓', t:'外观', v:'跟随系统', act:'theme'},
+      {ico:'📳', t:'触感反馈（震动）', v: canVibrate?'开启':'设备不支持', act:''},
+      {ico:'ℹ️', t:'关于学院', v:'v3.0', act:''}
+    ]}
+  ];
+  groups.forEach(function(g){
+    h += '<div class="ios-group" style="margin-bottom:20px"><div class="ghead">'+g.head+'</div>';
+    g.items.forEach(function(it){
+      h += '<button class="cell" '+(it.act==='theme'?'data-act="theme"':'data-nav="'+it.act+'"')+'><span class="c-ico" style="background:var(--accent-soft)">'+it.ico+'</span><b>'+it.t+'</b>'
+         + '<span class="c-val">'+it.v+'</span><span class="c-arrow">›</span></button>';
+    });
+    h += '</div>';
+  });
+  /* iOS 形态下 big-card 呈现 */
+  h += '<div class="big-card"><h3>🐍 Python 学院</h3><div class="sub">以马瑟斯《Python 编程：从入门到实践（第 3 版）》为蓝本。五大战役、11 周计划，讲义、练习、判题、问答一条龙。这里没有观众，每个概念都要亲手敲成代码。</div></div>';
+  view.innerHTML = h;
+  bindNav();
+  /* 外观 cell 动作（用 data-act 避开全局 data-nav 跳转） */
+  var themeCell = view.querySelector('[data-act=theme]');
+  if(themeCell) themeCell.addEventListener('click', function(){
+    themeOverride = themeOverride==='auto' ? 'dark' : (themeOverride==='dark' ? 'light' : 'auto');
+    applyTheme(); vibrateTap();
+    var v = themeOverride==='auto'?'跟随系统':themeOverride==='dark'?'深色':'浅色';
+    themeCell.querySelector('.c-val').textContent = v;
+  });
+};
+
+/* ---------- 章节考试（占位） ---------- */
+VIEWS.exam = function(){
+  var h = '<div class="mac-h1">章节考试</div><div class="mac-sub">每章一套题，检验是否真学会</div><div class="empty" style="background:var(--card);border-radius:var(--r-md)"><div class="e-face">📝</div>第 4 章测验 · 12 题 · 预计 15 分钟<br><br><button class="btn-primary" style="margin:0 auto">开始考试</button></div>';
+  view.innerHTML = h;
+  bindNav();
+};
+
+/* ---------- 实验室（占位） ---------- */
+VIEWS.lab = function(){
+  var code = ['print("Hello, 鼠哥 🐍")','for i in range(1, 6):','    print("🔥" * i)'].join('\n');
+  var h = '<div class="mac-h1">代码实验室</div><div class="mac-sub">随便写，随便跑。你的实验台。</div>'
+     + '<div class="card" style="overflow:hidden"><pre style="background:var(--card2);padding:16px;font-size:13px;line-height:1.7;overflow:auto;font-family:ui-monospace,SFMono-Regular,Consolas,monospace">'+code+'</pre></div>'
+     + '<div class="empty" style="color:var(--accent);font-size:13px">▶ 点运行，浏览器内即时执行（真实版内嵌 c99js 同款方案）</div>';
+  view.innerHTML = h;
+  bindNav();
+};
+
+/* ---------- 视图分发 & 导航高亮 ---------- */
+var current = 'home';
+function go(id){
+  var nav = navFor(id);
+  if(!nav){ id='home'; nav=navFor(id); }
+  current = id;
+  document.getElementById('macTitle').textContent = nav.macTitle;
+  document.getElementById('macSub').textContent  = nav.macSub;
+  document.getElementById('iosH1').textContent   = nav.t;
+  document.getElementById('iosDate').textContent = fmtDate();
+  if(VIEWS[id]) VIEWS[id](); else VIEWS.home();
+  document.getElementById('content').scrollTop = 0;
+  document.getElementById('content').scrollTo({top:0});
+  paintNav();
+}
+
+function fmtDate(){
+  var d = new Date();
+  var w = ['日','一','二','三','四','五','六'][d.getDay()];
+  return (d.getMonth()+1)+'月'+d.getDate()+'日 周'+w+' · ' + (current==='home'?'今天也要亲手敲代码 💪':'');
+}
+
+function paintNav(){
+  var nav = navFor(current);
+  /* 侧栏 */
+  var side = document.getElementById('side-nav');
+  var groups = ['学院','修炼场','记录'];
+  var html = '';
+  groups.forEach(function(g){
+    html += '<div class="side-sep">'+g+'</div>';
+    NAVS.forEach(function(n){
+      if(n.grp!==g) return;
+      var on = (n.id===current);
+      var bdg = (n.id==='wrong' ? STAT.wrong : n.id==='hall' ? STAT.done+'题' : '');
+      html += '<button class="side-item'+(on?' on':'')+'" data-nav="'+n.id+'"><span class="ico">'+n.ico+'</span>'+n.t
+            + (bdg?'<span class="bdg">'+bdg+'</span>':'') + '</button>';
+    });
+  });
+  side.innerHTML = html;
+  /* 底部 Tab */
+  var tb = document.getElementById('tabbar');
+  var th = '';
+  TABS.forEach(function(t, ti){
+    var tabNavs = NAVS.filter(function(n){ return n.tab===t.id; });
+    var active = tabNavs.some(function(n){ return n.id===current; });
+    th += '<button class="tab-btn'+(active?' on':'')+'" data-tab="'+t.id+'"><span class="t-ico">'+t.ico+'</span><span>'+t.id+'</span></button>';
+  });
+  tb.innerHTML = th;
+  tb.querySelectorAll('.tab-btn').forEach(function(b){
+    b.addEventListener('click', function(){
+      vibrateTap();
+      var tid = b.getAttribute('data-tab');
+      var first = NAVS.filter(function(n){ return n.tab===tid; })[0];
+      go(first.id);
+    });
+  });
+  bindNav();
+}
+
+/* 全局导航绑定（data-nav 元素） */
+function bindNav(){
+  var root = view;
+  var items = root.querySelectorAll('[data-nav]');
+  for(var i=0;i<items.length;i++){
+    (function(el){
+      var id = el.getAttribute('data-nav');
+      if(!id) return;
+      el.addEventListener('click', function(){ vibrateTap(); go(id); });
+    })(items[i]);
+  }
+}
+
+/* iOS 大标题滚动收缩 */
+function titleShrink(scroller){
+  var t = document.getElementById('ios-title');
+  if(!t) return;
+  t.classList.toggle('scrolled', scroller.scrollTop > 8);
+}
+
+/* ============================================================
+   入口 & 演示工具条绑定
+   ============================================================ */
+document.getElementById('formSeg').addEventListener('click', function(ev){
+  var b = ev.target.closest('button'); if(!b) return;
+  formOverride = b.getAttribute('data-form');
+  applyForm();
+});
+document.getElementById('themeSeg').addEventListener('click', function(ev){
+  var b = ev.target.closest('button'); if(!b) return;
+  themeOverride = b.getAttribute('data-theme');
+  applyTheme();
+});
+window.addEventListener('resize', function(){ if(!formOverride) applyForm(); });
+
+/* 引导首屏 */
+function boot(){
+  applyTheme();
+  applyForm();
+  go('home');
+  if(isDesktop){
+    /* 桌面下把 iOS 相关按钮留在可点状态即可 */
+  }
+  document.title = 'Python 学院 · Apple 化演示';
+}
+boot();
+document.body.classList.add('ready');
+</script>
+</body>
+</html>
