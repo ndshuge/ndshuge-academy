@@ -1316,16 +1316,22 @@ function fmtMs(ms){
 function logLessonDone(c){
   if(!c.quiz || !c.quiz.length) return;
   if(chQuizDone(c) < chQuizCount(c)) return;
+  if(chDone.indexOf(c.id) === -1){ chDone.push(c.id); store('ch', chDone); if(typeof renderChSelect === 'function') renderChSelect(); }
   if(studyLog.some(function(l){ return (''+l.x).indexOf('学完第') > -1 && (''+l.x).indexOf(c.no) > -1; })) return;
   logStudy('📖 学完第 ' + c.no + ' 章「' + c.title + '」练习');
   dailyGoal('l');
 }
 function logExamDone(c){
   if(!c.exam || !c.exam.length) return;
-  var full = c.exam.every(function(q,i){ return hallDone['ex_'+c.id+'_'+i] !== undefined; });
-  if(!full) return;
+  // 考试全部答完（不论对错）即通过：补标已做 + 章完成 + 打卡(e)
+  var allAns = c.exam.every(function(q,i){ return quizStat['ex_'+c.id+'_'+i] !== undefined; });
+  if(!allAns) return;
+  var changedH = false;
+  c.exam.forEach(function(q,i){ var k='ex_'+c.id+'_'+i; if(hallDone[k] === undefined){ hallDone[k]=1; changedH=true; } });
+  if(changedH) saveQuiz();
+  if(chDone.indexOf(c.id) === -1){ chDone.push(c.id); store('ch', chDone); if(typeof renderChSelect === 'function') renderChSelect(); }
   if(studyLog.some(function(l){ return (''+l.x).indexOf('卷子') > -1 && (''+l.x).indexOf(c.no) > -1; })) return;
-  logStudy('📝 第 ' + c.no + ' 章卷子满分通过');
+  logStudy('📝 第 ' + c.no + ' 章卷子完成');
   dailyGoal('e');
 }
 function logStudyTick(){ CHAPTERS.forEach(function(c){ logLessonDone(c); logExamDone(c); }); }
@@ -1434,9 +1440,9 @@ function setFabVisible(v){
   function sideFabSync(){
     var fab = document.getElementById('sideFab');
     var ef = document.getElementById('exitFab');
-    var isMobile = window.innerWidth <= 860;
-    if(fab) fab.style.display = isMobile ? 'flex' : 'none';
-    if(ef) ef.style.display = isMobile ? 'flex' : 'none';
+    var show = sideEl.classList.contains('collapsed');
+    if(fab) fab.style.display = show ? 'flex' : 'none';
+    if(ef) ef.style.display = show ? 'flex' : 'none';
   }
   window.addEventListener('resize', sideFabSync);
   function sideClearTimers(){
@@ -1477,9 +1483,8 @@ function setFabVisible(v){
       }, 440);
     }
   });
-  var _sfm = load('sidefold', null);
-  if((window.innerWidth <= 860 && _sfm !== 0) || _sfm === 1){
-    // 手机端默认收起（尊重手动展开过）；桌面按 sidefold 偏好
+  if(load('sidefold', null) !== 0){
+    // 进入学院默认折叠（☰ 菜单/🚪 退出悬浮钮常驻左下）；手动展开过(sidefold=0)则尊重
     sideEl.classList.add('collapsed');
     st.textContent = '»';
   }
@@ -2154,11 +2159,11 @@ function renderExamStatus(c){
     var st = quizStat['ex_'+c.id+'_'+i];
     if(st !== undefined){ answered++; if(st === 1) correct++; }
   });
-  var full = answered >= c.exam.length && correct >= c.exam.length;
+  var full = answered >= c.exam.length;
   box.innerHTML = '<div style="background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:var(--ink2);display:flex;gap:16px;flex-wrap:wrap;align-items:center">' +
     '<span>已答 <b style="color:var(--ink)">'+answered+'/'+c.exam.length+'</b> 题</span>' +
     '<span>答对 <b style="color:var(--ink)">'+correct+'</b> 题</span>' +
-    (full ? '<span>👑 本章考试全通！</span>' : '') + '</div>';
+    (full ? '<span>✅ 考试已答完，答完即通过</span>' : '') + '</div>';
 }
 function renderSettleResult(c){
   var box = document.getElementById('settleResult_'+c.id);
@@ -2216,7 +2221,7 @@ function settleCheck(c, isExam){
   var info = { pct: Math.round(correct/total*100), correct: correct, total: total, dur: dur, allCorrect: correct>=total, ts: Date.now(), exam: isExam, pop: true };
   settleStore['settle_'+c.id] = info;
   storeSettle();
-  if(allCorrect && chDone.indexOf(c.id) === -1){
+  if(allDone && chDone.indexOf(c.id) === -1){
     chDone.push(c.id); store('ch', chDone);
     if(curPage==='lesson' && !curCh) renderChSelect();
   }
@@ -2332,12 +2337,22 @@ function checkExam(btn){
 }
 
 /* ================= 错题本 ================= */
+function wkValidPy(key){
+  try{
+    var p = String(key).split('_');
+    if(key.indexOf('ex_')===0){ var c = CHAPTERS.filter(function(x){return x.id===+p[1]})[0]; return !!(c && c.exam && c.exam[+p[2]]); }
+    var c2 = CHAPTERS.filter(function(x){return x.id===+p[0]})[0]; return !!(c2 && c2.quiz && c2.quiz[+p[1]]);
+  }catch(e){ return false; }
+}
 function wrongInfo(key){
   if(key.indexOf('ex_')===0){ var p=key.split('_'); var c=CHAPTERS.filter(function(x){return x.id===+p[1]})[0]; return {c:c, q:c.exam[+p[2]], i:+p[2], exam:true}; }
   var p=key.split('_'); var c=CHAPTERS.filter(function(x){return x.id===+p[0]})[0];
   return {c:c, q:c.quiz[+p[1]], i:+p[1], exam:false};
 }
 function renderWrong(){
+  var _nw = wrongPool.length;
+  wrongPool = wrongPool.filter(wkValidPy);
+  if(wrongPool.length !== _nw) store('wrong', wrongPool);
   if(!wrongPool.length){ $('#page-wrong').innerHTML='<div class="page-head">❌ 错题本</div><div class="page-sub">暂无错题，继续保持</div><div class="card"><div class="about-sec">错题本为空。去「练习大厅」或章节练习里做题吧。</div></div>'; return; }
   var html='<div class="page-head">❌ 错题本</div><div class="page-sub">'+wrongPool.length+' 道错题 · 订正后移入「已订正」</div>';
   wrongPool.forEach(function(key){
@@ -2362,6 +2377,9 @@ function renderWrong(){
   $('#page-wrong').innerHTML=html;
 }
 function renderFixed(){
+  var _nf = fixedPool.length;
+  fixedPool = fixedPool.filter(wkValidPy);
+  if(fixedPool.length !== _nf) store('fixed', fixedPool);
   var html='<div class="page-head">✅ 已订正</div><div class="page-sub">'+fixedPool.length+' 道曾经错过、现已掌握的题</div>';
   if(!fixedPool.length) html+='<div class="card"><div class="about-sec">还没有订正记录。犯错不可怕，订正完就是成长。</div></div>';
   fixedPool.forEach(function(key){

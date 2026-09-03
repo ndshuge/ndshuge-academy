@@ -90,6 +90,8 @@ body{
 .day.ok{color:var(--green); font-weight:700}
 .day.part{color:var(--orange)}
 .day.none{color:#b5ab97}
+/* 今日已打卡角标 */
+.academy.day-ok::after{content:'🔥 今日已打卡'; position:absolute; top:12px; right:12px; background:linear-gradient(135deg,#D9A441,#B8860B); color:#fff; font-size:11px; font-weight:700; border-radius:980px; padding:4px 12px; letter-spacing:.5px; box-shadow:0 2px 8px rgba(184,134,11,.4)}
 
 /* ===== 说明 ===== */
 .note{margin-top:36px; background:var(--card); border:1px solid var(--line); border-radius:16px; padding:20px 24px}
@@ -247,18 +249,13 @@ ACADEMIES.forEach(function(a){
   }catch(e){}
   var el = document.getElementById('day-' + a.id), card = document.getElementById('ac-' + a.id);
   if(!el) return;
-  if(st.l && st.e){
-    el.textContent = '✅ 今日达标：学一节 + 做一份卷子';
+  if(st.l || st.e){
+    // 学一课或做一份卷，完成其一即今日打卡
+    el.textContent = '🔥 今日已打卡（学一课或做一份卷）';
     el.className = 'day ok';
     card.classList.add('day-ok');
-  } else if(st.l){
-    el.textContent = '⏳ 今日已学一节，还差做一份卷子';
-    el.className = 'day part';
-  } else if(st.e){
-    el.textContent = '⏳ 今日做了卷子，还差学一节';
-    el.className = 'day part';
   } else {
-    el.textContent = '今日目标：学一节 + 做一份卷子';
+    el.textContent = '今日目标：学一课 或 做一份卷子，完成其一即打卡';
     el.className = 'day none';
   }
 });

@@ -564,7 +564,7 @@ canvas{width:100%;background:#fffdf7;border:1px solid var(--line);border-radius:
       <div class="page-head">
         <div class="kick">THE MINI EXAMS</div>
         <h2>小卷练习</h2>
-        <p>每章一份 15 题小卷，覆盖本章核心概念与套路。即时批改，错题自动进错题集。全对即「满分」，卷子完成。</p>
+        <p>每章一份小卷，覆盖本章核心概念与套路。即时批改，错题自动进错题集。全部答完即可结算。</p>
       </div>
       <div id="examNav" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px"></div>
       <div id="examList"></div>
@@ -3484,7 +3484,7 @@ function autoSyncLessons(){
       });
     });
   });
-  if(changed){ store('lessons', lessonsDone); dailyGoal('l'); renderPlan(); }
+  if(changed){ store('lessons', lessonsDone); dailyGoal('l'); var _cd = false; CHAPTERS.forEach(function(c){ if(chIsDone(c) && chDone.indexOf(c.id) === -1){ chDone.push(c.id); _cd = true; } }); if(_cd) store('ch', chDone); renderPlan(); }
 }
 
 /* ================= 渲染：计划页 ================= */
@@ -4110,6 +4110,11 @@ function renderTrace(){
 
 /* ================= 渲染：错题集与订正 ================= */
 function renderWrongNav(){
+  /* 净化悬空错题键（内容改版/跨院混入导致），防「有计数但列表空白」 */
+  var _w1 = wrongPool.length, _f1 = fixedPool.length;
+  wrongPool = wrongPool.filter(wkValid);
+  fixedPool = fixedPool.filter(wkValid);
+  if(wrongPool.length !== _w1 || fixedPool.length !== _f1){ store('wrong', wrongPool); store('fixed', fixedPool); }
   var w = $('#wrongCnt'); if(w) w.textContent = wrongPool.length ? ('待订正 '+wrongPool.length) : '';
   var f = $('#fixedCnt'); if(f) f.textContent = fixedPool.length ? ('已订正 '+fixedPool.length) : '';
 }
@@ -4125,7 +4130,7 @@ function curRank(pct){
 /* 统一统计（总进度 = 课0.35 + 章0.25 + 卷0.2 + 错题订正0.2，任何活动都推动） */
 function calcStats(){
   var doneL = lessonsDone.length, totalL = TOTAL_LESSONS;
-  var doneC = CHAPTERS.filter(chIsDone).length, totalC = CHAPTERS.length;
+  var doneC = chDone.length, totalC = CHAPTERS.length;
   var doneW = PLAN.filter(function(w){ return w.lessons.every(function(l){ return lessonsDone.indexOf(l.k) > -1; }); }).length;
   var examTotal = CHAPTERS.filter(function(c){ return c.exam; }).length;
   var examFull = CHAPTERS.filter(function(c){ return c.exam && examStatus(c).full; }).length;
@@ -4151,8 +4156,8 @@ var BADGES = [
   {n:'积分炼金师', d:'完成第 21 周（积分战役）', c:function(s){ return s.doneW>=21; }},
   {n:'级数大师', d:'完成第 26 周（级数战役）', c:function(s){ return s.doneW>=26; }},
   {n:'收官学士', d:'完成第 28 周（全册收官）', c:function(s){ return s.doneW>=28; }},
-  {n:'卷子初满', d:'任意一章小卷满分', c:function(s){ return s.examFull>=1; }},
-  {n:'卷子全满', d:'全部小卷满分', c:function(s){ return s.examTotal>0 && s.examFull>=s.examTotal; }},
+  {n:'卷子初满', d:'任意一章小卷已做（答完即结算）', c:function(s){ return s.examFull>=1; }},
+  {n:'卷子全满', d:'全部小卷已做', c:function(s){ return s.examTotal>0 && s.examFull>=s.examTotal; }},
   {n:'错题清零', d:'错题全部订正', c:function(s){ return s.wrongPool===0 && s.fixedPool>0; }},
   {n:'学习启航', d:'累计学习 5 次', c:function(s){ return s.studyCount>=5; }},
   {n:'今日打卡', d:'今日完成一章练习或一份卷（四院共通）', c:function(s){ try{ var g=JSON.parse(localStorage.getItem('daily_goal')||'{}'); var t=new Date(); if(t.getHours()<4) t.setDate(t.getDate()-1); var k=t.getFullYear()+'-'+(t.getMonth()+1)+'-'+t.getDate(); var d0=g[k]; return !!(d0 && d0.calc && (d0.calc.l||d0.calc.e)); }catch(e){ return false; } }},
@@ -4287,11 +4292,23 @@ function renderStats(){
     return '<div class="stat"><div class="sv">'+c[1]+'</div><div class="sl">'+c[0]+'</div></div>';
   }).join('');
 }
+function wkValid(key){
+  try{
+    var p = String(key).split('_');
+    if(/^e\d+/.test(key)){ var c = CHAPTERS[+p[0].slice(1)-1]; return !!(c && c.exam && c.exam[+p[1]]); }
+    var c2 = CHAPTERS[+p[0]-1]; return !!(c2 && c2.quiz && c2.quiz[+p[1]]);
+  }catch(e){ return false; }
+}
 function wrongItems(keys){
   if(!keys.length) return '<p style="color:var(--ink2);font-size:13.5px">这里还空着。做错的题会自动进来。</p>';
   return keys.map(function(key){
-    var p = key.split('_'), c = CHAPTERS[+p[0]-1], q = c.quiz[+p[1]];
-    if(!c || !q) return '';
+    var c = null, q = null, p = null;
+    try{
+      p = String(key).split('_');
+      if(/^e\d+/.test(key)){ c = CHAPTERS[+p[0].slice(1)-1]; if(c && c.exam) q = c.exam[+p[1]]; }
+      else { c = CHAPTERS[+p[0]-1]; if(c && c.quiz) q = c.quiz[+p[1]]; }
+      if(!c || !q) return '';
+    }catch(e){ return ''; }
     var h = '<div class="quiz" data-wk="'+key+'"><div class="q"><span class="qn">第'+c.id+'章 Q'+(+p[1]+1)+'</span>'+parseMath(q.q)+'</div>';
     if(q.type === 'choice'){
       h += '<div class="opts">'+q.options.map(function(o, oi){ return '<div class="opt" data-o="'+oi+'">'+String.fromCharCode(65+oi)+'. '+parseMath(o)+'</div>'; }).join('')+'</div>';
@@ -4444,7 +4461,7 @@ function renderHome(){
   var cards = [
     {ic:'📜', t:'学习计划', v:doneL+'/'+totalL, d:'课程进度', go:'plan'},
     {ic:'🎓', t:'章节课堂', v:doneC+'/'+totalC, d:'章节已学', go:'lesson'},
-    {ic:'📝', t:'小卷练习', v:'满分 '+examFull+'/'+examTotal, d:'卷子通关', go:'exam'},
+    {ic:'📝', t:'小卷练习', v:'已做 '+examFull+'/'+examTotal, d:'已做卷数', go:'exam'},
     {ic:'📕', t:'错题集', v:s.wrongPool ? s.wrongPool+' 题' : '✅ 已清空', d:'待订正 · 已订正 '+s.fixedPool, go:'wrong'}
   ];
   var next;
@@ -4454,7 +4471,7 @@ function renderHome(){
     var nc = CHAPTERS[doneC];
     next = {tx:'下一站：第 '+(doneC+1)+' 章「'+(nc ? nc.title : '')+'」。打开讲义，做题结算。', go:'lesson', btn:'去上课'};
   } else if(examFull < examTotal){
-    next = {tx:'讲义全通！还有小卷等着你——每章 15 题，全对拿满分。', go:'exam', btn:'去刷卷'};
+    next = {tx:'讲义全通！还有小卷等着你——每章题目答完即可结算。', go:'exam', btn:'去刷卷'};
   } else {
     next = {tx:'全册通关、错题清零、卷子满分——你已可以来找笛卡尔领毕业答辩。', go:'about', btn:'毕业答辩'};
   }
@@ -4493,7 +4510,7 @@ function renderExamNav(){
   nav.innerHTML = CHAPTERS.map(function(c){
     if(!c.exam) return '';
     var st = examStatus(c);
-    var label = st.full ? '🏆 满分' : (st.answered ? '进行中 '+st.answered+'/15' : '未做');
+    var label = st.full ? '✅ 已做' : (st.answered ? '进行中 '+st.answered+'/'+(c.exam?c.exam.length:15) : '未做');
     var col = st.full ? 'var(--green)' : (st.answered ? 'var(--gold)' : 'var(--ink2)');
     var fw = st.full ? 'bold' : 'normal';
     return '<button class="opt" style="border:1.5px solid '+(st.full?'var(--green)':'var(--line)')+';background:'+(examCh===c.id?'rgba(184,134,11,.15)':'transparent')+';color:'+col+';font-weight:'+fw+'" data-c="'+c.id+'">第'+c.id+'章 · '+label+'</button>';
@@ -4509,7 +4526,16 @@ function examStatus(c){
     var st = quizStat['e'+c.id+'_'+i];
     if(st !== undefined){ answered++; if(st === 1) correct++; }
   });
-  return {answered: answered, correct: correct, full: answered >= c.exam.length && correct >= c.exam.length};
+  return {answered: answered, correct: correct, full: answered >= c.exam.length};
+}
+/* 结算本卷：小卷全部答完即可结算 → 章完成 + 今日打卡(e) */
+function settleExam(chId){
+  var c = CHAPTERS[chId-1];
+  if(!c || chDone.indexOf(chId) > -1) return;
+  chDone.push(chId); store('ch', chDone);
+  dailyGoal('e');
+  logStudy('quiz', chId, c.title);
+  renderExam(); renderExamNav(); renderAll();
 }
 function renderExam(){
   renderExamNav();
@@ -4520,13 +4546,16 @@ function renderExam(){
     return;
   }
   var st = examStatus(c);
+  var doneCh = chDone.indexOf(c.id) > -1;
+  var nEx = c.exam ? c.exam.length : 15;
   var head = '';
   if(st.full){
-    head = '<div class="trap" style="background:#eaf3ec;border-color:var(--green);font-weight:bold;color:var(--green);font-size:15px">🏆 本章小卷满分！15/15 全部正确，卷子已通关。</div>';
+    head = '<div class="trap" style="background:#eaf3ec;border-color:var(--green);font-weight:bold;color:var(--green);font-size:15px">✅ 本卷 '+st.answered+'/'+nEx+' 题已答完'+(doneCh?' · 已结算 ✓':'')+'</div>';
+    if(!doneCh) head += '<div style="text-align:right;margin-top:10px"><button id="examSettle" style="background:linear-gradient(135deg,#4A6B4A,#2f4a2f);color:#fff;border:none;border-radius:980px;padding:9px 22px;font-family:inherit;font-size:14px;cursor:pointer;font-weight:600;letter-spacing:.5px">📝 结算本卷</button></div>';
   } else if(st.answered){
-    head = '<div class="trap" style="background:#f7f2e3;border-color:var(--gold)">📝 已答 '+st.answered+'/15 · 对 '+st.correct+' · 还差 '+(15-st.answered)+' 题。全对即满分通关。答错题已进错题集，可先去订正再回来。</div>';
+    head = '<div class="trap" style="background:#f7f2e3;border-color:var(--gold)">📝 已答 '+st.answered+'/'+nEx+' · 还差 '+(nEx-st.answered)+' 题。答完即可结算（不再要求全对）。答错题已进错题集，可先去订正再回来。</div>';
   } else {
-    head = '<div class="trap" style="background:#f2ead4;border-color:var(--line)">📝 15 题小卷 · 做完且全对即通关。错题自动进错题集。</div>';
+    head = '<div class="trap" style="background:#f2ead4;border-color:var(--line)">📝 '+nEx+' 题小卷 · 全部答完即结算通关。错题自动进错题集。</div>';
   }
   var html = '<div class="card"><h3>第'+c.id+'章 小卷 · '+c.title+'</h3>'+head+
     (st.answered ? '<div style="text-align:right;margin-bottom:8px"><button id="examReset" style="border:1px solid var(--line);background:transparent;color:var(--ink2);border-radius:8px;padding:6px 14px;font-family:inherit;font-size:13px;cursor:pointer">🔄 重置本卷（重新做）</button></div>' : '') +
@@ -4546,6 +4575,8 @@ function renderExam(){
     store('quizStat', quizStat);
     renderExam(); renderExamNav(); renderAll();
   });
+  var es = document.getElementById('examSettle');
+  if(es) es.addEventListener('click', function(){ settleExam(c.id); });
 }
 function bindExam(scope){
   scope.querySelectorAll('.quiz[data-ek]').forEach(function(qz){
@@ -4577,7 +4608,7 @@ function bindExam(scope){
         todayRecord(ok);
         var ekN = CHAPTERS[cid-1].exam ? CHAPTERS[cid-1].exam.length : 0;
         var ekDone = Object.keys(quizStat).filter(function(k){ return k.indexOf('e'+cid+'_') === 0; }).length;
-        if(ekN > 0 && ekDone >= ekN) dailyGoal('e');
+        if(ekN > 0 && ekDone >= ekN){ dailyGoal('e'); setTimeout(function(){ renderExam(); }, 60); }
         statRecordQ(ok);
         renderAll(); renderStats(); sbNotify();
         var v = qz.querySelector('.verdict');
@@ -4599,7 +4630,7 @@ function renderAll(){
   $('#chCnt').textContent = s.doneC + '/30';
   $('#traceCnt').textContent = s.todayCount ? '今日 '+s.todayCount : '';
   renderWrongNav();
-  $('#examCnt').textContent = s.examTotal ? ('满分 '+s.examFull+'/'+s.examTotal) : '';
+  $('#examCnt').textContent = s.examTotal ? ('已做 '+s.examFull+'/'+s.examTotal) : '';
   // 徽章：侧栏小圆点 + 计数
   // 徽章：侧栏只显示计数（圆点已去掉，详情进荣誉墙）
   var bd = badgeState(s);
@@ -4624,7 +4655,7 @@ function renderAll(){
   var sub = [
     {t:'课程', v:s.doneL, n:s.totalL, tip:'已学课数 / 总课数'},
     {t:'章节', v:s.doneC, n:s.totalC, tip:'已学章数（本章全部练习做完）'},
-    {t:'小卷', v:s.examFull, n:s.examTotal, tip:'满分卷数（全对才计入）'},
+    {t:'小卷', v:s.examFull, n:s.examTotal, tip:'已做卷数（答完即可结算）'},
     {t:'错题订正', v:s.fixedPool, n:s.wrongN, tip:'已订正 / 总错题'}
   ];
   $('#progSub').innerHTML = sub.map(function(x){
@@ -4683,8 +4714,7 @@ if(sideToggle){
   function sideFabSync(){
     var fab = document.getElementById('sideFab');
     var ef = document.getElementById('exitFab');
-    var isMobile = window.innerWidth <= 860;
-    var show = isMobile && sideEl.classList.contains('collapsed');
+    var show = sideEl.classList.contains('collapsed');
     if(fab) fab.style.display = show ? 'flex' : 'none';
     if(ef) ef.style.display = show ? 'flex' : 'none';
   }
@@ -4799,14 +4829,13 @@ function openCalendar(){
   document.body.appendChild(wrap);
 }
 (function(){
-  /* 手机端默认收起（未手动展开过）；桌面按 sidefold 偏好 */
-  var sf = load('sidefold', null);
-  var shouldFold = (window.innerWidth <= 860 && sf !== 0) || sf === 1;
+  /* 进入学院默认折叠（☰ 菜单/🚪 退出悬浮钮常驻左下）；手动展开过(sidefold=0)则尊重 */
+  var shouldFold = load('sidefold', null) !== 0;
   if(shouldFold){
     var side = document.getElementById('side');
     if(side){ side.classList.add('collapsed'); if(sideToggle) sideToggle.textContent = '»'; }
-    var fab = document.getElementById('sideFab'); if(fab){ fab.style.display = (window.innerWidth <= 860) ? 'flex' : 'none'; }
-    var ef = document.getElementById('exitFab'); if(ef){ ef.style.display = (window.innerWidth <= 860) ? 'flex' : 'none'; }
+    var fab = document.getElementById('sideFab'); if(fab){ fab.style.display = 'flex'; }
+    var ef = document.getElementById('exitFab'); if(ef){ ef.style.display = 'flex'; }
   }
 })();
 
