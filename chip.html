@@ -6,7 +6,7 @@
 <meta http-equiv="Expires" content="0">
 
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
 <title>🐭 鼠哥的芯片战争读书学院 🧠 · 已授 36 章</title>
 <style>
 :root{
@@ -469,8 +469,8 @@ canvas{width:100%;background:#fffdf7;border:1px solid var(--line);border-radius:
 .tabbar{display:none}
 @media (max-width:860px){
   body{background:#F2F2F7;padding-bottom:0}
-  .tabbar{display:flex;position:fixed;left:0;right:0;bottom:0;background:rgba(249,249,251,.88);backdrop-filter:blur(24px) saturate(1.6);-webkit-backdrop-filter:blur(24px) saturate(1.6);border-top:.5px solid rgba(0,0,0,.14);z-index:12000;padding:5px 0 calc(10px + env(safe-area-inset-bottom))}
-  .tabbar .tb{flex:1;border:none;background:none;font-family:inherit;color:#8E8E93;font-size:10px;display:flex;flex-direction:column;align-items:center;gap:2px;padding:2px 0;cursor:pointer;-webkit-tap-highlight-color:transparent;position:relative}
+  .tabbar{display:flex;justify-content:center;gap:10px;position:fixed;left:0;right:0;bottom:0;background:rgba(249,249,251,.88);backdrop-filter:blur(24px) saturate(1.6);-webkit-backdrop-filter:blur(24px) saturate(1.6);border-top:.5px solid rgba(0,0,0,.14);z-index:12000;padding:5px 0 calc(10px + env(safe-area-inset-bottom))}
+  .tabbar .tb{flex:none;width:66px;border:none;background:none;font-family:inherit;color:#8E8E93;font-size:10px;display:flex;flex-direction:column;align-items:center;gap:2px;padding:2px 0;cursor:pointer;-webkit-tap-highlight-color:transparent;position:relative}
   .tabbar .tb .ti{font-size:22px;line-height:1.2;filter:grayscale(.4)}
   .tabbar .tb.on{color:#3F6179;font-weight:600}
   .tabbar .tb.on .ti{filter:none;transform:translateY(-1px);transition:transform .2s var(--pop)}
@@ -483,8 +483,8 @@ canvas{width:100%;background:#fffdf7;border:1px solid var(--line);border-radius:
   .guest-bar{bottom:calc(64px + env(safe-area-inset-bottom))}
 }
 /* 通用微动效 */
-.page{animation:fadeUp .28s var(--curve)}
-@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.page{animation:fadeIn .22s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
 .nav-gp{transition:max-height .4s cubic-bezier(.4,0,.2,1)}
 .gp-arrow{transition:transform .35s cubic-bezier(.4,0,.2,1)}
 .nav-group.collapsed .gp-arrow{transform:rotate(-90deg)}
@@ -543,14 +543,45 @@ canvas{width:100%;background:#fffdf7;border:1px solid var(--line);border-radius:
 @media (max-width:860px){
   .trace-quick{display:block;margin:0 0 14px}
   .tq-cap{font-size:13px;font-weight:700;color:#8E8E93;margin:10px 4px 6px}
-  .tq-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-  .tq-row button,.tq-row a{background:#fff;border-radius:12px;padding:11px 4px;font-family:inherit;font-size:11px;color:#3A3A3C;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;box-shadow:0 1px 3px rgba(0,0,0,.06);border:none;text-decoration:none}
+  .tq-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+  .tq-row button,.tq-row a{background:#fff;border-radius:11px;padding:9px 3px;font-family:inherit;font-size:11px;color:#3A3A3C;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;box-shadow:0 1px 3px rgba(0,0,0,.05);border:none;text-decoration:none;min-width:0}
   .tq-row .qi{font-size:20px}
 }
+/* macOS 菜单栏（仅桌面） */
+.menubar{display:none}
+@media (min-width:861px){
+  .menubar{display:flex;align-items:center;gap:16px;position:fixed;top:0;left:0;right:0;height:28px;background:rgba(246,246,248,.9);border-bottom:.5px solid rgba(0,0,0,.12);z-index:20000;padding:0 14px;font-size:13px;color:#1D1D1F;-webkit-user-select:none;user-select:none}
+  .menubar .dots{display:flex;gap:7px}
+  .menubar .dots i{width:12px;height:12px;border-radius:50%;display:block}
+  .menubar .dots .r{background:#FF5F57}.menubar .dots .y{background:#FEBC2E}.menubar .dots .g{background:#28C840}
+  .menubar .app{font-weight:700}
+  .menubar .mit{color:#5A5A5E}
+  .menubar .sp{flex:1}
+  .menubar .mright{display:flex;align-items:center;gap:12px;font-size:12px}
+  .menubar .batt{width:22px;height:11px;border:1px solid rgba(0,0,0,.4);border-radius:3px;position:relative}
+  .menubar .batt::after{content:'';position:absolute;left:1px;top:1px;bottom:1px;width:75%;background:rgba(0,0,0,.5);border-radius:1px}
+  body{padding-top:28px}
+  #side{top:28px;height:calc(100vh - 28px)}
+}
+/* 侧栏今日目标 widget */
+.tkcard{margin:4px 2px 8px;background:rgba(255,255,255,.7);border-radius:12px;padding:12px 14px;border:.5px solid rgba(0,0,0,.07)}
+.tkcard .tkc-t{font-size:10.5px;font-weight:700;letter-spacing:1px;color:#86868B}
+.tkcard .tkc-row{display:flex;align-items:center;gap:8px;margin-top:7px;font-size:13.5px;font-weight:700}
+.tkcard .tkc-s{font-size:11px;color:#8E8E93;margin-top:4px;line-height:1.5}
+.tkcard .tkc-p{height:4px;background:rgba(0,0,0,.08);border-radius:2px;margin-top:9px;overflow:hidden}
+.tkcard .tkc-p i{display:block;height:100%;background:linear-gradient(90deg,#3F6179,#007AFF);border-radius:2px;transition:width .6s var(--curve)}
 </style>
 
 </head>
 <body>
+<div class="menubar">
+  <span class="dots"><i class="r"></i><i class="y"></i><i class="g"></i></span>
+  <span class="app">🐭 鼠哥学院</span>
+  <span class="mit">芯片战争学院</span>
+  <span class="mit">文件</span><span class="mit">编辑</span><span class="mit">视图</span><span class="mit">窗口</span><span class="mit">帮助</span>
+  <span class="sp"></span>
+  <span class="mright"><span>◔</span><span>100%</span><span class="batt"></span><span id="mclock">10:24</span></span>
+</div>
 <div id="guestBar" class="guest-bar" style="display:none" onclick="showLogin()">🎮 游客模式：数据保存在本浏览器，登录账号后自动并入进度；未登录不跨设备同步，清理浏览器数据可能丢失。点这里 <b>注册账号</b> 保存进度</div>
 <div id="app">
   <aside id="side">
@@ -620,6 +651,7 @@ canvas{width:100%;background:#fffdf7;border:1px solid var(--line);border-radius:
       </div>
       <div id="badges" class="badge-row"></div>
     </div>
+    <div class="tkcard" id="tkBox"></div>
     <div id="quote">「芯片是新的钢铁，战争换了材料。」—— 正在给你导读芯片史的米勒</div>
     <div class="com-block">
       <div class="more-cap">社区</div>
@@ -723,7 +755,6 @@ canvas{width:100%;background:#fffdf7;border:1px solid var(--line);border-radius:
       <div class="trace-quick">
         <div class="tq-cap">学习</div>
         <div class="tq-row">
-          <button onclick="goPage('home')"><span class="qi">🏠</span>主页</button>
           <button onclick="goPage('lesson')"><span class="qi">🎓</span>章节课堂</button>
           <button onclick="goPage('hall')"><span class="qi">🏛</span>练习大厅</button>
           <button onclick="goPage('exam')"><span class="qi">📝</span>小卷</button>
@@ -731,13 +762,9 @@ canvas{width:100%;background:#fffdf7;border:1px solid var(--line);border-radius:
         </div>
         <div class="tq-cap">社区</div>
         <div class="tq-row">
+          <button onclick="openCalendar()"><span class="qi">📅</span>打卡日历</button>
           <button onclick="openRank()"><span class="qi">🏆</span>排行榜</button>
           <button onclick="openFeedback()"><span class="qi">💬</span>留言</button>
-          <button onclick="openShare()"><span class="qi">📤</span>分享</button>
-        </div>
-        <div class="tq-cap">工具</div>
-        <div class="tq-row">
-          <button onclick="openCalendar()"><span class="qi">📅</span>打卡日历</button>
           <button onclick="openAuthor()"><span class="qi">👨‍💻</span>关于作者</button>
         </div>
       </div>
@@ -12323,6 +12350,19 @@ function renderAll(){
       rb.style.width = Math.round(Math.max(0, Math.min(1, (pct-curLow)/span))*100) + '%';
     } else { rb.style.width = '100%'; }
   }
+  /* 侧栏今日目标 widget（macOS 概念稿卡） */
+  var _tk = document.getElementById('tkBox');
+  if(_tk){
+    var _dt2 = !!acadDaySet()[todayStr()];
+    var _st2 = calcStreak();
+    _tk.innerHTML = '<div class="tkc-t">今日目标 · 学一课或做一份卷</div>' +
+      '<div class="tkc-row">' + (_dt2 ? '🔥 今日已打卡' : '⏳ 今天还没完成') + ' · 连续 <b style="color:#B8860B">' + _st2 + '</b> 天</div>' +
+      '<div class="tkc-s">' + (_dt2 ? '四院共通，跨学院不断签。明天继续。' : '完成其一即点亮，四院共通不断签。') + '</div>' +
+      '<div class="tkc-p"><i style="width:' + pct + '%"></i></div>';
+  }
+  /* macOS 菜单栏时钟 */
+  var _mc = document.getElementById('mclock');
+  if(_mc){ var _d = new Date(), _p2 = function(x){ return (x<10?'0':'')+x; }; _mc.textContent = _p2(_d.getHours()) + ':' + _p2(_d.getMinutes()); }
   // 学习进度四条细分
   var sub = [
     {t:'课程', v:s.doneL, n:s.totalL, tip:'已学课数 / 总课数'},
@@ -12345,6 +12385,11 @@ var navStack = [];
 function goPage(name, silent){
   studyTimerLeave();
   if(name === 'lesson' || name === 'hall' || name === 'exam') studyTimerEnter();
+  /* 切页回顶：避免底栏/Tab 切换时页面停留旧滚动位置造成跳动 */
+  var _sc = document.scrollingElement || document.documentElement;
+  if(_sc) _sc.scrollTop = 0;
+  var _mainEl = document.getElementById('main');
+  if(_mainEl) _mainEl.scrollTop = 0;
   var cur = document.querySelector('.nav button.on');
   var curName = cur ? cur.dataset.page : 'home';
   if(!silent && curName !== name && navStack[navStack.length-1] !== curName){ navStack.push(curName); }
