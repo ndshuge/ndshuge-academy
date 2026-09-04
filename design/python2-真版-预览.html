@@ -1362,20 +1362,13 @@ function calcStats(){
   return {doneC:doneC,totalC:totalC,examTotal:examTotal,examFull:examFull,wrongN:wrongN,fixedPool:fixedPool.length,wrongPool:wrongPool.length,pct:Math.min(100,pct),studyCount:studyLog.length};
 }
 var BADGES=[
-  {n:'材料学徒',d:'完成第一部分 · 达第 5 章',c:function(s){ return s.doneC>=5; }},
-  {n:'开关手',d:'完成第二部分 · 达第 10 章',c:function(s){ return s.doneC>=10; }},
-  {n:'集成匠',d:'完成第三部分 · 达第 15 章',c:function(s){ return s.doneC>=15; }},
-  {n:'起飞乘客',d:'完成第四部分 · 达第 20 章',c:function(s){ return s.doneC>=20; }},
-  {n:'光刻学徒',d:'完成第五部分 · 达第 25 章',c:function(s){ return s.doneC>=25; }},
-  {n:'代工学徒',d:'完成第六部分 · 达第 30 章',c:function(s){ return s.doneC>=30; }},
-  {n:'断供老兵',d:'完成第七部分 · 达第 35 章',c:function(s){ return s.doneC>=35; }},
-  {n:'芯片史官',d:'完成第八部分 · 全书 36 章通关',c:function(s){ return s.doneC>=36; }},
-  {n:'卷子初满',d:'任意一章小卷已做（答完即结算）',c:function(s){ return s.examFull>=1; }},
-  {n:'卷子全满',d:'全部小卷已做',c:function(s){ return s.examTotal>0&&s.examFull>=s.examTotal; }},
-  {n:'错题清零',d:'错题全部订正',c:function(s){ return s.wrongPool===0&&s.fixedPool>0; }},
-  {n:'学习启航',d:'累计学习 5 次',c:function(s){ return s.studyCount>=5; }},
-  {n:'今日打卡',d:'今日完成一章练习或一份卷（四院共通）',c:function(s){ try{ var g=JSON.parse(localStorage.getItem('daily_goal')||'{}'); var d0=g[todayStr()]; return !!(d0&&d0.chip&&(d0.chip.l||d0.chip.e)); }catch(e){ return false; } }},
-  {n:'毕业学士',d:'全册通关（全书章节全通）',c:function(s){ return s.doneC>=s.totalC; }}
+  {n:'开卷第一', d:'完成第 1 章', c:function(s){ return s.doneC>=1; }},
+  {n:'行百里者', d:'完成全书 25%', c:function(s){ return s.doneC>=Math.ceil(s.totalC*0.25); }},
+  {n:'半程点灯', d:'完成全书一半', c:function(s){ return s.doneC>=Math.ceil(s.totalC*0.5); }},
+  {n:'卷上轻舟', d:'完成第一份小卷', c:function(s){ return s.examFull>=1; }},
+  {n:'错题清零', d:'错题全部订正', c:function(s){ return s.wrongPool===0 && s.fixedPool>0; }},
+  {n:'今日打卡', d:'今日完成学习（四院共通）', c:function(s){ try{ var g=JSON.parse(localStorage.getItem('daily_goal')||'{}'); var d0=g[todayStr()]; return !!(d0&&d0[AC.id]&&(d0[AC.id].l||d0[AC.id].e)); }catch(e){ return false; } }},
+  {n:'毕业学士', d:'全书通关', c:function(s){ return s.doneC>=s.totalC; }}
 ];
 function badgeState(s){ return BADGES.map(function(b){ return {n:b.n,d:b.d,got:b.c(s)}; }); }
 /* ---------- 今日答题统计 ---------- */
