@@ -371,3 +371,15 @@ document.addEventListener('DOMContentLoaded',function(){
   history.replaceState({view:'home'},'');
   renderView('home',false);
 })();
+
+/* 实验室滑块委托 */
+scroller.addEventListener('input',function(ev){
+  var t=ev.target; if(!t||t.type!=='range') return;
+  var v=null, fn=null;
+  if(t.id==='dopeS'){ v=document.getElementById('dopeV'); fn=drawDope; }
+  else if(t.id==='lithoS'){ v=document.getElementById('lithoV'); fn=drawLitho; }
+  else if(t.id==='yieldS'){ v=document.getElementById('yieldV'); fn=drawYield; }
+  else if(t.id==='mooreS'){ v=document.getElementById('mooreV'); fn=drawMoore; }
+  if(v) v.textContent=t.value;
+  if(fn){ try{ fn(); }catch(e){} }
+});
