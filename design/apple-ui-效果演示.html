@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>apple-ui 效果演示</title>
+<style>
+/* ============================================================
+   apple-ui 技能参数样张
+   本页所有数值照抄 skills/apple-ui/SKILL.md（§二 令牌 / §三 交互 / §四 图标）
+   ============================================================ */
+:root{
+  --bg:#F2F2F7; --bg-glow:#FFFFFF; --card:#FFFFFF; --fill:#E9E9EE; --fill-soft:rgba(120,120,128,.08);
+  --ink:#1D1D1F; --ink2:#3C3C43; --muted:#86868B; --sep:rgba(60,60,67,.12); --sep-strong:rgba(60,60,67,.26);
+  --accent:#007AFF; --accent-soft:rgba(0,122,255,.12);
+  --green:#34C759; --green-soft:rgba(52,199,89,.13);
+  --red:#FF3B30; --red-soft:rgba(255,59,48,.1);
+  --gold:#FF9500; --gold-soft:rgba(255,149,0,.16);
+  --glass:rgba(250,250,252,.62); --glass-edge:rgba(255,255,255,.5);
+  --r-s:10px; --r-m:14px; --r-l:20px; --r-cell:12px;
+  --sh-card:0 1px 1.5px rgba(0,0,0,.02),0 2px 10px rgba(0,0,0,.035);
+  --sh-float:0 14px 36px rgba(0,0,0,.16);
+  --ease:cubic-bezier(.32,.72,0,1);
+  --ease-spring:cubic-bezier(.34,1.56,.64,1);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme=light]){
+    --bg:#000; --bg-glow:#1C1C1E; --card:#1C1C1E; --fill:#2C2C2E; --fill-soft:rgba(120,120,128,.16);
+    --ink:#F5F5F7; --ink2:#C7C7CC; --muted:#8E8E93; --sep:rgba(84,84,88,.45); --sep-strong:rgba(84,84,88,.7);
+    --accent:#0A84FF; --accent-soft:rgba(10,132,255,.22);
+    --green:#32D74B; --green-soft:rgba(48,209,88,.16);
+    --red:#FF453A; --red-soft:rgba(255,69,58,.14);
+    --gold:#FF9F0A; --gold-soft:rgba(255,159,10,.18);
+    --glass:rgba(22,22,24,.55); --glass-edge:rgba(255,255,255,.14);
+    --sh-card:0 1px 2px rgba(0,0,0,.5);
+  }
+}
+:root[data-theme=dark]{
+  --bg:#000; --bg-glow:#1C1C1E; --card:#1C1C1E; --fill:#2C2C2E; --fill-soft:rgba(120,120,128,.16);
+  --ink:#F5F5F7; --ink2:#C7C7CC; --muted:#8E8E93; --sep:rgba(84,84,88,.45); --sep-strong:rgba(84,84,88,.7);
+  --accent:#0A84FF; --accent-soft:rgba(10,132,255,.22);
+  --green:#32D74B; --green-soft:rgba(48,209,88,.16);
+  --red:#FF453A; --red-soft:rgba(255,69,58,.14);
+  --gold:#FF9F0A; --gold-soft:rgba(255,159,10,.18);
+  --glass:rgba(22,22,24,.55); --glass-edge:rgba(255,255,255,.14);
+  --sh-card:0 1px 2px rgba(0,0,0,.5);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro SC","Segoe UI Variable","Segoe UI","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+  font-size:17px;line-height:1.5;color:var(--ink);background:radial-gradient(900px 480px at 18% -8%,var(--bg-glow),transparent),var(--bg);
+  -webkit-font-smoothing:antialiased;overflow:hidden}
+button{font-family:inherit;border:none;background:none;color:inherit;cursor:pointer}
+.ic{display:inline-flex;align-items:center;justify-content:center;flex:none;width:1em;height:1em}
+.ic svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+#app{display:flex;flex-direction:column;height:100dvh}
+
+/* 顶栏（返回显示上一级标题 · iOS 语义） */
+#topbar{flex:none;height:54px;display:flex;align-items:center;gap:8px;padding:0 10px 0 12px;position:relative;z-index:30;
+  background:var(--glass);-webkit-backdrop-filter:blur(40px) saturate(1.7);backdrop-filter:blur(40px) saturate(1.7)}
+#topbar::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:1px;
+  background:linear-gradient(var(--glass-edge),rgba(120,120,128,.25))}
+#topbar .backbtn{display:inline-flex;align-items:center;gap:3px;height:36px;padding:0 12px 0 6px;border-radius:10px;
+  font-size:16px;color:var(--accent);font-weight:500;background:var(--fill-soft)}
+#topbar .backbtn .ic{width:16px;height:16px}
+#topbar .brand{position:absolute;left:50%;transform:translateX(-50%);text-align:center;pointer-events:none}
+#topbar .brand b{font-size:15px;font-weight:600;display:block;white-space:nowrap}
+#topbar .brand span{font-size:10.5px;color:var(--muted);font-weight:600;letter-spacing:.6px}
+#topbar .themeBtn{margin-left:auto;height:36px;width:36px;border-radius:10px;display:flex;align-items:center;
+  justify-content:center;color:var(--accent);background:var(--accent-soft)}
+#topbar .themeBtn .ic{width:18px;height:18px}
+
+#stage{flex:1;position:relative;overflow:hidden}
+#scroller{height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:150px;
+  scrollbar-width:thin;scrollbar-color:rgba(120,120,128,.45) transparent}
+@media (hover:hover){
+  #scroller::-webkit-scrollbar{width:8px}
+  #scroller::-webkit-scrollbar-thumb{background:rgba(120,120,128,.35);border-radius:4px}
+}
+.view{padding:20px 16px 30px;max-width:900px;margin:0 auto}
+.view.push{animation:pushIn .38s var(--ease)}
+.view.pushBack{animation:pushBackIn .38s var(--ease)}
+@keyframes pushIn{from{opacity:.3;transform:translateX(60px)}to{opacity:1;transform:none}}
+@keyframes pushBackIn{from{opacity:.3;transform:translateX(-52px)}to{opacity:1;transform:none}}
+
+.kick{font-size:12px;font-weight:800;letter-spacing:1.8px;color:var(--accent);margin-bottom:8px}
+.h1{font-size:34px;font-weight:700;letter-spacing:-.5px;line-height:1.1;margin-bottom:5px}
+.sub{font-size:15px;color:var(--muted);margin-bottom:18px;line-height:1.5}
+.cap{font-size:12px;color:var(--muted)}
+.card{background:var(--card);border:1px solid var(--sep);box-shadow:var(--sh-card);border-radius:var(--r-m);padding:16px}
+.card+.card{margin-top:12px}
+.sec-title{font-size:13px;font-weight:600;color:var(--muted);margin:22px 0 10px;letter-spacing:.4px}
+
+/* hover 仅鼠标：轻上浮 */
+@media (hover:hover){
+  .lift{transition:transform .22s var(--ease),box-shadow .22s}
+  .lift:hover{transform:translateY(-2px);box-shadow:0 4px 10px rgba(0,0,0,.05),0 10px 26px rgba(0,0,0,.08)}
+}
+/* 触屏按压 = 高亮变暗，无 scale（apple-ui 戒律 3） */
+@media (hover:none){
+  .tile:active,.cell:active{background:var(--fill)}
+  .btn-solid:active,.btn-line:active,.btn-go:active{filter:brightness(.9)}
+  .card:active{filter:brightness(.95)}
+}
+
+/* 简约几何 hero：白卡 hairline + 线框几何 */
+.hero{border-radius:var(--r-l);border:1px solid var(--sep);background:var(--card);
+  box-shadow:var(--sh-card);padding:24px;position:relative;overflow:hidden;
+  display:flex;flex-direction:column;gap:13px}
+.hero .geo{position:absolute;right:10px;top:10px;width:70px;height:70px;color:var(--sep-strong)}
+.hero .geo .gline{stroke:currentColor;stroke-width:1.6;fill:none}
+.hero .geo .gdot{fill:var(--accent)}
+.hero h2{font-size:22px;font-weight:800;letter-spacing:-.3px;padding-right:76px;line-height:1.35}
+.hero .hero-cap{font-size:13.5px;color:var(--muted);line-height:1.6}
+.hero .foot{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:2px}
+.pill{display:inline-flex;align-items:center;gap:4px;font-size:13px;font-weight:600;
+  padding:4px 11px;border-radius:16px;background:var(--fill);color:var(--ink2)}
+.pill.gold{background:var(--gold-soft);color:#C93400}
+:root[data-theme=dark] .pill.gold{color:#FFD60A}
+.pill.blue{background:var(--accent-soft);color:var(--accent)}
+.btn-go{margin-left:auto;background:var(--accent);color:#fff;font-weight:700;font-size:15px;
+  padding:10px 20px;border-radius:12px;display:inline-flex;align-items:center;gap:6px;
+  box-shadow:0 4px 14px var(--accent-soft)}
+.btn-go .ic{width:15px;height:15px}
+
+/* 按钮演示 */
+.btn-solid{background:var(--accent);color:#fff;font-size:16px;font-weight:600;min-height:46px;
+  padding:0 24px;border-radius:13px;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn-line{background:var(--fill);color:var(--ink);font-size:16px;font-weight:600;min-height:46px;
+  padding:0 24px;border-radius:13px;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+
+/* 答题 + 常驻解析 */
+.q-stem{font-size:18px;font-weight:600;line-height:1.5;margin:4px 0 6px}
+.opt{width:100%;display:flex;align-items:center;gap:13px;text-align:left;
+  background:var(--card);border:1.5px solid var(--sep);border-radius:var(--r-m);
+  padding:13px 16px;font-size:16.5px;margin-top:10px}
+.opt .k{width:28px;height:28px;border-radius:50%;flex:none;background:var(--fill);
+  display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;color:var(--muted)}
+.opt .mark{margin-left:auto;width:22px;height:22px;color:var(--green);display:none}
+.opt .mark .ic{width:20px;height:20px}
+.opt.correct{border-color:var(--green);background:var(--green-soft)}
+.opt.correct .k{background:var(--green);color:#fff}
+.opt.correct .mark{display:inline-flex}
+.opt.wrong{border-color:var(--red);background:var(--red-soft)}
+.opt.wrong .k{background:var(--red);color:#fff}
+.opt.muted{opacity:.45}
+@media (hover:none){.opt:active{background:var(--fill)}}
+.why-note{margin-top:12px;padding:12px 14px;border-radius:12px;font-size:14.5px;line-height:1.7;
+  display:flex;flex-direction:column;gap:10px}
+.why-note:empty{display:none}
+.why-note .why-body{display:flex;gap:9px;align-items:flex-start}
+.why-note .why-ic{width:18px;height:18px;flex:none;margin-top:2px}
+.why-ic .ic{width:18px;height:18px}
+.why-ok{background:var(--green-soft)}
+.why-ok .why-ic{color:#1E9E4A}
+.why-no{background:var(--red-soft)}
+.why-no .why-ic{color:var(--red)}
+.retry-btn{display:inline-flex;align-items:center;gap:5px;align-self:flex-start;
+  font-size:14px;font-weight:600;color:var(--accent);padding:8px 16px;border-radius:10px;
+  background:var(--card);box-shadow:var(--sh-card)}
+
+/* cell 分组表（17/400 · 分隔线从文字左缘 · 44 热区） */
+.group{display:flex;flex-direction:column;border-radius:var(--r-m);overflow:hidden;
+  background:var(--card);border:1px solid var(--sep);box-shadow:var(--sh-card)}
+.cell{display:flex;align-items:center;gap:13px;width:100%;text-align:left;
+  min-height:48px;padding:10px 16px;position:relative;background:var(--card)}
+.cell+.cell::before{content:"";position:absolute;left:61px;right:0;top:0;height:.5px;background:var(--sep)}
+.cell .gi{width:34px;height:34px;border-radius:9px;flex:none;display:flex;align-items:center;
+  justify-content:center;color:#fff}
+.cell .gi .ic{width:18px;height:18px}
+.cell b{font-size:17px;font-weight:400;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cell .gv{font-size:15px;color:var(--muted)}
+.cell .garr{width:14px;height:14px;color:var(--sep-strong)}
+@media (hover:none){.cell:active{background:var(--fill)}}
+@media (hover:hover){.cell:hover{background:var(--fill-soft)}}
+
+/* Dock：三 Tab 玻璃片，无选中点无侧键 */
+#dock{position:fixed;left:0;right:0;bottom:0;z-index:40;display:flex;justify-content:center;
+  padding:12px 12px calc(env(safe-area-inset-bottom,0px) + 12px);pointer-events:none}
+#dock .dockbar{pointer-events:auto;display:flex;align-items:center;justify-content:center;
+  background:var(--glass);-webkit-backdrop-filter:blur(44px) saturate(1.8);backdrop-filter:blur(44px) saturate(1.8);
+  border:1px solid var(--sep);box-shadow:inset 0 1px 0 var(--glass-edge),var(--sh-float);
+  border-radius:26px;padding:5px 6px}
+.dock-btn{width:76px;height:52px;border-radius:20px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:3px;color:var(--muted);
+  transition:transform .24s var(--ease-spring),color .2s}
+.dock-btn .d-ico{width:24px;height:24px}
+.dock-btn span{font-size:10px;font-weight:600;letter-spacing:.2px}
+.dock-btn.on{color:var(--accent)}
+.dock-btn.on .d-ico{transform:translateY(-1px)}
+@media (hover:hover){
+  .dock-btn:hover{transform:translateY(-8px) scale(1.13);color:var(--accent);background:var(--fill-soft)}
+}
+@media (hover:none){.dock-btn:active{filter:brightness(.75)}}
+
+/* toast（短提示专用） */
+#toastBox{position:fixed;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 110px);
+  display:flex;flex-direction:column;align-items:center;gap:8px;z-index:60;pointer-events:none;padding:0 16px}
+.toast{display:flex;align-items:center;gap:8px;max-width:420px;background:var(--ink);color:var(--bg);
+  border-radius:14px;padding:11px 17px;font-size:14.5px;font-weight:500;box-shadow:var(--sh-float);
+  animation:toastIn .35s var(--ease-spring)}
+:root[data-theme=dark] .toast{background:#F2F2F7;color:#1D1D1F}
+.toast .t-ic{width:18px;height:18px}
+.toast.leaving{animation:toastOut .3s var(--ease) forwards}
+@keyframes toastIn{from{transform:translateY(24px) scale(.94);opacity:0}to{transform:none;opacity:1}}
+@keyframes toastOut{to{transform:translateY(16px) scale(.96);opacity:0}}
+
+/* 长按操作表（iOS Action Sheet 风，玻璃上滑） */
+#sheetBox{position:fixed;left:0;right:0;bottom:0;z-index:70;display:none;flex-direction:column;
+  padding:14px 16px calc(env(safe-area-inset-bottom,0px)+16px);
+  background:var(--glass);-webkit-backdrop-filter:blur(40px) saturate(1.6);backdrop-filter:blur(40px) saturate(1.6);
+  border-top:1px solid var(--sep);box-shadow:inset 0 1px 0 var(--glass-edge),var(--sh-float);
+  border-radius:24px 24px 0 0;animation:sheetUp .4s var(--ease-spring)}
+#sheetBox.show{display:flex}
+@keyframes sheetUp{from{transform:translateY(70px);opacity:0}to{transform:none;opacity:1}}
+#sheetBox .sh-cap{text-align:center;font-size:13px;color:var(--muted);margin-bottom:4px;font-weight:600}
+#sheetBox .sh{width:100%;min-height:52px;border-radius:14px;font-size:17px;font-weight:500;margin-top:8px;
+  display:flex;align-items:center;justify-content:center;background:var(--card);color:var(--ink);
+  border:1px solid var(--sep)}
+#sheetBox .sh.danger{color:var(--red);font-weight:600}
+#sheetBox .sh:active{filter:brightness(.9)}
+.lp-cell.pressing{filter:brightness(.85)}
+
+/* 设计令牌墙（配色速览，纯展示） */
+.tokens{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px}
+.tok{border-radius:var(--r-m);padding:10px;border:1px solid var(--sep);background:var(--card)}
+.tok .sw{height:44px;border-radius:9px;margin-bottom:8px;border:1px solid rgba(0,0,0,.05)}
+.tok b{font-size:12px;display:block}
+.tok .cap{font-size:10.5px}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="topbar">
+    <button class="backbtn" id="btnBack"><span class="ic" id="backIco"></span><span id="backTxt">返回</span></button>
+    <div class="brand"><b id="brandName">UI 演示</b><span>APPLE-UI PARAMS</span></div>
+    <button class="themeBtn" id="btnTheme" aria-label="切换深浅色"><span class="ic" id="themeIco"></span></button>
+  </div>
+  <div id="stage"><div id="scroller"><div class="view" id="view"></div></div></div>
+  <div id="dock"><div class="dockbar" id="dockbar"></div></div>
+</div>
+<div id="toastBox"></div>
+<div id="sheetBox"></div>
+
+<script>
+/* ---------- Lucide 图标（官方 path 内联） ---------- */
+var I={};
+function d(n,p){ I[n]='<svg viewBox="0 0 24 24"><g stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none">'+p+'</g></svg>'; }
+d('back','<path d="m15 18-6-6 6-6"/>');
+d('home','<path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>');
+d('book','<path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20"/>');
+d('pen','<path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/>');
+d('person','<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>');
+d('check','<path d="M20 6 9 17l-5-5"/>');
+d('info','<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>');
+d('chev-r','<path d="m9 18 6-6-6-6"/>');
+d('moon','<path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401"/>');
+d('sun','<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>');
+d('arrow-r','<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>');
+d('calendar','<path d="M8 2v3"/><path d="M16 2v3"/><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/>');
+function IC(n){ return '<span class="ic">'+I[n]+'</span>'; }
+
+var $=function(s){return document.querySelector(s)};
+var view=$('#view'), scroller=$('#scroller');
+var isDark=matchMedia('(prefers-color-scheme: dark)');
+var theme='auto';
+function applyTheme(){
+  var t=$('html').getAttribute('data-theme');
+  var darkNow = theme==='dark' || (theme==='auto' && isDark.matches);
+  $('#themeIco').innerHTML = I[darkNow?'sun':'moon'];
+  if(theme==='auto') $('html').removeAttribute('data-theme');
+  else $('html').setAttribute('data-theme',theme);
+}
+$('#btnTheme').addEventListener('click',function(){
+  theme = theme==='auto' ? (isDark.matches?'light':'dark') : (theme==='dark'?'light':'dark');
+  applyTheme(); toast('外观已切换');
+});
+
+/* toast 短提示 */
+function toast(msg){
+  var el=document.createElement('div'); el.className='toast';
+  el.innerHTML='<span class="ic t-ic">'+I['check']+'</span><span>'+msg+'</span>';
+  $('#toastBox').appendChild(el);
+  setTimeout(function(){ el.classList.add('leaving'); setTimeout(function(){el.remove()},300); },2200);
+}
+
+/* 震动闸门：仅 Android 真机；iPhone 无 Vibration API，用视觉替代 */
+var isWin=/win/i.test(navigator.platform||(navigator.userAgentData&&navigator.userAgentData.platform)||'');
+var canVib=!isWin && typeof navigator.vibrate==='function';
+function tapV(){ if(canVib){ try{navigator.vibrate(15)}catch(e){} } }
+
+/* 长按识别：pointerdown 起 500ms，位移 >10px 取消；拦截系统 contextmenu */
+function bindLongPress(el, fn){
+  if(el._lp) return; el._lp=1;
+  var start=null,id=null;
+  el.addEventListener('pointerdown',function(e){
+    start={x:e.clientX,y:e.clientY};
+    el.classList.add('pressing');
+    id=setTimeout(function(){ id=null;
+      el.classList.remove('pressing');
+      tapV(); fn();
+    },500);
+  });
+  el.addEventListener('pointermove',function(e){
+    if(!start) return;
+    if(Math.abs(e.clientX-start.x)>10||Math.abs(e.clientY-start.y)>10){
+      clearTimeout(id); id=null; el.classList.remove('pressing'); start=null;
+    }
+  });
+  ['pointerup','pointercancel','pointerleave'].forEach(function(ev){
+    el.addEventListener(ev,function(){
+      if(start){ clearTimeout(id); id=null; el.classList.remove('pressing'); start=null; }
+    });
+  });
+  el.addEventListener('contextmenu',function(e){ e.preventDefault(); });
+}
+/* 操作表（sheet） */
+function openSheet(title, rows){
+  $('#sheetBox').innerHTML='<div class="sh-cap">'+title+'</div>'
+    +rows.map(function(r){ return '<button class="sh'+(r.danger?' danger':'')+'" data-sh="'+r.id+'">'+r.label+'</button>'; }).join('')
+    +'<button class="sh" data-sh="cancel">取消</button>';
+  $('#sheetBox').classList.add('show');
+}
+$('#sheetBox').addEventListener('click',function(e){
+  var b=e.target.closest('[data-sh]'); if(!b) return;
+  var id=b.getAttribute('data-sh');
+  $('#sheetBox').classList.remove('show');
+  if(id==='cancel') return;
+  toast({del:'已删除（演示）',rename:'已重命名（演示）',arch:'已归档（演示）'}[id]);
+});
+
+/* 路由：真 history + push 转场 */
+var STACK=[];
+var META={home:{n:'今日',tab:'learn'},parts:{n:'组件',tab:'drill'},quiz:{n:'随堂',tab:'drill'},mine:{n:'我的',tab:'mine'}};
+function renderView(id,isBack){
+  view.className='view '+(isBack?'pushBack':'push');
+  view.innerHTML=renderers[id]();
+  scroller.scrollTop=0;
+  $('#brandName').textContent=META[id].n;
+  var prev=STACK.length?STACK[STACK.length-1]:null;
+  if(prev&&META[prev]){ $('#backTxt').textContent=META[prev].n; $('#btnBack').disabled=false; }
+  else { $('#backTxt').textContent='返回'; $('#btnBack').disabled=true; }
+  paintDock(META[id].tab);
+  setTimeout(function(){ var c=view.className; if(c.indexOf('push')>=0) view.className='view'; },420);
+  /* 触感实验室元素挂载后绑长按（防重复绑定） */
+  setTimeout(function(){
+    var lp=document.getElementById('lpCell');
+    if(lp) bindLongPress(lp,function(){
+      openSheet('长按菜单（Action Sheet 演示）',[
+        {id:'rename',label:'重命名'},{id:'arch',label:'归档'},{id:'del',label:'删除',danger:true}
+      ]);
+    });
+  },80);
+  window._cur=id;
+}
+function go(id){
+  if(window._cur===id) return;
+  STACK.push(window._cur||'home');
+  history.pushState({v:id},'');
+  renderView(id,false);
+}
+function goBack(){
+  if(!STACK.length){ toast('已经在最前面了'); return; }
+  history.back();
+}
+window.addEventListener('popstate',function(e){
+  var id=(e.state&&e.state.v)||'home';
+  if(STACK.length&&STACK[STACK.length-1]===id) STACK.pop();
+  renderView(id,true);
+});
+function paintDock(tab){
+  var T=[{t:'learn',n:'学习',i:'book'},{t:'drill',n:'练习',i:'pen'},{t:'mine',n:'我的',i:'person'}];
+  $('#dockbar').innerHTML=T.map(function(x){
+    return '<button class="dock-btn'+(x.t===tab?' on':'')+'" data-tab="'+x.t+'"><span class="ic d-ico">'+I[x.i]+'</span><span>'+x.n+'</span></button>';
+  }).join('');
+}
+$('#dockbar').addEventListener('click',function(e){
+  var b=e.target.closest('.dock-btn'); if(!b) return;
+  go({learn:'home',drill:'parts',mine:'mine'}[b.getAttribute('data-tab')]);
+});
+$('#btnBack').addEventListener('click',goBack);
+
+/* 渲染器 */
+var renderers={};
+
+/* 几何装饰（芯片线框） */
+var GEO='<svg viewBox="0 0 96 96"><g class="gline"><rect x="28" y="28" width="40" height="40" rx="6"/><rect x="40" y="40" width="16" height="16" rx="3"/><path d="M40 28V20M56 28V20M40 76v-8M56 76v-8M28 40h-8M28 56h-8M68 40h8M68 56h8"/></g><circle class="gdot" cx="48" cy="15" r="2.6"/><circle class="gdot" cx="81" cy="48" r="2.6"/><circle class="gdot" cx="48" cy="81" r="2.4" opacity=".35"/></svg>';
+
+renderers.home=function(){
+  var h='<div class="kick">APPLE-UI PARAMETERS</div><div class="h1">一套参数，全部界面</div>'
+    +'<div class="sub">双学院试错沉淀的 UI 规范。这个页面本身就是样板：每块都可点可验。</div>';
+  h+='<div class="hero lift"><div class="geo">'+GEO+'</div>'
+    +'<span class="kick" style="margin-bottom:2px">FOCUS · 今日焦点</span>'
+    +'<h2>简约色调 + 现代几何<br>中性底 · 细线 · 单点强调</h2>'
+    +'<div class="hero-cap">hero 用白卡 hairline 细边而非渐变大色块，右侧芯片线框装饰是唯一的图形语言。</div>'
+    +'<div class="foot"><span class="pill gold">🔥 已按此规范</span><button class="btn-go" data-go="parts">看组件'+IC('arrow-r')+'</button></div></div>';
+  /* 配色速览 */
+  h+='<div class="sec-title">COLORS 令牌速览</div><div class="tokens">';
+  var TOK=[['accent','#007AFF','主蓝'],['ink','#1D1D1F','主文字'],['muted','#86868B','弱文字'],['bg','#F2F2F7','页面底'],['green','#34C759','完成'],['red','#FF3B30','错误'],['gold','#FF9500','成就'],['sep','#D9D9DE','细线']];
+  var isDarkNow = theme==='dark'||(theme==='auto'&&isDark.matches);
+  TOK.forEach(function(t){
+    h+='<div class="tok"><div class="sw" style="background:'+t[1]+'"></div><b>'+t[0]+'</b><span class="cap">'+t[2]+'</span></div>';
+  });
+  h+='</div>';
+  /* 任务 cell */
+  h+='<div class="sec-title">TODAY 任务</div><div class="group">';
+  var TASK=[['📚','完成第 3 章随堂',true],['✏️','练习卷 · 30 分钟',false],['📅','打卡',false]];
+  TASK.forEach(function(t,i){
+    h+='<button class="cell"><span class="gi" style="background:'+(i===0?'linear-gradient(135deg,#0A84FF,#5E5CE6)':i===1?'linear-gradient(135deg,#FF9F0A,#FF7A00)':'linear-gradient(135deg,#34C759,#28A745)')+'">'+t[0]+'</span>'
+      +'<b>'+t[1]+'</b><span class="gv">'+(t[2]?'完成':'进行中')+'</span><span class="garr">'+IC('chev-r')+'</span></button>';
+  });
+  h+='</div>';
+  return h;
+};
+
+/* 组件陈列 */
+renderers.parts=function(){
+  var h='<div class="kick">COMPONENTS</div><div class="h1">组件与手感</div><div class="sub">按压：iOS 高亮不变形。试着点下面每一样。</div>';
+  h+='<div class="card" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">'
+    +'<span class="cap" style="width:100%;font-weight:600">按钮（触屏按下变暗，不缩放）</span>'
+    +'<button class="btn-solid" data-act="demo">主按钮</button>'
+    +'<button class="btn-line" data-act="demo">次按钮</button>'
+    +'<button class="btn-go" data-go="quiz" style="margin-left:0">答题卡 →</button></div>';
+  h+='<div class="card"><span class="cap" style="font-weight:600;display:block;margin-bottom:10px">常驻解析条（错题反馈，不消失）</span>'
+    +'<div class="why-note why-ok" style="display:flex"><div class="why-body"><span class="why-ic">'+IC('check')+'</span><span><b>答对了。</b>解析固定在这里，想读多久读多久，绝不放会消失的 toast。</span></div></div>'
+    +'<div class="why-note why-no" style="display:flex;margin-top:10px"><div class="why-body"><span class="why-ic">'+IC('info')+'</span><span><b>答错了，正确答案：「B」</b><br>红色条提示错误与错因，附「再选一次」可重做。</span></div><button class="retry-btn" data-act="demo">↻ 再选一次</button></div></div>';
+  h+='<div class="card" style="display:flex;flex-direction:column;gap:8px">'
+    +'<span class="cap" style="font-weight:600">toast（只放 ≤12 字短提示，2.2s 自隐）</span>'
+    +'<button class="btn-line" style="align-self:flex-start" data-act="toast">弹个 toast</button></div>';
+  /* 触感实验室 */
+  h+='<div class="card"><span class="cap" style="font-weight:600;display:block;margin-bottom:10px">触感实验室 · 长按下面这行（桌面鼠标按住也行）</span>'
+    +'<div class="group"><button class="cell lp-cell" id="lpCell"><span class="gi" style="background:linear-gradient(135deg,#FF453A,#D70015)">'+IC('info')+'</span><b>长按我 · 弹操作菜单</b><span class="gv" style="font-size:13px">500ms</span></button></div>'
+    +'<div class="cap" style="margin-top:10px;line-height:1.7">iPhone 没有 Vibration API：长按用「按压加深 + 弹性上滑菜单」补触感；Android 真机长按时会额外震一下。位移超过 10px 自动取消，不误伤滚动。</div></div>';
+  h+='<div class="card"><span class="cap" style="font-weight:600;display:block;margin-bottom:12px">cell 分组表（17px 正文 · 分隔线对齐文字 · 44+ 热区）</span>'
+    +'<div class="group"><button class="cell"><span class="gi" style="background:linear-gradient(135deg,#0A84FF,#5E5CE6)">'+IC('book')+'</span><b>章节列表行</b><span class="garr">'+IC('chev-r')+'</span></button>'
+    +'<button class="cell"><span class="gi" style="background:linear-gradient(135deg,#FF9F0A,#FF7A00)">'+IC('calendar')+'</span><b>日历入口</b><span class="garr">'+IC('chev-r')+'</span></button>'
+    +'<button class="cell"><span class="gi" style="background:linear-gradient(135deg,#34C759,#28A745)">'+IC('check')+'</span><b>已完成项</b><span class="gv">✓</span></button></div></div>';
+  return h;
+};
+
+/* 答题演示 */
+var QUIZ={opts:[
+  {t:'选项 A：惯性思维',ok:false,why:'A 是被包装过的干扰项。'},
+  {t:'选项 B：正确答案',ok:true,why:'B 对：因为机制如此，参数表里有完整答案。'},
+  {t:'选项 C：常见错解',ok:false,why:'C 是经典错因，很多人栽在这里。'}
+]};
+var answered=null;
+renderers.quiz=function(){
+  answered=null;
+  var h='<div class="kick">QUIZ</div><div class="h1">随堂一题</div><div class="sub">点错也没关系，看解析后可以「再选一次」。</div>';
+  h+='<div class="card"><div class="q-stem">演示题干：选择正确的那一项？</div>';
+  ['A','B','C'].forEach(function(k,i){
+    h+='<button class="opt" data-i="'+i+'"><span class="k">'+k+'</span><span>'+QUIZ.opts[i].t+'</span><span class="mark">'+IC('check')+'</span></button>';
+  });
+  h+='<div class="why-note" id="whyQ"></div></div>';
+  return h;
+};
+
+/* 我的 */
+renderers.mine=function(){
+  var h='<div class="kick">SETTINGS</div><div class="h1">我的</div><div class="sub">分组表布局 · 外观实时切换。</div>';
+  h+='<div class="card" style="display:flex;align-items:center;gap:14px;border-radius:var(--r-l)">'
+    +'<div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#0A84FF,#5E5CE6);display:flex;align-items:center;justify-content:center;color:#fff;font-size:24px">🐹</div>'
+    +'<div><b style="font-size:18px">鼠哥</b><span class="cap" style="display:block">此规范 · 验证中</span></div></div>';
+  h+='<div class="group" style="margin-top:12px">'
+    +'<button class="cell" id="themeCell"><span class="gi" style="background:linear-gradient(135deg,#5856D6,#AF52DE)">'+IC('moon')+'</span><b>外观</b><span class="gv" id="themeVal">自动</span><span class="garr">'+IC('chev-r')+'</span></button>'
+    +'<button class="cell" data-go="home"><span class="gi" style="background:linear-gradient(135deg,#0A84FF,#5E5CE6)">'+IC('home')+'</span><b>回今日</b><span class="garr">'+IC('chev-r')+'</span></button></div>';
+  return h;
+};
+
+/* 事件委托 */
+scroller.addEventListener('click',function(e){
+  var act=e.target.closest('[data-act]');
+  if(act){
+    var a=act.getAttribute('data-act');
+    if(a==='toast') toast('完成，一条短提示');
+    else if(a==='demo') toast('✓ 反馈正确：只有变暗，没有缩放');
+    return;
+  }
+  var gBtn=e.target.closest('[data-go]');
+  if(gBtn){ var g=gBtn.getAttribute('data-go'); if(renderers[g]) go(g); return; }
+  var opt=e.target.closest('.opt');
+  if(opt){
+    var i=+opt.getAttribute('data-i'); if(answered!==null) return;
+    answered=i;
+    var ok=QUIZ.opts[i].ok;
+    document.querySelectorAll('.opt').forEach(function(o){
+      var oi=+o.getAttribute('data-i');
+      o.style.pointerEvents='none';
+      if(oi===i) o.classList.add(ok?'correct':'wrong');
+      else if(QUIZ.opts[oi].ok){ o.classList.add('correct','muted'); o.querySelector('.mark').style.display='inline-flex'; }
+      if(QUIZ.opts[oi].ok&&o.querySelector('.mark')) o.querySelector('.mark').style.display='inline-flex';
+    });
+    var w=$('#whyQ');
+    if(ok){
+      w.className='why-note why-ok';
+      w.innerHTML='<div class="why-body"><span class="why-ic">'+IC('check')+'</span><span><b>答对了。</b>'+QUIZ.opts[i].why+'</span></div>';
+    }else{
+      w.className='why-note why-no';
+      w.innerHTML='<div class="why-body"><span class="why-ic">'+IC('info')+'</span><span><b>答错了，正确答案：「B」</b><br>'+QUIZ.opts[i].why+'</span></div>'
+        +'<button class="retry-btn" data-retry>↻ 再选一次</button>';
+    }
+    return;
+  }
+  var rt=e.target.closest('[data-retry]');
+  if(rt){
+    answered=null;
+    document.querySelectorAll('.opt').forEach(function(o){
+      o.classList.remove('correct','wrong','muted'); o.style.pointerEvents='';
+      var m=o.querySelector('.mark'); if(m) m.style.display='none';
+    });
+    var w2=$('#whyQ'); w2.className='why-note'; w2.innerHTML='';
+    toast('重置，再来一次');
+  }
+});
+var tc=document.getElementById('dockbar');
+/* theme cell 在 mine 渲染后绑定 */
+scroller.addEventListener('click',function(e){
+  var cell=e.target.closest('#themeCell');
+  if(!cell) return;
+  var seq=['auto','light','dark'],cur=theme;
+  theme=seq[(seq.indexOf(cur)+1)%3];
+  applyTheme();
+  $('#themeVal').textContent={auto:'跟随系统',light:'浅色',dark:'深色'}[theme];
+});
+
+/* 启动 */
+$('#backIco').innerHTML=I['back'];
+applyTheme();
+history.replaceState({v:'home'},'');
+renderView('home',false);
+</script>
+</body>
+</html>

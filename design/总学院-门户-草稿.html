@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>鼠哥学院 · 总门户（草稿）</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#F2F2F7;--bg-glow:#fff;--card:#fff;--ink:#1D1D1F;--ink2:#3C3C43;--muted:#86868B;
+  --sep:rgba(60,60,67,.12);--glass:rgba(250,250,252,.62);--glass-edge:rgba(255,255,255,.5);
+  --sh-card:0 1px 1.5px rgba(0,0,0,.02),0 2px 10px rgba(0,0,0,.035);
+  --sh-float:0 14px 36px rgba(0,0,0,.16);--r-l:26px;--r-m:18px;
+  --ease:cubic-bezier(.32,.72,0,1);
+}
+html,body{height:100%}
+body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro SC","PingFang SC","Segoe UI","Microsoft YaHei",sans-serif;
+  background:radial-gradient(1200px 600px at 20% -10%,var(--bg-glow),transparent),var(--bg);
+  color:var(--ink);overflow:hidden}
+button{font-family:inherit;border:none;background:none;color:inherit;cursor:pointer}
+a{text-decoration:none;color:inherit}
+#app{display:flex;flex-direction:column;height:100dvh}
+#topbar{flex:none;height:calc(env(safe-area-inset-top,0px)+54px);padding:env(safe-area-inset-top,0px) 14px 0;
+  display:flex;align-items:center;position:relative;background:var(--glass);
+  -webkit-backdrop-filter:blur(40px) saturate(1.7);backdrop-filter:blur(40px) saturate(1.7)}
+#topbar::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:1px;background:linear-gradient(var(--glass-edge),rgba(120,120,128,.25))}
+#topbar .brand{position:absolute;left:50%;bottom:9px;transform:translateX(-50%);text-align:center;line-height:1.15;pointer-events:none}
+#topbar .brand b{font-size:15px;font-weight:600;letter-spacing:.2px}
+#topbar .brand span{font-size:10px;color:var(--muted);font-weight:600;letter-spacing:.8px}
+#scroller{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:18px 16px 70px;scrollbar-width:thin}
+.inner{max-width:920px;margin:0 auto}
+.kick{font-size:11px;font-weight:800;letter-spacing:1.8px;color:#007AFF}
+.h1{font-size:30px;font-weight:800;letter-spacing:-.5px;line-height:1.1}
+.sub{font-size:14px;color:var(--muted);margin-top:5px;line-height:1.55}
+.hero{margin-top:16px;position:relative;overflow:hidden;background:var(--card);border:1px solid var(--sep);
+  border-radius:var(--r-l);box-shadow:var(--sh-card);padding:24px;display:flex;flex-direction:column;gap:11px}
+.hero .hk{font-size:12px;font-weight:800;letter-spacing:2.2px;color:#007AFF}
+.hero .next{font-size:21px;font-weight:800;line-height:1.35;padding-right:40px}
+.hero .pills{display:flex;gap:8px;flex-wrap:wrap}
+.pill{font-size:13px;font-weight:600;padding:5px 12px;border-radius:16px;background:rgba(120,120,128,.09);color:var(--ink2)}
+.pill.b{background:rgba(0,122,255,.12);color:#007AFF}
+.sec{font-size:13px;font-weight:600;color:var(--muted);letter-spacing:.4px;margin:22px 0 10px}
+.grid{display:grid;grid-template-columns:1fr;gap:12px}
+@media(min-width:680px){.grid{grid-template-columns:1fr 1fr}}
+.ac{display:flex;flex-direction:column;gap:13px;text-align:left;background:var(--card);border:1px solid var(--sep);
+  border-radius:var(--r-l);box-shadow:var(--sh-card);padding:18px;position:relative;overflow:hidden;
+  transition:transform .22s var(--ease),box-shadow .22s var(--ease)}
+@media(hover:hover){.ac:hover{transform:translateY(-3px) scale(1.015);box-shadow:0 6px 14px rgba(0,0,0,.05),0 12px 30px rgba(0,0,0,.1)}}
+.ac .top{display:flex;align-items:center;gap:12px}
+.ico{width:48px;height:48px;border-radius:14px;flex:none;display:flex;align-items:center;justify-content:center;color:#fff;font-size:23px;box-shadow:0 3px 10px rgba(0,0,0,.12)}
+.ac b{font-size:17px}
+.ac .d{font-size:12.5px;color:var(--muted);line-height:1.5;flex:1}
+.ac .stat{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:12px;color:var(--ink2);font-weight:600}
+.ac .go{align-self:flex-start;font-size:14px;font-weight:700;color:#fff;padding:8px 18px;border-radius:12px}
+.foot-tip{text-align:center;color:var(--muted);font-size:12px;margin-top:22px;line-height:1.8}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="topbar">
+    <div class="brand"><b>🐭 鼠哥学院</b><span>ACADEMY HUB</span></div>
+  </div>
+  <div id="scroller"><div class="inner">
+    <div class="kick">鼠哥学院 · 总门户</div>
+    <div class="h1">四院合一，一门硬课</div>
+    <div class="sub">一个链接，四门硬课，一群同学。账号互通、打卡四院共通、进度各自独立。</div>
+
+    <div class="hero">
+      <span class="hk">今日 · ONE LINE</span>
+      <b class="next">继续昨天的战线：芯片战争第 2 章「开关」正等你开卷。</b>
+      <div class="pills"><span class="pill b">🔥 连签 3 天</span><span class="pill">总进度 21%</span><span class="pill">错题 4 待订正</span></div>
+    </div>
+
+    <div class="sec">ACADEMIES 学院</div>
+    <div class="grid">
+      <button class="ac">
+        <div class="top"><span class="ico" style="background:linear-gradient(135deg,#0A84FF,#5E5CE6)">🧠</span><b>芯片战争学院</b></div>
+        <div class="d">米勒《芯片战争》36 章 · 随堂题点亮章节，读懂半导体七十年的大国博弈。</div>
+        <div class="stat"><span class="pill">已学 1/36 章</span></div>
+        <span class="go" style="background:linear-gradient(135deg,#0A84FF,#5E5CE6)">进入 →</span>
+      </button>
+      <button class="ac">
+        <div class="top"><span class="ico" style="background:linear-gradient(135deg,#FF9F0A,#FF7A00)">∫</span><b>微积分学院</b></div>
+        <div class="d">大一高数先修 · 极限导数积分，一步一练，公式即刻批改。</div>
+        <div class="stat"><span class="pill">已学 0/60 讲</span></div>
+        <span class="go" style="background:linear-gradient(135deg,#FF9F0A,#FF7A00)">进入 →</span>
+      </button>
+      <button class="ac">
+        <div class="top"><span class="ico" style="background:linear-gradient(135deg,#34C759,#28A745)">🐍</span><b>Python 学院</b></div>
+        <div class="d">浏览器里写代码 · 30 章渐进，每课动手即判题。</div>
+        <div class="stat"><span class="pill">已学 0/30 章</span></div>
+        <span class="go" style="background:linear-gradient(135deg,#34C759,#28A745)">进入 →</span>
+      </button>
+      <button class="ac">
+        <div class="top"><span class="ico" style="background:linear-gradient(135deg,#FF453A,#D70015)">⚙</span><b>C 语言学院</b></div>
+        <div class="d">从指针到内存 · 浏览器内真编译真运行。</div>
+        <div class="stat"><span class="pill">已学 0/50 章</span></div>
+        <span class="go" style="background:linear-gradient(135deg,#FF453A,#D70015)">进入 →</span>
+      </button>
+    </div>
+
+    <div class="foot-tip">进度与账号 · 四院同一体系 · 源码公开于 GitHub · 意见随时「留言」<br>由拉里·佩奇搭建 · 鼠哥学院</div>
+  </div></div>
+</div>
+</body>
+</html>

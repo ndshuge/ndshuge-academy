@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>转场草稿对比 · A推门 / B轻扫 / C纸带</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#F2F2F7; --card:#fff; --ink:#1D1D1F; --ink2:#3C3C43; --muted:#8E8E93;
+  --accent:#007AFF; --accent-soft:rgba(0,122,255,.12); --sep:rgba(60,60,67,.12);
+  --sh-card:0 1px 1.5px rgba(0,0,0,.02),0 2px 10px rgba(0,0,0,.035);
+}
+body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro SC","PingFang SC","Segoe UI","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--ink);height:100dvh;display:flex;flex-direction:column}
+#top{flex:none;display:flex;gap:6px;padding:10px 12px;border-bottom:1px solid var(--sep)}
+.mode{flex:1;padding:9px 0;border:none;border-radius:11px;background:var(--card);font-family:inherit;font-size:12.5px;font-weight:600;color:var(--ink2);cursor:pointer;box-shadow:var(--sh-card)}
+.mode.on{background:var(--accent);color:#fff}
+#bar{flex:1;position:relative;overflow:hidden}
+#scroller{position:absolute;inset:0;overflow-y:auto;scrollbar-width:none}
+.sc-inner{max-width:760px;margin:0 auto;padding:16px}
+.kick{font-size:11px;font-weight:800;letter-spacing:1.6px;color:var(--accent);margin-bottom:2px}
+.h1{font-size:26px;font-weight:800;letter-spacing:-.3px;margin-bottom:12px}
+.hint{font-size:13px;color:var(--muted);background:var(--accent-soft);border-radius:12px;padding:9px 13px;margin-bottom:14px;line-height:1.5}
+.card{background:var(--card);border-radius:16px;box-shadow:var(--sh-card);padding:16px;margin-bottom:10px}
+.card+.card{margin-top:0}
+.item{width:100%;text-align:left;display:flex;align-items:center;gap:12px;background:var(--card);border:none;border-radius:16px;box-shadow:var(--sh-card);padding:13px 14px;margin-bottom:10px;font-family:inherit;cursor:pointer}
+.num{width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,#0A84FF,#5E5CE6);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;flex:none}
+.item b{font-size:15px;color:var(--ink)}
+.item .cap{display:block;font-size:12px;color:var(--muted);margin-top:2px}
+.back{display:inline-flex;align-items:center;gap:6px;border:none;background:var(--accent-soft);color:var(--accent);font-family:inherit;font-weight:600;font-size:14px;padding:8px 15px;border-radius:11px;cursor:pointer;margin-bottom:14px}
+.big{font-size:19px;font-weight:800}
+</style>
+</head>
+<body>
+<div id="top">
+  <button class="mode on" data-m="push">A · 推门覆盖</button>
+  <button class="mode" data-m="glide">B · 同速轻扫</button>
+  <button class="mode" data-m="belt">C · 纸带轨道</button>
+</div>
+<div id="bar"><div id="scroller"><div class="sc-inner" id="inner"></div></div></div>
+
+<script>
+var $=function(s){return document.querySelector(s)};
+var scroller=$('#scroller'), inner=$('#inner');
+var MODE='push';
+var ITEMS=['集成电路','晶体管','光刻与掩模','台积电的崛起','摩尔定律','存储器战争','EUV 长征','芯片冷战 2.0'];
+var _busy=false;
+
+/* 三种转场引擎 */
+function swap(newHtml, dir){          // dir 'l' 前进 / 'r' 返回
+  if(_busy){ inner.innerHTML=newHtml; scroller.scrollTop=0; return; }
+  _busy=true;
+  if(MODE==='push')   pushAnim(newHtml,dir);
+  else if(MODE==='glide') glideAnim(newHtml,dir);
+  else beltAnim(newHtml,dir);
+}
+/* A 推门覆盖：新页满宽滑入盖旧页，旧页被同向推一小段并微缩 */
+function pushAnim(newHtml,dir){
+  var left=dir!=='r';
+  var old=document.createElement('div'); old.className='sc-inner';
+  old.style.cssText='position:absolute;inset:0;margin:0;padding:16px;overflow:hidden;background:var(--bg)';
+  old.style.top=(-scroller.scrollTop)+'px';
+  while(inner.firstChild) old.appendChild(inner.firstChild);
+  scroller.appendChild(old);
+  var v=inner; v.style.position='relative';
+  if(left){
+    v.style.zIndex='2'; old.style.zIndex='1';
+    v.style.transform='translateX(100vw)';
+    v.innerHTML=newHtml; scroller.scrollTop=0; void v.offsetWidth;
+    v.style.transition='transform .34s cubic-bezier(.32,.72,0,1)';
+    v.style.transform='translateX(0)';
+    old.style.transition='transform .34s cubic-bezier(.32,.72,0,1)';
+    old.style.transform='translateX(-30vw) scale(.98)';
+  } else {
+    v.style.zIndex='1'; old.style.zIndex='2';
+    v.style.transform='translateX(-30vw) scale(.98)';
+    v.innerHTML=newHtml; scroller.scrollTop=0; void v.offsetWidth;
+    v.style.transition='transform .34s cubic-bezier(.32,.72,0,1)';
+    v.style.transform='translateX(0) scale(1)';
+    old.style.transition='transform .34s cubic-bezier(.32,.72,0,1)';
+    old.style.transform='translateX(100vw)';
+  }
+  setTimeout(cleanup,430);
+  function cleanup(){
+    if(old.parentNode) old.parentNode.removeChild(old);
+    v.style.transition=''; v.style.transform=''; v.style.position=''; v.style.zIndex='';
+    _busy=false;
+  }
+}
+/* B 同速轻扫：两页各走半屏但同一曲线同速到位（无覆盖主层，像两卡错身） */
+function glideAnim(newHtml,dir){
+  var left=dir!=='r';
+  var old=document.createElement('div'); old.className='sc-inner';
+  old.style.cssText='position:absolute;inset:0;margin:0;padding:16px;overflow:hidden;background:var(--bg)';
+  old.style.top=(-scroller.scrollTop)+'px';
+  while(inner.firstChild) old.appendChild(inner.firstChild);
+  scroller.appendChild(old);
+  var v=inner; v.style.position='relative';
+  var sp=left?'50vw':'-50vw';          // 新页从对方半屏来
+  v.style.zIndex='2'; old.style.zIndex='1';
+  v.style.transform='translateX('+sp+')';
+  v.innerHTML=newHtml; scroller.scrollTop=0; void v.offsetWidth;
+  var t='transform .30s cubic-bezier(.22,1,.36,1)';
+  v.style.transition=t;
+  v.style.transform='translateX(0)';
+  old.style.transition=t;
+  old.style.transform=left?'translateX(-50vw)':'translateX(50vw)';
+  setTimeout(function(){
+    if(old.parentNode) old.parentNode.removeChild(old);
+    v.style.transition=''; v.style.transform=''; v.style.position=''; v.style.zIndex='';
+    _busy=false;
+  },380);
+}
+/* C 纸带轨道：两页并排成 200vw 轨道整条同步滑一屏 */
+function beltAnim(newHtml,dir){
+  var left=dir!=='r';
+  var tr=document.createElement('div');
+  tr.style.cssText='position:absolute;left:0;top:0;display:flex;width:200vw;z-index:9;pointer-events:none;will-change:transform';
+  function scr(){var d=document.createElement('div');d.style.cssText='width:100vw;flex:none;height:100dvh;overflow:hidden;background:var(--bg)';var w=document.createElement('div');w.className='sc-inner';w.style.cssText='max-width:760px;margin:0 auto;padding:16px';d.appendChild(w);return {d:w};}
+  var a=scr(),b=scr();
+  while(inner.firstChild) a.d.appendChild(inner.firstChild);
+  b.d.innerHTML=newHtml;
+  tr.appendChild(a.d); tr.appendChild(b.d);
+  scroller.appendChild(tr);
+  tr.style.transform=left?'translateX(0)':'translateX(-100vw)';
+  inner.style.visibility='hidden'; scroller.scrollTop=0;
+  void tr.offsetWidth;
+  tr.style.transition='transform .4s cubic-bezier(.32,.72,0,1)';
+  tr.style.transform=left?'translateX(-100vw)':'translateX(0)';
+  setTimeout(function(){
+    var vis=left?b:a;
+    while(vis.d.firstChild) inner.appendChild(vis.d.firstChild);
+    if(tr.parentNode) tr.parentNode.removeChild(tr);
+    inner.style.visibility='';
+    _busy=false;
+  },480);
+}
+
+/* 页面 */
+function homeHTML(){
+  var h='<div class="kick">TRANSITION DEMO</div><div class="h1">三种转场对比</div>'
+    +'<div class="hint">点下面任意一项进二级页，再看左上返回的退场。<br><b>A 推门覆盖</b>：新页满宽盖入、旧页被推+微缩（iOS 味）· <b>B 同速轻扫</b>：两页各半屏同速错身 · <b>C 纸带轨道</b>：两页并排整条平移（你描述的方案，主版正在用）</div>';
+  ITEMS.forEach(function(t,i){
+    h+='<button class="item" data-open="'+i+'"><span class="num">'+(i+1)+'</span><span><b>'+t+'</b><span class="cap">第 '+(i+1)+' 章 · 讲义 4 节 · 随堂 10 题</span></span></button>';
+  });
+  return h;
+}
+function detailHTML(i){
+  var h='<button class="back" data-back="1">‹ 返回列表</button>'
+    +'<div class="kick">LESSON '+(i+1)+'</div><div class="h1">'+ITEMS[i]+'</div>'
+    +'<div class="card"><div class="big">开讲词</div><div style="font-size:14px;line-height:1.8;color:var(--ink2);margin-top:8px">这是第 '+(i+1)+' 章的演示内容卡片。切换顶部方案后返回，再点进来，就能对比三种转场在你机器上的帧率与手感。</div></div>'
+    +'<div class="card" style="height:340px;background:linear-gradient(160deg,#fff,var(--bg))">内容占位 · 长页滚动与切页速度的体感都在这</div>';
+  return h;
+}
+function render(html){ inner.innerHTML=html; scroller.scrollTop=0; }
+render(homeHTML());
+scroller.addEventListener('click',function(e){
+  var open=e.target.closest('[data-open]');
+  if(open){ _b=null; swap(detailHTML(+open.getAttribute('data-open')),'l'); return; }
+  var back=e.target.closest('[data-back]');
+  if(back){ swap(homeHTML(),'r'); }
+});
+document.querySelectorAll('.mode').forEach(function(b){
+  b.addEventListener('click',function(){
+    MODE=b.getAttribute('data-m');
+    document.querySelectorAll('.mode').forEach(function(x){ x.classList.toggle('on',x===b); });
+    toast('当前：'+(MODE==='push'?'A 推门覆盖':MODE==='glide'?'B 同速轻扫':'C 纸带轨道'));
+  });
+});
+var _tb=null;
+function toast(msg){
+  if(_tb){ _tb.remove(); }
+  _tb=document.createElement('div');
+  _tb.textContent=msg;
+  _tb.style.cssText='position:fixed;bottom:26px;left:50%;transform:translateX(-50%);background:#1D1D1F;color:#fff;font-size:13px;padding:9px 16px;border-radius:20px;z-index:99;transition:opacity .3s;box-shadow:0 8px 24px rgba(0,0,0,.25)';
+  document.body.appendChild(_tb);
+  setTimeout(function(){ if(_tb){_tb.style.opacity='0'; setTimeout(function(){ if(_tb){_tb.remove();_tb=null;} },300);} },1500);
+}
+</script>
+</body>
+</html>
