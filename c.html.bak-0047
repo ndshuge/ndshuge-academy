@@ -3564,41 +3564,11 @@ renderers.honor=function(){
 
 /* ============ 实验室 / 管理 / 关于 ============ */
 renderers.lab=function(){
-  var h='<div class="kick">C LAB</div><div class="h1">实验室</div><div class="sub">指针是 C 的灵魂：它让你亲手握住内存</div>';
-  h+='<div class="card" style="border-radius:var(--r-l)"><b>指针示意 · 内存格子</b>'
-    +'<canvas id="cvMem" width="720" height="240" style="width:100%;height:auto;background:#fff;border-radius:12px;margin-top:10px"></canvas>'
-    +'<div style="display:flex;align-items:center;gap:12px;margin-top:12px;flex-wrap:wrap">'
-    +'<input type="range" id="memS" min="0" max="7" step="1" value="2" style="flex:1;min-width:140px">'
-    +'<button class="mini-btn lift" id="memGo" style="flex:none">走一格</button></div>'
-    +'<div class="status" id="memSt" style="font-size:13px;color:var(--ink2);margin-top:10px;line-height:1.6"></div></div>';
-  setTimeout(function(){ try{ cMemDraw(); }catch(e){} },50);
-  return h;
+  return '<div class="kick">THE CHIP LAB</div><div class="h1">芯片实验室</div>'
+    +'<div class="sub">掺杂 · 光刻 · 良率 · 摩尔定律的动手实验（下一批接入画布）</div>'
+    +'<div class="card" style="text-align:center;padding:30px 20px"><span style="font-size:44px">🔬</span>'
+    +'<div class="cap" style="margin-top:8px;line-height:1.7">四个真实工艺模拟器（掺杂滑块 / 光刻曝光 / 灰尘良率 / 摩尔对数轴）正在搬入<br>先把书读起来，实验台随后就到。</div></div>';
 };
-function cMemDraw(){
-  var cv=document.getElementById('cvMem'); if(!cv||!cv.getContext) return;
-  var c=cv.getContext('2d'); var i=parseInt(document.getElementById('memS').value||0,10);
-  var W=cv.width,H=cv.height, n=8, cell=Math.min(72,(W-80)/n);
-  c.fillStyle='#fff'; c.fillRect(0,0,W,H);
-  var names=['a','b','c','d','e','f','g','h'],vals=[42,7,99,13,5,77,20,3];
-  for(var k=0;k<n;k++){
-    var x=60+k*(cell+14), y=50;
-    c.fillStyle='#F2F3F7'; c.strokeStyle='#C7C9D1';
-    c.beginPath(); c.roundRect?c.roundRect(x,y,cell,86,10):c.rect(x,y,cell,86); c.fill(); c.stroke();
-    c.fillStyle='#3C3C43'; c.font='13px ui-monospace,Consolas,monospace';
-    c.fillText('0x'+('10'+k).toString(16), x, y+16);
-    c.fillStyle='#007AFF'; c.font='bold 22px ui-monospace,Consolas,monospace';
-    c.fillText(''+vals[k], x+cell/2-12, y+56);
-    c.fillStyle='#86868B'; c.font='12px sans-serif'; c.fillText(names[k], x+cell/2-6, y+78);
-  }
-  var ax=60+i*(cell+14);
-  c.strokeStyle='#FF3B30'; c.lineWidth=3; c.beginPath(); c.moveTo(ax+cell/2, y-20); c.lineTo(ax+cell/2, y+6); c.stroke();
-  c.fillStyle='#FF3B30'; c.font='bold 13px ui-monospace,Consolas,monospace';
-  c.fillText('int *p = &'+names[i]+';', 60, H-22);
-  c.fillStyle='#3C3C43'; c.font='13px sans-serif'; c.fillText('*p = '+vals[i], 300, H-22);
-  var st=document.getElementById('memSt');
-  if(st) st.textContent='指针 p 指向第 '+i+' 格（'+names[i]+'），*p 读出 '+vals[i]+'。p+1 会走到下一个格子。';
-}
-
 renderers.manage=function(){
   var s=calcStats();
   var h='<div class="kick">ACCOUNT</div><div class="h1">管理</div>'
@@ -4017,17 +3987,6 @@ document.addEventListener('DOMContentLoaded',function(){
   history.replaceState({view:'home'},'');
   renderView('home',false);
 })();
-
-scroller.addEventListener('input',function(ev){
-  var t=ev.target; if(!t||t.id!=='memS') return;
-  try{ cMemDraw(); }catch(e){}
-});
-scroller.addEventListener('click',function(ev){
-  var g=ev.target.closest('#memGo'); if(!g) return;
-  var s=document.getElementById('memS'); if(!s) return;
-  s.value=(parseInt(s.value,10)+1)%8;
-  try{ cMemDraw(); }catch(e){}
-});
 
 </script>
 <!-- 学院壳公共 DOM 注入（与 _shell.css 配套，来源唯一：样张） -->

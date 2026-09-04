@@ -465,11 +465,46 @@ renderers.honor=function(){
 
 /* ============ 实验室 / 管理 / 关于 ============ */
 renderers.lab=function(){
-  return '<div class="kick">THE CHIP LAB</div><div class="h1">芯片实验室</div>'
-    +'<div class="sub">掺杂 · 光刻 · 良率 · 摩尔定律的动手实验（下一批接入画布）</div>'
-    +'<div class="card" style="text-align:center;padding:30px 20px"><span style="font-size:44px">🔬</span>'
-    +'<div class="cap" style="margin-top:8px;line-height:1.7">四个真实工艺模拟器（掺杂滑块 / 光刻曝光 / 灰尘良率 / 摩尔对数轴）正在搬入<br>先把书读起来，实验台随后就到。</div></div>';
+  var h='<div class="kick">PY LAB</div><div class="h1">实验室</div><div class="sub">print() 的第一行魔法：让机器回你一句话</div>';
+  h+='<div class="card" style="border-radius:var(--r-l)"><b>终端演示</b>'
+    +'<canvas id="pyTerm" width="720" height="260" style="width:100%;height:auto;background:#0D0D12;border-radius:12px;margin-top:10px"></canvas>'
+    +'<div class="status" id="pySt" style="font-size:13px;color:var(--ink2);margin-top:10px;line-height:1.6"></div></div>';
+  setTimeout(function(){ try{ pyTermAnim(); }catch(e){} },60);
+  return h;
 };
+function pyTermAnim(){
+  var cv=document.getElementById('pyTerm'); if(!cv||!cv.getContext) return;
+  var c=cv.getContext('2d'); c.fillStyle='#0D0D12'; c.fillRect(0,0,cv.width,cv.height);
+  c.font='15px ui-monospace,Consolas,monospace';
+  var lines=['$ python hello.py','Hello Python world!','$ python sum.py','1 + 2 + 3 = 6','$ python loop.py','0,1,2,3,4,5,6,7,8,9','$ █'];
+  var st=document.getElementById('pySt');
+  var li=0,ch=0,tick=0;
+  function frame(){
+    c.fillStyle='#0D0D12'; c.fillRect(0,0,cv.width,cv.height);
+    c.fillStyle='#5B8DEF'; c.fillText('$',14,30); c.fillStyle='#D4D4D4'; c.fillText(' python demo.py',36,30);
+    var y=66;
+    for(var k=0;k<Math.min(li,6);k++){
+      var ln=lines[k];
+      c.fillStyle=ln.indexOf('$')===0?'#5B8DEF':'#9CDCFE';
+      c.fillText(ln.indexOf('$')===0?'$':ln, k>0&&ln.indexOf('$')===0?14:14, y);
+      if(ln.indexOf('$')!==0){ c.fillStyle='#D4D4D4'; c.fillText(ln.replace('$ ',''),36,y); }
+      y+=30;
+    }
+    if(li<lines.length){
+      var cur=lines[li];
+      if(cur.indexOf('$')===0){ c.fillStyle='#5B8DEF'; c.fillText('$',14,y); c.fillStyle='#D4D4D4'; c.fillText(cur.slice(2,2+ch),36,y); }
+      else { c.fillStyle='#D4D4D4'; c.fillText(cur.slice(0,ch),14,y); }
+      ch++;
+      if(ch>cur.length+4){ li++; ch=0; }
+    } else {
+      c.fillStyle='#D4D4D4'; c.fillText('>>> 就到这里，下一行等你自己写',14,y);
+    }
+    if(st) st.textContent='print() 把括号里的内容送到屏幕——程序员的第一次对话。';
+    if(li<lines.length+1){ setTimeout(frame, li>=lines.length?4000:90); }
+  }
+  frame();
+}
+
 renderers.manage=function(){
   var s=calcStats();
   var h='<div class="kick">ACCOUNT</div><div class="h1">管理</div>'

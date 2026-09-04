@@ -3976,11 +3976,42 @@ renderers.honor=function(){
 
 /* ============ 实验室 / 管理 / 关于 ============ */
 renderers.lab=function(){
-  return '<div class="kick">THE CHIP LAB</div><div class="h1">芯片实验室</div>'
-    +'<div class="sub">掺杂 · 光刻 · 良率 · 摩尔定律的动手实验（下一批接入画布）</div>'
-    +'<div class="card" style="text-align:center;padding:30px 20px"><span style="font-size:44px">🔬</span>'
-    +'<div class="cap" style="margin-top:8px;line-height:1.7">四个真实工艺模拟器（掺杂滑块 / 光刻曝光 / 灰尘良率 / 摩尔对数轴）正在搬入<br>先把书读起来，实验台随后就到。</div></div>';
+  var it=(CHAPTERS[0]&&CHAPTERS[0].story&&CHAPTERS[0].story.interact)||null;
+  var h='<div class="kick">CALC LAB</div><div class="h1">实验室</div><div class="sub">一个规则变成一条曲线：笛卡尔的魔法</div>';
+  if(!it){ return h+'<div class="card" style="text-align:center;padding:30px"><div class="cap">画板数据待机</div></div>'; }
+  h+='<div class="card" style="border-radius:var(--r-l)"><b>函数互动画板 · '+esc(it.label||('y = f(x)'))+'</b>'
+    +'<p style="font-size:13.5px;color:var(--ink2);margin:6px 0;line-height:1.7">'+esc(it.desc||'')+'</p>'
+    +'<div style="display:flex;align-items:center;gap:12px;margin:10px 0;flex-wrap:wrap"><label style="font-size:13px;color:var(--ink2)">x = <b id="fxv">0</b></label>'
+    +'<input type="range" id="fxs" min="'+it.xmin+'" max="'+it.xmax+'" step="0.2" value="0" style="flex:1;min-width:140px"></div>'
+    +'<canvas id="fcv" width="720" height="400" style="width:100%;height:auto;background:#fff;border-radius:12px"></canvas></div>';
+  h+='<div class="card" style="margin-top:12px"><div class="cap" style="line-height:1.8">拖动 x，看点如何沿曲线移动——函数从「看不见的规则」变成「看得见的图像」。</div></div>';
+  setTimeout(function(){ try{ labFuncDraw(it); }catch(e){} },40);
+  return h;
 };
+function labFuncDraw(it){
+  var cv=document.getElementById('fcv'); if(!cv||!cv.getContext) return;
+  var c=cv.getContext('2d'); var xv=parseFloat(document.getElementById('fxs').value||0);
+  var W=cv.width,H=cv.height;
+  var xmin=it.xmin,xmax=it.xmax,ymin=it.ymin,ymax=it.ymax;
+  var sx=W/(xmax-xmin), sy=H/(ymax-ymin);
+  var px=function(x){ return (x-xmin)*sx; }, py=function(y){ return H-(y-ymin)*sy; };
+  c.fillStyle='#F7F8FA'; c.fillRect(0,0,W,H);
+  c.strokeStyle='#E1E3E8'; c.lineWidth=1;
+  for(var g=Math.ceil(xmin);g<=xmax;g++){ c.beginPath(); c.moveTo(px(g),0); c.lineTo(px(g),H); c.stroke(); }
+  for(var g2=Math.ceil(ymin);g2<=ymax;g2++){ c.beginPath(); c.moveTo(0,py(g2)); c.lineTo(W,py(g2)); c.stroke(); }
+  c.strokeStyle='#007AFF'; c.lineWidth=3; c.beginPath();
+  var f=function(x){ try{ return eval('(' + it.fn + ')'); }catch(e){ return 0; } };
+  for(var i=0;i<=W;i++){ var x=xmin+(i/W)*(xmax-xmin); var y=f(x);
+    var X=px(x),Y=py(y); if(i===0)c.moveTo(X,Y); else c.lineTo(X,Y); }
+  c.stroke();
+  var vy=f(xv); var X0=px(xv),Y0=py(vy);
+  c.fillStyle='#FF3B30'; c.beginPath(); c.arc(X0,Y0,7,0,7); c.fill();
+  c.strokeStyle='#FF9500'; c.setLineDash([5,4]); c.beginPath(); c.moveTo(X0,py(0)); c.lineTo(X0,Y0); c.moveTo(0,Y0); c.lineTo(X0,Y0); c.stroke(); c.setLineDash([]);
+  c.fillStyle='#3C3C43'; c.font='14px sans-serif';
+  c.fillText('x = '+xv.toFixed(1)+'   y = '+vy.toFixed(2), 14, 26);
+  var st=document.getElementById('fxv'); if(st) st.textContent=xv.toFixed(1);
+}
+
 renderers.manage=function(){
   var s=calcStats();
   var h='<div class="kick">ACCOUNT</div><div class="h1">管理</div>'
@@ -4399,6 +4430,12 @@ document.addEventListener('DOMContentLoaded',function(){
   history.replaceState({view:'home'},'');
   renderView('home',false);
 })();
+
+scroller.addEventListener('input',function(ev){
+  var t=ev.target; if(!t||t.id!=='fxs') return;
+  var it=(CHAPTERS[0]&&CHAPTERS[0].story&&CHAPTERS[0].story.interact)||null;
+  if(it){ var v=parseFloat(t.value); var el=document.getElementById('fxv'); if(el) el.textContent=v.toFixed(1); try{ labFuncDraw(it); }catch(e){} }
+});
 
 </script>
 <!-- 学院壳公共 DOM 注入（与 _shell.css 配套，来源唯一：样张） -->

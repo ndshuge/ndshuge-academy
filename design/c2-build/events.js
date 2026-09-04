@@ -371,3 +371,14 @@ document.addEventListener('DOMContentLoaded',function(){
   history.replaceState({view:'home'},'');
   renderView('home',false);
 })();
+
+scroller.addEventListener('input',function(ev){
+  var t=ev.target; if(!t||t.id!=='memS') return;
+  try{ cMemDraw(); }catch(e){}
+});
+scroller.addEventListener('click',function(ev){
+  var g=ev.target.closest('#memGo'); if(!g) return;
+  var s=document.getElementById('memS'); if(!s) return;
+  s.value=(parseInt(s.value,10)+1)%8;
+  try{ cMemDraw(); }catch(e){}
+});

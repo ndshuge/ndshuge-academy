@@ -371,3 +371,9 @@ document.addEventListener('DOMContentLoaded',function(){
   history.replaceState({view:'home'},'');
   renderView('home',false);
 })();
+
+scroller.addEventListener('input',function(ev){
+  var t=ev.target; if(!t||t.id!=='fxs') return;
+  var it=(CHAPTERS[0]&&CHAPTERS[0].story&&CHAPTERS[0].story.interact)||null;
+  if(it){ var v=parseFloat(t.value); var el=document.getElementById('fxv'); if(el) el.textContent=v.toFixed(1); try{ labFuncDraw(it); }catch(e){} }
+});
