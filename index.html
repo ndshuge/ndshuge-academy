@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
+
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <meta name="theme-color" content="#3F6179">
@@ -532,10 +533,10 @@ body{background:radial-gradient(1200px 600px at 20% -10%,var(--bg-glow,var(--car
 <script>
 /* 学院清单（相对链接：同目录部署永远打开最新学院） */
 var ACADEMIES = [
-  {id:'chip',     file:'chip.html?v=3',      name:'芯片战争学院', icon:'🧠', bg:'linear-gradient(135deg,#0A84FF,#5E5CE6)', desc:'米勒《芯片战争》36 章', sub:'材料、制造与地缘权力 · 随堂题点亮章节'},
-  {id:'calculus', file:'calculus.html?v=3',  name:'微积分学院',   icon:'∫',  bg:'linear-gradient(135deg,#FF9F0A,#FF7A00)', desc:'大一高数先修', sub:'极限导数积分 · 公式即时批改'},
-  {id:'python',   file:'python.html?v=3',    name:'Python 学院',  icon:'🐍', bg:'linear-gradient(135deg,#34C759,#28A745)', desc:'浏览器里写代码', sub:'30 章渐进 · 动手即判题'},
-  {id:'c',        file:'c.html?v=3',         name:'C 语言学院',   icon:'⚙',  bg:'linear-gradient(135deg,#FF453A,#D70015)', desc:'指针与内存', sub:'50 章 · 浏览器真编译真运行'}
+  {id:'chip',     file:'chip.html?v=4',      name:'芯片战争学院', icon:'🧠', bg:'linear-gradient(135deg,#0A84FF,#5E5CE6)', desc:'米勒《芯片战争》36 章', sub:'材料、制造与地缘权力 · 随堂题点亮章节'},
+  {id:'calculus', file:'calculus.html?v=4',  name:'微积分学院',   icon:'∫',  bg:'linear-gradient(135deg,#FF9F0A,#FF7A00)', desc:'大一高数先修', sub:'极限导数积分 · 公式即时批改'},
+  {id:'python',   file:'python.html?v=4',    name:'Python 学院',  icon:'🐍', bg:'linear-gradient(135deg,#34C759,#28A745)', desc:'浏览器里写代码', sub:'30 章渐进 · 动手即判题'},
+  {id:'c',        file:'c.html?v=4',         name:'C 语言学院',   icon:'⚙',  bg:'linear-gradient(135deg,#FF453A,#D70015)', desc:'指针与内存', sub:'50 章 · 浏览器真编译真运行'}
 ];
 document.getElementById('acGrid').innerHTML = ACADEMIES.map(function(a){
   return '<a class="card ac-card lift" href="'+a.file+'"><div class="ac-head">'
