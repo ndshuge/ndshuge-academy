@@ -10929,7 +10929,7 @@ function doRenderView(id,isBack){
   }catch(e){}
   var prev=STACK.length?STACK[STACK.length-1]:null;
   if(prev&&META[prev]){ $('#backTxt').textContent=META[prev].n; $('#btnBack').disabled=false; }
-  else { $('#backTxt').textContent='返回'; $('#btnBack').disabled=true; }
+   else if(_isRoot){ $('#backTxt').textContent='总学院'; $('#btnBack').disabled=false; } else { $('#backTxt').textContent='返回'; $('#btnBack').disabled=false; }
   window._cur=id;
   paintDock(id);
   setTimeout(function(){ if(v.className.indexOf('push')>=0) v.className='view'; },430);

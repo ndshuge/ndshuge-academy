@@ -3135,7 +3135,7 @@ function doRenderView(id,isBack){
   }catch(e){}
   var prev=STACK.length?STACK[STACK.length-1]:null;
   if(prev&&META[prev]){ $('#backTxt').textContent=META[prev].n; $('#btnBack').disabled=false; }
-  else { $('#backTxt').textContent='返回'; $('#btnBack').disabled=true; }
+   else if(_isRoot){ $('#backTxt').textContent='总学院'; $('#btnBack').disabled=false; } else { $('#backTxt').textContent='返回'; $('#btnBack').disabled=false; }
   window._cur=id;
   paintDock(id);
   try{ if(typeof initCodeMirrors==='function') initCodeMirrors(); }catch(e){}
@@ -4283,7 +4283,7 @@ function doWipe(){
 }
 /* 分享学院：复制学习链接（带版本号防缓存），支持系统分享面板 */
 function shareAcademy(){
-  var url='https://ndshuge.github.io/ndshuge-academy/python.html?v='+encodeURIComponent(APP_VER);
+  var url='https://ndshuge.github.io/ndshuge-academy/c.html?v='+encodeURIComponent(APP_VER);
   var done=function(){ toast('已复制学习链接'); };
   if(navigator.share){ navigator.share({title:'Python 学院',text:'跟我一起学 Python：',url:url}).catch(function(){}); return; }
   if(navigator.clipboard && navigator.clipboard.writeText){
