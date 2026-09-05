@@ -1,17 +1,15 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<title>🐭 鼠哥学院 · 总门户</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <meta name="theme-color" content="#3F6179">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
-<title>🐭 鼠哥学院 · 总门户</title>
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -19,7 +17,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <title>芯片学院 · 对齐样张 v2（iOS 26 玻璃语汇）</title>
 <style>
-
 /* ============================================================
    对齐样张 v2 · 设计令牌
    v2 升级（按评估结论）：
@@ -466,8 +463,7 @@ img{max-width:100%;display:block}
   font-size:10.5px;font-weight:700;letter-spacing:.5px;color:var(--muted);
   background:var(--glass);border:1px solid var(--sep);padding:3px 8px;border-radius:6px;
   -webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px)}
-</style>
-/* 2) 悬停语言 v2（Dock 款：上浮+微 scale+阴影，鼠哥 2026-09-04 定稿）
+</style><style>/* 2) 悬停语言 v2（Dock 款：上浮+微 scale+阴影，鼠哥 2026-09-04 定稿）
    只对可点元素生效：ch-row/grow 必须带 data-go* 才有点击语义；不可点静态行一律无 hover */
 .ch-row{transition:transform .2s var(--ease),background .16s var(--ease)}
 .ch-row[data-go],.ch-row[data-go-ch],.ch-row[data-go-drill],.ch-row[data-go-exam]{cursor:pointer}
@@ -489,92 +485,128 @@ img{max-width:100%;display:block}
   .mini-btn:hover{transform:translateY(-6px) scale(1.09);color:var(--accent);background:var(--fill-soft)}
 }
 
-
 :root{--r-s:12px;--r-m:18px;--r-l:26px}
 .card,.hero-card,.big-entry,.snap-card{border-radius:var(--r-l)}
 .opt,.ch-row,.tile,.mini-btn,.why-note,.fillin,.q-code{border-radius:18px}
+.tutor-card{
+  display:flex;align-items:center;gap:16px;margin-top:16px;
+  background:linear-gradient(135deg,var(--card),rgba(0,122,255,.045));
+  border:1px solid var(--sep);border-radius:var(--r-l);
+  box-shadow:var(--sh-card);padding:18px;text-align:left;width:100%;
+}
+.tutor-photo{width:76px;height:76px;border-radius:22px;flex:none;object-fit:cover;
+  box-shadow:0 4px 12px rgba(0,0,0,.14);border:2px solid #fff}
+.tutor-body{flex:1;min-width:0}
+.tutor-cap{font-size:10.5px;font-weight:800;letter-spacing:1.6px;color:var(--accent)}
+.tutor-quote{font-size:15px;font-weight:600;line-height:1.55;margin-top:3px;color:var(--ink)}
+.tutor-name{font-size:12px;color:var(--muted);margin-top:4px}
+@media (min-width:640px){ .tutor-photo{width:88px;height:88px} .tutor-quote{font-size:16px} }
 
-/* ===== 门户专属小补 ===== */
+/* ===== 跳转按钮统一 Dock 款 hover（鼠哥 2026-09-04）：凡可点跳转的按钮同底栏手感 ===== */
+@media (hover:hover){
+  .btn-go,.btn-solid,.ss-start,.mini-btn,.retry-btn,.btn-line{
+    transition:transform .26s cubic-bezier(.34,1.56,.64,1),color .18s,background .18s,filter .18s;
+    cursor:pointer;
+  }
+  .btn-go:hover,.btn-solid:hover,.ss-start:hover,.mini-btn:hover,.retry-btn:hover,.btn-line:hover{
+    transform:translateY(-6px) scale(1.09);
+  }
+  .btn-go:hover,.btn-solid:hover,.ss-start:hover{filter:brightness(.94)}
+  .mini-btn:hover,.btn-line:hover{color:var(--accent);background:var(--fill-soft)}
+  .backbtn,.homebtn{transition:transform .26s cubic-bezier(.34,1.56,.64,1),color .18s,background .18s,filter .18s}
+  .backbtn:hover,.homebtn:hover{transform:translateY(-6px) scale(1.09);color:var(--accent);background:var(--fill-soft);filter:none}
+}
 
-body{background:radial-gradient(1200px 600px at 20% -10%,var(--bg-glow,var(--card)),transparent),var(--bg)}
-.acgrid{display:grid;grid-template-columns:1fr;gap:14px;margin-top:16px}
-@media(min-width:720px){.acgrid{grid-template-columns:1fr 1fr}}
-.ac-card{display:flex;flex-direction:column;gap:12px;text-align:left;width:100%;padding:20px}
-.ac-card .ac-head{display:flex;align-items:center;gap:12px}
-.ac-card .ac-go{align-self:flex-start;margin-top:2px}
-.hintbar{margin-top:10px;font-size:12px;color:var(--muted);text-align:center;line-height:1.7}
-</head>
+/* ===== 列表行/宫格防文字挤压（2026-09-04：我的页修挤字） ===== */
+.grow b{min-width:0}
+.grow .gv{max-width:50%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:1}
+.tile .cap,.tile b{overflow-wrap:break-word}
+#view b,#view .cap,#view .sub{overflow-wrap:break-word}
+
+/* 刷题/列表行排版统一：标题单行省略 + 右侧动作胶囊 */
+.ch-row .rt{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ch-row .rta{flex:none;background:var(--accent-soft);color:var(--accent);font-size:12px;padding:4px 12px;border-radius:980px}
+.ch-row .cap{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ===== 门户 v3 专属 ===== */
+body{background:radial-gradient(1200px 600px at 20% -10%,var(--bg-glow,var(--card)),transparent),var(--bg);overflow:hidden}
+#hubscroller{position:absolute;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:20px 16px 60px;scrollbar-width:thin}
+.acgrid{display:grid;grid-template-columns:1fr;gap:14px;margin-top:6px}
+@media(min-width:760px){.acgrid{grid-template-columns:1fr 1fr}}
+.ac-card{display:flex;flex-direction:column;gap:13px;width:100%;padding:18px;text-align:left}
+.ac-head{display:flex;align-items:center;gap:13px}
+.ac-name{font-size:17px;font-weight:700}
+.ac-stat{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:2px}
+.foot-note{text-align:center;color:var(--muted);font-size:12px;line-height:1.9;margin-top:24px}
+</style></head>
 <body>
 <div id="app" style="height:100dvh">
   <div id="topbar">
     <div class="brand" style="position:static;transform:none;left:auto;align-items:flex-start;pointer-events:auto;max-width:none">
-      <b style="font-size:16px">🐭 鼠哥学院 · 总门户</b><span>FOUR ACADEMIES · ONE FAMILY</span>
+      <b style="font-size:16px">🐭 鼠哥学院</b><span>FOUR ACADEMIES · ONE FAMILY</span>
     </div>
   </div>
-  <div id="stage"><div id="scroller"><div class="view" id="view">
-    <div class="kick">鼠哥学院</div>
+  <div id="hubscroller"><div class="view" id="view">
+    <div class="kick">MOUSE ACADEMY</div>
     <div class="h1">四门硬课，一起啃</div>
-    <div class="sub">账号互通、打卡四院共通、进度各自独立。点任一学院进入，读它的书、做它的题。</div>
+    <div class="sub" style="margin-bottom:14px">账号互通 · 打卡四院共通 · 进度各自独立。挑一座学院，点开今天的第一章。</div>
 
-    <div class="hero-card">
+    <div class="hero-card lift" style="cursor:default">
       <span class="hk">TODAY · 今天</span>
-      <b class="next" style="padding-right:0">挑一座学院，点开今天的第一章。</b>
-      <div class="foot" style="gap:6px">
-        <span class="pill gold">🔥 连签按四院打卡累计</span>
-        <span class="pill blue" id="hubStreak">…</span>
+      <b class="next" style="padding-right:0" id="hubLine">加载中…</b>
+      <div class="foot" style="gap:6px" id="hubPills">
+        <span class="pill blue">总进度 ·</span>
       </div>
     </div>
 
     <div class="sec-title">ACADEMIES 学院</div>
     <div class="acgrid" id="acGrid"></div>
-    <div class="hintbar">进度与账号四院同一体系 · 源码公开于 GitHub · 由鼠哥发起、拉里·佩奇搭建<br>（预览版：学院卡将打开当前目录的学院页面；看新版效果请直接打开 design/chip2-真版-预览.html）</div>
-  </div></div></div>
+
+    <div class="foot-note">学习进度按院独立记录 · 四院同一账号体系 · 源码公开于 GitHub<br>由鼠哥发起、拉里·佩奇搭建 · 有问题在学院里「留言」</div>
+  </div></div>
 </div>
 <script>
-/* 学院清单（相对链接：同目录部署永远打开最新学院） */
 var ACADEMIES = [
-  {id:'chip',     file:'chip.html?v=4',      name:'芯片战争学院', icon:'🧠', bg:'linear-gradient(135deg,#0A84FF,#5E5CE6)', desc:'米勒《芯片战争》36 章', sub:'材料、制造与地缘权力 · 随堂题点亮章节'},
-  {id:'calculus', file:'calculus.html?v=4',  name:'微积分学院',   icon:'∫',  bg:'linear-gradient(135deg,#FF9F0A,#FF7A00)', desc:'大一高数先修', sub:'极限导数积分 · 公式即时批改'},
-  {id:'python',   file:'python.html?v=4',    name:'Python 学院',  icon:'🐍', bg:'linear-gradient(135deg,#34C759,#28A745)', desc:'浏览器里写代码', sub:'30 章渐进 · 动手即判题'},
-  {id:'c',        file:'c.html?v=4',         name:'C 语言学院',   icon:'⚙',  bg:'linear-gradient(135deg,#FF453A,#D70015)', desc:'指针与内存', sub:'50 章 · 浏览器真编译真运行'}
+  {id:'chip',     file:'chip.html?v=5',      icon:'🧠', bg:'linear-gradient(135deg,#0A84FF,#5E5CE6)',   name:'芯片战争学院', desc:'米勒《芯片战争》36 章', sub:'材料、制造与地缘权力 · 随堂题点亮章节'},
+  {id:'calculus', file:'calculus.html?v=5',  icon:'∫',  bg:'linear-gradient(135deg,#FF9F0A,#FF7A00)',  name:'微积分学院',   desc:'大一高数先修',           sub:'极限导数积分 · 公式即时批改'},
+  {id:'python',   file:'python.html?v=5',    icon:'🐍', bg:'linear-gradient(135deg,#34C759,#28A745)',  name:'Python 学院',  desc:'浏览器里写代码',         sub:'14 章渐进 · 动手即判题'},
+  {id:'c',        file:'c.html?v=5',         icon:'⚙',  bg:'linear-gradient(135deg,#FF453A,#D70015)',  name:'C 语言学院',   desc:'指针与内存',             sub:'50 章 · 讲义代码 + 判题'}
 ];
-document.getElementById('acGrid').innerHTML = ACADEMIES.map(function(a){
-  return '<a class="card ac-card lift" href="'+a.file+'"><div class="ac-head">'
-    +'<span style="width:52px;height:52px;border-radius:15px;background:'+a.bg+';display:flex;align-items:center;justify-content:center;color:#fff;font-size:26px;flex:none;box-shadow:0 3px 12px rgba(0,0,0,.12)">'+a.icon+'</span>'
-    +'<span style="flex:1;min-width:0"><b style="font-size:18px">'+a.name+'</b><span class="cap" style="display:block;font-size:12.5px;margin-top:2px">'+a.desc+'</span></span></div>'
-    +'<span class="cap" style="line-height:1.6">'+a.sub+'</span>'
-    +'<span class="pill blue stat" data-st="'+a.id+'" style="align-self:flex-start">…</span></a>';
-}).join('');
-
-/* 进度统计：同域 localStorage 前缀隔离读取（旧版同源口径：章/卷） */
 var PRE = { chip:'chip_', calculus:'pjc_', python:'pyc_', c:'cc_' };
 var TOT = { chip:36, calculus:30, python:14, c:50 };
 function cnt(prefix, key){
-  try{ var v=JSON.parse(localStorage.getItem(prefix+key)); return v? (Array.isArray(v)?v.length:(typeof v==='number'?v:Object.keys(v).length)) : 0; }catch(e){ return 0; }
+  try{ var v = JSON.parse(localStorage.getItem(prefix + key));
+    return v ? (Array.isArray(v) ? v.length : (typeof v === 'number' ? v : Object.keys(v).length)) : 0; }
+  catch(e){ return 0; }
 }
-function paintStats(){
-  Object.keys(PRE).forEach(function(id){
-    var el=document.querySelector('.stat[data-st="'+id+'"]'); if(!el) return;
-    var ch=cnt(PRE[id],'ch'); var ex=cnt(PRE[id],'examDone'); var tt=TOT[id];
-    var txt = ch>0 ? ('已学 '+Math.min(ch,tt)+'/'+tt+' 章') : (ex>0 ? ('小卷 '+ex+' 份') : '开卷中');
-    el.textContent = txt;
-  });
-}
-paintStats();
+function tk(x){ return x.getFullYear() + '-' + (x.getMonth() + 1) + '-' + x.getDate(); }
+document.getElementById('acGrid').innerHTML = ACADEMIES.map(function(a){
+  var ch = cnt(PRE[a.id], 'ch'), ex = cnt(PRE[a.id], 'examDone'), tt = TOT[a.id];
+  var stTxt = ch > 0 ? ('已学 ' + Math.min(ch, tt) + '/' + tt + ' 章') : (ex > 0 ? ('小卷 ' + ex + ' 份') : '开卷中');
+  return '<a class="card ac-card lift" href="' + a.file + '"><div class="ac-head">'
+    + '<span style="width:54px;height:54px;border-radius:16px;background:' + a.bg + ';display:flex;align-items:center;justify-content:center;color:#fff;font-size:26px;flex:none;box-shadow:0 4px 12px rgba(0,0,0,.14)">' + a.icon + '</span>'
+    + '<span style="flex:1;min-width:0"><span class="ac-name">' + a.name + '</span>'
+    + '<span class="cap" style="display:block;font-size:12.5px;margin-top:2px">' + a.desc + '</span></span></div>'
+    + '<span class="cap" style="line-height:1.65">' + a.sub + '</span>'
+    + '<span class="ac-stat"><span class="pill blue" style="font-size:12px">' + stTxt + '</span><span class="pill" style="font-size:12px;margin-left:auto">进入学习 →</span></span></a>';
+}).join('');
 
-/* 连签（全站 daily_goal） */
 try{
-  var g=JSON.parse(localStorage.getItem('daily_goal')||'{}'), set={};
-  var tk=function(x){ return x.getFullYear()+'-'+(x.getMonth()+1)+'-'+x.getDate(); };
-  Object.keys(g).forEach(function(k){ if(g[k]&&Object.keys(g[k]).length) set[k]=1; });
-  var d=new Date(), streak=0;
-  if(!set[tk(d)]) d.setDate(d.getDate()-1);
-  while(set[tk(d)]){ streak++; d.setDate(d.getDate()-1); }
-  var el=document.getElementById('hubStreak');
-  if(el) el.textContent = streak>0 ? ('🔥 今日连签 '+streak+' 天') : '今天还没打卡 · 点一座学院开始';
+  var g = JSON.parse(localStorage.getItem('daily_goal') || '{}'), set = {};
+  Object.keys(g).forEach(function(k){ if(g[k] && Object.keys(g[k]).length) set[k] = 1; });
+  var d = new Date(), streak = 0;
+  if(!set[tk(d)]) d.setDate(d.getDate() - 1);
+  while(set[tk(d)]){ streak++; d.setDate(d.getDate() - 1); }
+  var line = streak > 0 ? '🔥 今日连签 ' + streak + ' 天 — 保持住，别让小火苗断咯。' : '今天还没打卡：挑一座学院，学完一章点亮今天。';
+  var hp = '';
+  hp += '<span class="pill gold">🔥 连签 ' + streak + ' 天</span>';
+  var tch = 0, tt2 = 0;
+  Object.keys(TOT).forEach(function(k){ tch += Math.min(cnt(PRE[k], 'ch'), TOT[k]); tt2 += TOT[k]; });
+  hp += '<span class="pill blue">四院合计已学 ' + tch + '/' + tt2 + ' 章</span>';
+  var hl = document.getElementById('hubLine'); if(hl) hl.textContent = line;
+  var pp = document.getElementById('hubPills'); if(pp) pp.innerHTML = hp;
 }catch(e){}
 
-/* PWA：注册 Service Worker（网络优先，发布后自动接管刷新一次） */
 if('serviceWorker' in navigator){
   window.addEventListener('load', function(){
     navigator.serviceWorker.register('sw.js').then(function(){
@@ -585,6 +617,5 @@ if('serviceWorker' in navigator){
   });
 }
 </script>
-
 </body>
 </html>
