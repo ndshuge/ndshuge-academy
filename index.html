@@ -608,16 +608,32 @@ function cnt(prefix, key){
     return v ? (Array.isArray(v) ? v.length : (typeof v === 'number' ? v : Object.keys(v).length)) : 0; }
   catch(e){ return 0; }
 }
-function tk(x){ return x.getFullYear() + '-' + (x.getMonth() + 1) + '-' + x.getDate(); }
+function tk(x){ var d2 = new Date(x); if(d2.getHours()<4) d2.setDate(d2.getDate()-1); return d2.getFullYear() + '-' + (d2.getMonth() + 1) + '-' + d2.getDate(); }
+function acStreak(id){
+  try{
+    var g = JSON.parse(localStorage.getItem('daily_goal') || '{}');
+    var d = new Date();
+    function key(x){ var d2 = new Date(x); if(d2.getHours()<4) d2.setDate(d2.getDate()-1); return d2.getFullYear() + '-' + (d2.getMonth() + 1) + '-' + d2.getDate(); }
+    var today = key(d);
+    if(!(g[today] && g[today][id] && (g[today][id].l || g[today][id].e))) return 0;
+    var n = 0;
+    while(g[key(d)] && g[key(d)][id] && (g[key(d)][id].l || g[key(d)][id].e)){ n++; d.setDate(d.getDate()-1); }
+    return n;
+  }catch(e){ return 0; }
+}
 document.getElementById('acGrid').innerHTML = ACADEMIES.map(function(a){
   var ch = cnt(PRE[a.id], 'ch'), ex = cnt(PRE[a.id], 'examDone'), tt = TOT[a.id];
   var stTxt = ch > 0 ? ('已学 ' + Math.min(ch, tt) + '/' + tt + ' 章') : (ex > 0 ? ('小卷 ' + ex + ' 份') : '开卷中');
+  var sd = acStreak(a.id);
+  var pill = sd > 0
+    ? '<span class="pill green" style="font-size:11.5px">🔥 今日已打卡 · 连签 ' + sd + ' 天</span>'
+    : '<span class="pill" style="font-size:11.5px;background:rgba(120,120,128,.1);color:var(--muted)">今日待打卡</span>';
   return '<a class="card ac-card lift" href="' + a.file + '"><div class="ac-head">'
     + '<span style="width:54px;height:54px;border-radius:16px;background:' + a.bg + ';display:flex;align-items:center;justify-content:center;color:#fff;font-size:26px;flex:none;box-shadow:0 4px 12px rgba(0,0,0,.14)">' + a.icon + '</span>'
     + '<span style="flex:1;min-width:0"><span class="ac-name">' + a.name + '</span>'
     + '<span class="cap" style="display:block;font-size:12.5px;margin-top:2px">' + a.desc + '</span></span></div>'
     + '<span class="cap" style="line-height:1.65">' + a.sub + '</span>'
-    + '<span class="ac-stat"><span class="pill blue" style="font-size:12px">' + stTxt + '</span><span class="pill" style="font-size:12px;margin-left:auto">进入学习 →</span></span></a>';
+    + '<span class="ac-stat">' + pill + '<span class="pill blue" style="font-size:12px">' + stTxt + '</span><span class="pill" style="font-size:12px;margin-left:auto">进入学习 →</span></span></a>';
 }).join('');
 
 try{
