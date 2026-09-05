@@ -549,7 +549,7 @@ body{background:radial-gradient(1200px 600px at 20% -10%,var(--bg-glow,var(--car
 #authDim.show{display:flex}
 #authMask{position:absolute;inset:0;background:rgba(0,0,0,.42);opacity:0;transition:opacity .3s var(--ease);-webkit-backdrop-filter:blur(20px) saturate(1.4);backdrop-filter:blur(20px) saturate(1.4)}
 #authDim.show #authMask{opacity:1}
-#authCard{position:relative;width:100%;max-width:520px;margin:0 10px 14px;background:var(--card);border-radius:28px;box-shadow:var(--sh-float);padding:26px 24px calc(20px + env(safe-area-inset-bottom,0px));transform:translateY(120%) scale(.96);transition:transform .5s cubic-bezier(.24,1.42,.4,1)}
+#authCard{position:relative;width:100%;max-width:520px;margin:0 auto 0;background:var(--card);border-radius:28px 28px 0 0;box-shadow:var(--sh-float);padding:26px 24px calc(20px + env(safe-area-inset-bottom,0px));transform:translateY(120%) scale(.96);transition:transform .5s cubic-bezier(.24,1.42,.4,1)}
 #authDim.show #authCard{transform:translateY(0) scale(1)}
 #hubapp{transform-origin:center bottom;transition:transform .5s cubic-bezier(.32,.72,0,1)}
 #authDim.show ~ #hubapp{transform:scale(.93)}
@@ -668,7 +668,7 @@ function closeAuth(){
 }
 /* ===== 总院账号（Supabase · 四院共享会话 acad_sb_session） ===== */
 var SB_URL='https://yycokuphczoxfntcwizi.supabase.co';
-var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl5Y29rdXBoY3pveGZudGN3aXppIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc0MDM3MzgsImV4cCI6MjEwMjk3OTczOH0.1vm61oyqeBmc2lL_q0-rgJT2x6TsOn_DXsQ';
+var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl5Y29rdXBoY3pveGZudGN3aXppIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc0MDM3MzgsImV4cCI6MjEwMjk3OTczOH0.1vm61oyqeBmc2lL_q0-rgJT2x6TsOn_DXsQo1GQJbSM';
 var AVS=['🦊','🐼','🐸','🐙','🦄','🐯','🐨','🐰','🦁','🐢','🐳','🦉','🐭','🐿️'];
 var selAv='🦊';
 function hubSess(){ try{ var a=JSON.parse(localStorage.getItem('acad_sb_session')); if(a&&a.access_token) return a; }catch(e){} return null; }
@@ -722,6 +722,7 @@ function authModeView(){ /* 渲染 authCard 内容 */
   }
   inner+='<input class="auth-inp" type="email" id="authEmail" placeholder="邮箱">'
     +(window._authTab==='fr'?'':'<input class="auth-inp" type="password" id="authPass" placeholder="密码'+(window._authTab==='up'?'（至少 6 位）':'')+'">')
+    +(window._authTab==='up'?'<div style="font-size:12px;color:var(--muted);line-height:1.6;margin:4px 2px 2px;display:flex;gap:5px"><span style="flex:none">🔒</span><span>设置一个好记的密码。我们不会窃取你的数据，但请别把它设成和常用密码相同。</span></div>':'')
     +'<div id="authMsg" style="font-size:12px;min-height:16px;line-height:1.5;margin:2px 0 8px;color:var(--red)"></div>'
     +'<button class="auth-go" id="authGo">'+(window._authTab==='up'?'注册并登录':(window._authTab==='fr'?'发送重置邮件':'登录'))+'</button>'
     +'<button class="auth-guest" onclick="authGuest()">先以游客身份逛逛 →</button>';
