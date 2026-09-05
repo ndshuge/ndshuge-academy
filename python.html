@@ -1019,7 +1019,22 @@ var _swapBusy = false; /* 兼容旧调用遗留 */
    页面切换动效 = apple-ui-动效实验室 同款（class push/pushBack）
    其余机制不变（导航栈/参数页/守卫/主题）
    ============================================================ */
-function doRenderView(id,isBack){
+
+/* 进度自愈：随堂已答满但未点亮的章自动补入 chDone（旧数据对账，各入口口径统一） */
+function autoHeal(){
+  try{
+    if(typeof chDone==='undefined'||typeof CHAPTERS==='undefined') return;
+    var dirty=false;
+    CHAPTERS.forEach(function(c){
+      if(!c||!c.quiz||!c.quiz.length) return;
+      var sm=chSummary(c);
+      if(sm&&sm.allDone&&chDone.indexOf(c.id)===-1){ chDone.push(c.id); dirty=true; }
+    });
+    if(dirty){ store('ch',chDone); try{ if(typeof sbNotify==='function') sbNotify(); }catch(_n){} }
+  }catch(_e){}
+}
+
+function doRenderView(id,isBack){ try{ autoHeal(); }catch(_h){}
   var html=renderers[id]?renderers[id]():'<div class="cap">页面不存在</div>';
   var m=META[id]||{n:'Python 学院'};
   var nn=m.n;
