@@ -463,6 +463,8 @@ img{max-width:100%;display:block}
   font-size:10.5px;font-weight:700;letter-spacing:.5px;color:var(--muted);
   background:var(--glass);border:1px solid var(--sep);padding:3px 8px;border-radius:6px;
   -webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px)}
+/* 防 iOS 聚焦自动缩放：可编辑控件字号 >=16px */
+input[type=text],input[type=email],input[type=password],input[type=number],input:not([type]),textarea{font-size:16px!important}
 </style><style>/* 2) 悬停语言 v2（Dock 款：上浮+微 scale+阴影，鼠哥 2026-09-04 定稿）
    只对可点元素生效：ch-row/grow 必须带 data-go* 才有点击语义；不可点静态行一律无 hover */
 .ch-row{transition:transform .2s var(--ease),background .16s var(--ease)}

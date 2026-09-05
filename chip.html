@@ -5,8 +5,8 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
-<title>芯片学院 · 对齐样张 v2（iOS 26 玻璃语汇）</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
+<title>芯片战争学院 · 半导体七十年</title>
 <style>
 /* ============================================================
    对齐样张 v2 · 设计令牌
@@ -454,6 +454,9 @@ img{max-width:100%;display:block}
   font-size:10.5px;font-weight:700;letter-spacing:.5px;color:var(--muted);
   background:var(--glass);border:1px solid var(--sep);padding:3px 8px;border-radius:6px;
   -webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px)}
+
+/* 防 iOS 聚焦自动缩放 */
+input[type=text],input[type=email],input[type=password],input[type=number],input:not([type]),textarea{font-size:16px!important}
 /* ============================================================
    UI 动效强化（chip 内容层 · 不删任何内容，纯增强）
    荣誉墙 / 做题界面 / 卡片入场 / 判题反馈
@@ -943,13 +946,28 @@ img{max-width:100%;display:block}
 .ch-row .rta{flex:none;background:var(--accent-soft);color:var(--accent);font-size:12px;padding:4px 12px;border-radius:980px}
 .ch-row .cap{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 </style>
+<script>
+(function(){
+  function block(ev){ if(ev.touches && ev.touches.length > 1){ ev.preventDefault(); } }
+  function blockG(ev){ ev.preventDefault(); }
+  document.addEventListener('touchmove', block, { passive: false });
+  document.addEventListener('gesturestart', blockG);
+  document.addEventListener('gesturechange', blockG);
+  document.addEventListener('gestureend', blockG);
+  var _lastT=0;
+  document.addEventListener('touchend', function(ev){
+    var now=Date.now();
+    if(now-_lastT<350){ ev.preventDefault(); }
+    _lastT=now;
+  }, { passive: false });
+})();
+</script>
 </head>
 <body>
 <div id="app">
   <div id="topbar">
-    <button class="backbtn" id="btnBack"><span class="ic" id="backIco"></span><span id="backTxt">返回</span></button>
+    <button class="backbtn" id="btnBack"><span class="ic" id="backIco"></span><span id="backTxt">总学院</span></button>
     <div class="brand"><b id="brandName">芯片战争学院</b><span>CHIP WAR ACADEMY</span></div>
-    <button class="homebtn" id="btnPortal"><span class="ic" id="portalIco"></span>总学院</button>
   </div>
   <div id="stage">
     <div id="timerBar" style="display:none"><i></i></div>
@@ -11467,6 +11485,13 @@ function doRenderView(id,isBack){
   v.innerHTML=html;
   scroller.scrollTop=0;
   $('#brandName').textContent=nn;
+  try{
+    var _isRoot=(id==='home'||id==='hall'||id==='mine');
+    var _bt=document.getElementById('backTxt');
+    if(_bt) _bt.textContent=_isRoot?'总学院':'返回';
+    var _bi=document.getElementById('backIco');
+    if(_bi&&typeof I!=='undefined') _bi.innerHTML=_isRoot?(I['home']||''):(I['back']||'');
+  }catch(e){}
   var prev=STACK.length?STACK[STACK.length-1]:null;
   if(prev&&META[prev]){ $('#backTxt').textContent=META[prev].n; $('#btnBack').disabled=false; }
   else { $('#backTxt').textContent='返回'; $('#btnBack').disabled=true; }
@@ -12073,30 +12098,77 @@ renderers.stats=function(){
   var s=calcStats(), streak=calcStreak(), rk=curRank(s.pct);
   var tq=(stat&&stat.totalQ)?stat.totalQ:0, tc=(stat&&stat.totalCorrect)?stat.totalCorrect:0;
   var bd=badgeState(s), gotN=bd.filter(function(b){return b.got;}).length;
-  var cards=[
-    {v:s.doneC+'/'+s.totalC,l:'已学章节'},
-    {v:s.examFull+'/'+s.examTotal,l:'小卷已做'},
-    {v:tq,l:'累计答题'+(tq?' · 对 '+tc:'')},
-    {v:s.wrongPool,l:'待订正错题'},
-    {v:gotN+'/'+bd.length,l:'徽章解锁'},
-    {v:streak,l:'连续打卡'}
+  var acc = tq ? Math.round(tc/tq*100) : 0;
+  var pct=s.pct;
+  /* 当前档与下一档（进度条刻度） */
+  var curAt=0, nextAt=rk.nextAt, curName=rk.name, nextName=rk.next;
+  for(var i=0;i<RANKS.length;i++){ if(pct>=RANKS[i][0]){ curAt=RANKS[i][0]; curName=RANKS[i][1]; } }
+  var span=(nextAt!==null&&nextAt!==undefined)?(nextAt-curAt):1;
+  var innerPct=Math.max(0,Math.min(1,(pct-curAt)/span));
+  /* 荣誉调色板（随档位轮换） */
+  var PALS=[
+    ['linear-gradient(135deg,#0A84FF,#5E5CE6)','#0A84FF'],
+    ['linear-gradient(135deg,#FF9F0A,#FF7A00)','#FF9F0A'],
+    ['linear-gradient(135deg,#FF453A,#D70015)','#FF453A'],
+    ['linear-gradient(135deg,#34C759,#28A745)','#34C759'],
+    ['linear-gradient(135deg,#AF52DE,#7D2AE0)','#AF52DE'],
+    ['linear-gradient(135deg,#FFD60A,#FF9500)','#FF9500']
   ];
+  var idx=0; for(var pi=0;pi<RANKS.length;pi++){ if(pct>=RANKS[pi][0]) idx=pi; }
+  var pal=PALS[(idx+1)%PALS.length];
+  var C=pal[1], Cg=pal[0];
+  /* 进度环（SVG） */
+  var R=54, CIRC=2*Math.PI*R;
+  var ring='<div style="position:relative;width:132px;height:132px;flex:none">'
+    +'<svg width="132" height="132" viewBox="0 0 132 132" style="transform:rotate(-90deg)">'
+    +'<circle cx="66" cy="66" r="'+R+'" fill="none" stroke="var(--fill)" stroke-width="10"/>'
+    +'<circle cx="66" cy="66" r="'+R+'" fill="none" stroke="'+C+'" stroke-width="10" stroke-linecap="round" '
+    +'stroke-dasharray="'+CIRC+'" stroke-dashoffset="'+CIRC*(1-pct/100)+'" style="transition:stroke-dashoffset 1s cubic-bezier(.22,.9,.3,1)"/>'
+    +'</svg>'
+    +'<div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">'
+    +'<b style="font-size:26px;color:var(--ink);line-height:1">'+pct+'<span style="font-size:14px">%</span></b>'
+    +'<span class="cap" style="margin-top:2px">总进度</span></div></div>';
   var h='<div class="kick">OVERVIEW</div><div class="h1">进度总览</div>'
-    +'<div class="sub">'+rk.name+' · 总进度 '+s.pct+'%'+(rk.next?' · 距「'+rk.next+'」还差 '+(rk.nextAt-s.pct)+'%':' · 已达最高')+'</div>';
-  h+='<div class="card" style="border-radius:var(--r-l)"><div style="display:flex;align-items:center;gap:14px">'
-    +'<div style="flex:1"><b style="font-size:22px">'+s.pct+'%</b><div class="cap">总进度</div>'
-    +'<div style="height:8px;background:var(--fill-soft);border-radius:4px;margin-top:8px;overflow:hidden"><i style="display:block;height:100%;width:'+s.pct+'%;background:linear-gradient(90deg,#0A84FF,#5E5CE6);border-radius:4px;transition:width .6s"></i></div></div>'
-    +'<div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#FFD60A,#FF9500);display:flex;align-items:center;justify-content:center;font-size:30px;flex:none">👑</div></div>'
-    +'<div class="cap" style="margin-top:8px;color:var(--ink2)">当前称号：'+rk.name+'</div></div>';
-  h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px">';
-  cards.forEach(function(cd){
-    h+='<div class="card" style="border-radius:var(--r-l);margin:0;padding:16px;text-align:center"><b style="font-size:20px;display:block">'+cd.v+'</b><span class="cap">'+cd.l+'</span></div>';
+    +'<div class="sub">'+rk.name+' · 距「'+(rk.next||'满级')+'」还差 '+(rk.nextAt!==null&&rk.nextAt!==undefined?rk.nextAt-pct:'0')+'%</div>';
+  /* 称号横幅 */
+  h+='<div style="border-radius:24px;padding:20px;color:#fff;background:'+Cg+';box-shadow:0 12px 32px rgba(0,0,0,.18);display:flex;align-items:center;gap:16px;position:relative;overflow:hidden">'
+    +'<div style="position:absolute;right:-30px;top:-30px;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,.12)"></div>'
+    +'<div style="position:absolute;right:30px;bottom:-50px;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,.08)"></div>'
+    +'<div style="width:60px;height:60px;border-radius:20px;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;font-size:30px;flex:none;backdrop-filter:blur(4px)">'
+    +(idx===0?'🌱':idx>=RANKS.length-2?'👑':'🏆')+'</div>'
+    +'<div style="flex:1;min-width:0;position:relative;z-index:1">'
+    +'<div style="font-size:11px;font-weight:800;letter-spacing:1.6px;opacity:.85">CURRENT RANK</div>'
+    +'<b style="font-size:21px;display:block;margin-top:2px">'+curName+'</b>'
+    +'<div style="height:6px;background:rgba(255,255,255,.25);border-radius:3px;margin-top:9px;overflow:hidden">'
+    +'<i style="display:block;height:100%;width:'+Math.round(innerPct*100)+'%;background:#fff;border-radius:3px;transition:width .8s"></i></div>'
+    +'<div style="font-size:11.5px;opacity:.9;margin-top:5px;display:flex;justify-content:space-between"><span>'+curAt+'%</span><span>'+(rk.next||'满级')+' · '+(nextAt!==null&&nextAt!==undefined?nextAt+'%':'MAX')+'</span></div>'
+    +'</div></div>';
+  /* 中央行：进度环 + 今日/连签 */
+  h+='<div style="display:flex;align-items:center;gap:18px;margin-top:14px">'
+    +ring
+    +'<div style="flex:1;display:grid;grid-template-columns:1fr;gap:8px">'
+    +'<div style="display:flex;align-items:center;gap:10px;background:var(--card);border-radius:16px;padding:10px 14px;box-shadow:var(--sh-card)"><span style="font-size:22px">🔥</span><div><b style="font-size:15px;display:block">'+streak+' 天</b><span class="cap">连续打卡</span></div></div>'
+    +'<div style="display:flex;align-items:center;gap:10px;background:var(--card);border-radius:16px;padding:10px 14px;box-shadow:var(--sh-card)"><span style="font-size:22px">🎯</span><div><b style="font-size:15px;display:block">'+acc+'%</b><span class="cap">答题正确率</span></div></div>'
+    +'</div></div>';
+  /* 数据六宫格 */
+  var D=[
+    {ico:'📖',v:s.doneC+'/'+s.totalC,l:'已学章节'},
+    {ico:'📝',v:s.examFull+'/'+s.examTotal,l:'小卷已做'},
+    {ico:'🧮',v:tq,l:'累计答题'+(tc?'':'')},
+    {ico:'✍️',v:tc,l:'累计答对'},
+    {ico:'🎖️',v:gotN+'/'+bd.length,l:'徽章解锁'},
+    {ico:'🧹',v:s.wrongPool,l:'待订正错题'}
+  ];
+  h+='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px">';
+  D.forEach(function(d){
+    h+='<div style="background:var(--card);border-radius:18px;padding:12px 6px;text-align:center;box-shadow:var(--sh-card);border:1px solid var(--sep)">'
+      +'<div style="font-size:20px;line-height:1">'+d.ico+'</div>'
+      +'<b style="font-size:17px;display:block;margin-top:5px">'+d.v+'</b>'
+      +'<span class="cap" style="display:block;margin-top:2px">'+d.l+'</span></div>';
   });
   h+='</div>';
   return h;
 };
-
-
 /* ============ 实验室 / 管理 / 关于 ============ */
 renderers.lab=function(){
   return '<div class="kick">THE CHIP LAB</div><div class="h1">芯片实验室</div>'
@@ -12715,12 +12787,15 @@ function beginStudy(){
   else { _lastNav.chapter=ctx.id; _lastNav.mode=(ctx.kind==='drill')?'drill':'lesson'; go('chapter',ctx.id); startTimer(); }
 }
 /* ---------- 顶栏 / Dock 绑定 ---------- */
-$('#btnBack').addEventListener('click',function(){ tap(); guardedBack(); });
-$('#btnPortal').addEventListener('click',function(){
+$('#btnBack').addEventListener('click',function(){
   tap();
-  toast('正在前往总学院…');
-  setTimeout(function(){ location.href='https://ndshuge.github.io/ndshuge-academy/'; },260);
+  var _c=window._cur;
+  if(_c==='home'||_c==='hall'||_c==='mine'){
+    toast('正在前往总学院…');
+    setTimeout(function(){ location.href='https://ndshuge.github.io/ndshuge-academy/'; },260);
+  } else { guardedBack(); }
 });
+
 document.querySelectorAll('.dock-btn').forEach(function(b){
   b.addEventListener('click',function(){
     tap();

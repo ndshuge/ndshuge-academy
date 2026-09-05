@@ -5,7 +5,7 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
 <title>Python 学院 · 编程入门</title>
 <style>
 /* ============================================================
@@ -454,6 +454,9 @@ img{max-width:100%;display:block}
   font-size:10.5px;font-weight:700;letter-spacing:.5px;color:var(--muted);
   background:var(--glass);border:1px solid var(--sep);padding:3px 8px;border-radius:6px;
   -webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px)}
+
+/* 防 iOS 聚焦自动缩放 */
+input[type=text],input[type=email],input[type=password],input[type=number],input:not([type]),textarea{font-size:16px!important}
 /* ===== Python 代码题（pyodide 判题）模块样式 ===== */
 .codebox{margin-top:10px;border:1px solid var(--sep);border-radius:16px;overflow:hidden;background:var(--bg)}
 .cb-head{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 12px;background:rgba(127,127,127,.08);font-size:12.5px;flex-wrap:wrap}
@@ -957,13 +960,31 @@ img{max-width:100%;display:block}
 .ch-row .rta{flex:none;background:var(--accent-soft);color:var(--accent);font-size:12px;padding:4px 12px;border-radius:980px}
 .ch-row .cap{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 </style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/lib/codemirror.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/theme/darcula.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/addon/fold/foldgutter.min.css">
+<script>
+(function(){
+  function block(ev){ if(ev.touches && ev.touches.length > 1){ ev.preventDefault(); } }
+  function blockG(ev){ ev.preventDefault(); }
+  document.addEventListener('touchmove', block, { passive: false });
+  document.addEventListener('gesturestart', blockG);
+  document.addEventListener('gesturechange', blockG);
+  document.addEventListener('gestureend', blockG);
+  var _lastT=0;
+  document.addEventListener('touchend', function(ev){
+    var now=Date.now();
+    if(now-_lastT<350){ ev.preventDefault(); }
+    _lastT=now;
+  }, { passive: false });
+})();
+</script>
 </head>
 <body>
 <div id="app">
   <div id="topbar">
-    <button class="backbtn" id="btnBack"><span class="ic" id="backIco"></span><span id="backTxt">返回</span></button>
+    <button class="backbtn" id="btnBack"><span class="ic" id="backIco"></span><span id="backTxt">总学院</span></button>
     <div class="brand"><b id="brandName">Python 学院</b><span>PYTHON ACADEMY</span></div>
-    <button class="homebtn" id="btnPortal"><span class="ic" id="portalIco"></span>总学院</button>
   </div>
   <div id="stage">
     <div id="timerBar" style="display:none"><i></i></div>
@@ -2000,6 +2021,13 @@ function doRenderView(id,isBack){
   v.innerHTML=html;
   scroller.scrollTop=0;
   $('#brandName').textContent=nn;
+  try{
+    var _isRoot=(id==='home'||id==='hall'||id==='mine');
+    var _bt=document.getElementById('backTxt');
+    if(_bt) _bt.textContent=_isRoot?'总学院':'返回';
+    var _bi=document.getElementById('backIco');
+    if(_bi&&typeof I!=='undefined') _bi.innerHTML=_isRoot?(I['home']||''):(I['back']||'');
+  }catch(e){}
   var prev=STACK.length?STACK[STACK.length-1]:null;
   if(prev&&META[prev]){ $('#backTxt').textContent=META[prev].n; $('#btnBack').disabled=false; }
   else { $('#backTxt').textContent='返回'; $('#btnBack').disabled=true; }
@@ -2638,30 +2666,77 @@ renderers.stats=function(){
   var s=calcStats(), streak=calcStreak(), rk=curRank(s.pct);
   var tq=(stat&&stat.totalQ)?stat.totalQ:0, tc=(stat&&stat.totalCorrect)?stat.totalCorrect:0;
   var bd=badgeState(s), gotN=bd.filter(function(b){return b.got;}).length;
-  var cards=[
-    {v:s.doneC+'/'+s.totalC,l:'已学章节'},
-    {v:s.examFull+'/'+s.examTotal,l:'小卷已做'},
-    {v:tq,l:'累计答题'+(tq?' · 对 '+tc:'')},
-    {v:s.wrongPool,l:'待订正错题'},
-    {v:gotN+'/'+bd.length,l:'徽章解锁'},
-    {v:streak,l:'连续打卡'}
+  var acc = tq ? Math.round(tc/tq*100) : 0;
+  var pct=s.pct;
+  /* 当前档与下一档（进度条刻度） */
+  var curAt=0, nextAt=rk.nextAt, curName=rk.name, nextName=rk.next;
+  for(var i=0;i<RANKS.length;i++){ if(pct>=RANKS[i][0]){ curAt=RANKS[i][0]; curName=RANKS[i][1]; } }
+  var span=(nextAt!==null&&nextAt!==undefined)?(nextAt-curAt):1;
+  var innerPct=Math.max(0,Math.min(1,(pct-curAt)/span));
+  /* 荣誉调色板（随档位轮换） */
+  var PALS=[
+    ['linear-gradient(135deg,#0A84FF,#5E5CE6)','#0A84FF'],
+    ['linear-gradient(135deg,#FF9F0A,#FF7A00)','#FF9F0A'],
+    ['linear-gradient(135deg,#FF453A,#D70015)','#FF453A'],
+    ['linear-gradient(135deg,#34C759,#28A745)','#34C759'],
+    ['linear-gradient(135deg,#AF52DE,#7D2AE0)','#AF52DE'],
+    ['linear-gradient(135deg,#FFD60A,#FF9500)','#FF9500']
   ];
+  var idx=0; for(var pi=0;pi<RANKS.length;pi++){ if(pct>=RANKS[pi][0]) idx=pi; }
+  var pal=PALS[(idx+1)%PALS.length];
+  var C=pal[1], Cg=pal[0];
+  /* 进度环（SVG） */
+  var R=54, CIRC=2*Math.PI*R;
+  var ring='<div style="position:relative;width:132px;height:132px;flex:none">'
+    +'<svg width="132" height="132" viewBox="0 0 132 132" style="transform:rotate(-90deg)">'
+    +'<circle cx="66" cy="66" r="'+R+'" fill="none" stroke="var(--fill)" stroke-width="10"/>'
+    +'<circle cx="66" cy="66" r="'+R+'" fill="none" stroke="'+C+'" stroke-width="10" stroke-linecap="round" '
+    +'stroke-dasharray="'+CIRC+'" stroke-dashoffset="'+CIRC*(1-pct/100)+'" style="transition:stroke-dashoffset 1s cubic-bezier(.22,.9,.3,1)"/>'
+    +'</svg>'
+    +'<div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">'
+    +'<b style="font-size:26px;color:var(--ink);line-height:1">'+pct+'<span style="font-size:14px">%</span></b>'
+    +'<span class="cap" style="margin-top:2px">总进度</span></div></div>';
   var h='<div class="kick">OVERVIEW</div><div class="h1">进度总览</div>'
-    +'<div class="sub">'+rk.name+' · 总进度 '+s.pct+'%'+(rk.next?' · 距「'+rk.next+'」还差 '+(rk.nextAt-s.pct)+'%':' · 已达最高')+'</div>';
-  h+='<div class="card" style="border-radius:var(--r-l)"><div style="display:flex;align-items:center;gap:14px">'
-    +'<div style="flex:1"><b style="font-size:22px">'+s.pct+'%</b><div class="cap">总进度</div>'
-    +'<div style="height:8px;background:var(--fill-soft);border-radius:4px;margin-top:8px;overflow:hidden"><i style="display:block;height:100%;width:'+s.pct+'%;background:linear-gradient(90deg,#0A84FF,#5E5CE6);border-radius:4px;transition:width .6s"></i></div></div>'
-    +'<div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#FFD60A,#FF9500);display:flex;align-items:center;justify-content:center;font-size:30px;flex:none">👑</div></div>'
-    +'<div class="cap" style="margin-top:8px;color:var(--ink2)">当前称号：'+rk.name+'</div></div>';
-  h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px">';
-  cards.forEach(function(cd){
-    h+='<div class="card" style="border-radius:var(--r-l);margin:0;padding:16px;text-align:center"><b style="font-size:20px;display:block">'+cd.v+'</b><span class="cap">'+cd.l+'</span></div>';
+    +'<div class="sub">'+rk.name+' · 距「'+(rk.next||'满级')+'」还差 '+(rk.nextAt!==null&&rk.nextAt!==undefined?rk.nextAt-pct:'0')+'%</div>';
+  /* 称号横幅 */
+  h+='<div style="border-radius:24px;padding:20px;color:#fff;background:'+Cg+';box-shadow:0 12px 32px rgba(0,0,0,.18);display:flex;align-items:center;gap:16px;position:relative;overflow:hidden">'
+    +'<div style="position:absolute;right:-30px;top:-30px;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,.12)"></div>'
+    +'<div style="position:absolute;right:30px;bottom:-50px;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,.08)"></div>'
+    +'<div style="width:60px;height:60px;border-radius:20px;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;font-size:30px;flex:none;backdrop-filter:blur(4px)">'
+    +(idx===0?'🌱':idx>=RANKS.length-2?'👑':'🏆')+'</div>'
+    +'<div style="flex:1;min-width:0;position:relative;z-index:1">'
+    +'<div style="font-size:11px;font-weight:800;letter-spacing:1.6px;opacity:.85">CURRENT RANK</div>'
+    +'<b style="font-size:21px;display:block;margin-top:2px">'+curName+'</b>'
+    +'<div style="height:6px;background:rgba(255,255,255,.25);border-radius:3px;margin-top:9px;overflow:hidden">'
+    +'<i style="display:block;height:100%;width:'+Math.round(innerPct*100)+'%;background:#fff;border-radius:3px;transition:width .8s"></i></div>'
+    +'<div style="font-size:11.5px;opacity:.9;margin-top:5px;display:flex;justify-content:space-between"><span>'+curAt+'%</span><span>'+(rk.next||'满级')+' · '+(nextAt!==null&&nextAt!==undefined?nextAt+'%':'MAX')+'</span></div>'
+    +'</div></div>';
+  /* 中央行：进度环 + 今日/连签 */
+  h+='<div style="display:flex;align-items:center;gap:18px;margin-top:14px">'
+    +ring
+    +'<div style="flex:1;display:grid;grid-template-columns:1fr;gap:8px">'
+    +'<div style="display:flex;align-items:center;gap:10px;background:var(--card);border-radius:16px;padding:10px 14px;box-shadow:var(--sh-card)"><span style="font-size:22px">🔥</span><div><b style="font-size:15px;display:block">'+streak+' 天</b><span class="cap">连续打卡</span></div></div>'
+    +'<div style="display:flex;align-items:center;gap:10px;background:var(--card);border-radius:16px;padding:10px 14px;box-shadow:var(--sh-card)"><span style="font-size:22px">🎯</span><div><b style="font-size:15px;display:block">'+acc+'%</b><span class="cap">答题正确率</span></div></div>'
+    +'</div></div>';
+  /* 数据六宫格 */
+  var D=[
+    {ico:'📖',v:s.doneC+'/'+s.totalC,l:'已学章节'},
+    {ico:'📝',v:s.examFull+'/'+s.examTotal,l:'小卷已做'},
+    {ico:'🧮',v:tq,l:'累计答题'+(tc?'':'')},
+    {ico:'✍️',v:tc,l:'累计答对'},
+    {ico:'🎖️',v:gotN+'/'+bd.length,l:'徽章解锁'},
+    {ico:'🧹',v:s.wrongPool,l:'待订正错题'}
+  ];
+  h+='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px">';
+  D.forEach(function(d){
+    h+='<div style="background:var(--card);border-radius:18px;padding:12px 6px;text-align:center;box-shadow:var(--sh-card);border:1px solid var(--sep)">'
+      +'<div style="font-size:20px;line-height:1">'+d.ico+'</div>'
+      +'<b style="font-size:17px;display:block;margin-top:5px">'+d.v+'</b>'
+      +'<span class="cap" style="display:block;margin-top:2px">'+d.l+'</span></div>';
   });
   h+='</div>';
   return h;
 };
-
-
 /* ============ 实验室（Python 代码游乐场 · 动手练手） ============ */
 renderers.lab=function(){
   var h='<div class="kick">PY SANDBOX</div><div class="h1">代码游乐场</div>'
@@ -2780,6 +2855,7 @@ function sessDone(){
 function renderView(id, isBack){
   /* 退出确认统一走 requestNav → confirmBox（calc2 同款）；页面渲染直通 */
   doRenderView(id, isBack);
+  try{ if(typeof cmScanLater==='function') cmScanLater(); }catch(e){}
 }
 
 /* ============================================================
@@ -3123,12 +3199,15 @@ function beginStudy(){
   else { _lastNav.chapter=ctx.id; _lastNav.mode=(ctx.kind==='drill')?'drill':'lesson'; go('chapter',ctx.id); startTimer(); }
 }
 /* ---------- 顶栏 / Dock 绑定 ---------- */
-$('#btnBack').addEventListener('click',function(){ tap(); guardedBack(); });
-$('#btnPortal').addEventListener('click',function(){
+$('#btnBack').addEventListener('click',function(){
   tap();
-  toast('正在前往总学院…');
-  setTimeout(function(){ location.href='https://ndshuge.github.io/ndshuge-academy/'; },260);
+  var _c=window._cur;
+  if(_c==='home'||_c==='hall'||_c==='mine'){
+    toast('正在前往总学院…');
+    setTimeout(function(){ location.href='https://ndshuge.github.io/ndshuge-academy/'; },260);
+  } else { guardedBack(); }
 });
+
 document.querySelectorAll('.dock-btn').forEach(function(b){
   b.addEventListener('click',function(){
     tap();
@@ -3471,7 +3550,7 @@ function pyRunTap(qi, isJudge){
   var box=_pyCurCh(false); if(!box.c) return;
   var q=box.c[box.qs][qi]; if(!q) return;
   var key=box.c.id+'_'+qi;
-  var src=ta.value;
+  var src=cmVal(ta);
   pySaveCode(key, src);
   var out=_pyOut(qi,false), st=_pySt(qi,false);
   if(st) st.textContent='运行中…（首次需加载 Python 运行时，约 10 秒）';
@@ -3502,7 +3581,7 @@ function epyRunTap(qi, isJudge){
   var box=_pyCurCh(true); if(!box.c) return;
   var q=box.c[box.qs][qi]; if(!q) return;
   var key='e'+box.c.id+'_'+qi;
-  var src=ta.value;
+  var src=cmVal(ta);
   pySaveCode(key, src);
   var out=_pyOut(qi,true), st=_pySt(qi,true);
   if(st) st.textContent='运行中…（首次需加载 Python 运行时，约 10 秒）';
@@ -3533,7 +3612,7 @@ function pyShowAns(qi, isE){
   var st=_pySt(qi,isE);
   var out=_pyOut(qi,isE);
   if(ta && !(isE ? (quizStat['e'+box.c.id+'_'+qi]!==undefined) : (quizStat[box.c.id+'_'+qi]!==undefined))){
-    ta.value=q.code||'';
+    cmSet(ta,q.code||'');
     if(st) st.innerHTML='<span style="color:var(--ochre)">👁 已填入参考解，可自行运行观察输出。</span>';
   } else if(ta){
     if(st) st.textContent='已做锁定，不能覆盖。';
@@ -3549,7 +3628,7 @@ scroller.addEventListener('click', function(ev){
     var ta=document.getElementById('sandTa'); var out=document.getElementById('sandOut'); var st=document.getElementById('sandSt');
     if(!ta||!out) return;
     if(st) st.textContent='运行中…（首次约 10 秒）';
-    pyRun(ta.value).then(function(r){
+    pyRun(cmVal(ta)).then(function(r){
       out.textContent = r.err ? ('⚠ '+r.err) : (r.out || '(无输出)');
       if(st) st.textContent = r.err ? '⚠ 运行出错' : '✓ 运行完成';
     });
@@ -4026,6 +4105,79 @@ function cloudInit(){
 
 /* 启动即同步（登录态来自总院共享会话） */
 try{ cloudInit(); }catch(_e){}
+
+/* ============ CodeMirror 代码编辑器（共享模块：python3/c3） ============ */
+var CM_SRCS = [
+  'https://cdn.jsdelivr.net/npm/codemirror@5.65.16/lib/codemirror.min.js',
+  'https://cdn.jsdelivr.net/npm/codemirror@5.65.16/mode/python/python.min.js',
+  'https://cdn.jsdelivr.net/npm/codemirror@5.65.16/mode/clike/clike.min.js',
+  'https://cdn.jsdelivr.net/npm/codemirror@5.65.16/addon/edit/closebrackets.min.js',
+  'https://cdn.jsdelivr.net/npm/codemirror@5.65.16/addon/edit/matchbrackets.min.js',
+  'https://cdn.jsdelivr.net/npm/codemirror@5.65.16/addon/selection/active-line.min.js',
+  'https://cdn.jsdelivr.net/npm/codemirror@5.65.16/addon/fold/foldcode.min.js',
+  'https://cdn.jsdelivr.net/npm/codemirror@5.65.16/addon/fold/foldgutter.min.js',
+  'https://cdn.jsdelivr.net/npm/codemirror@5.65.16/addon/fold/brace-fold.min.js',
+  'https://cdn.jsdelivr.net/npm/codemirror@5.65.16/addon/comment/comment.min.js'
+];
+var _cmBusy=false,_cmReady=false,_cmQueue=[];
+function cmModeOf(ta){ return ta.getAttribute('data-cm')==='c' ? 'text/x-csrc' : 'python'; }
+function ensureCM(cb){
+  if(typeof CodeMirror!=='undefined'&&_cmReady){ cb(); return; }
+  if(_cmBusy){ _cmQueue.push(cb); return; }
+  _cmBusy=true;
+  var i=0;
+  function next(){
+    if(i>=CM_SRCS.length){ _cmReady=true; _cmBusy=false; cb(); var q=_cmQueue; _cmQueue=[]; q.forEach(function(f){ try{f();}catch(e){} }); return; }
+    var s=document.createElement('script');
+    s.src=CM_SRCS[i++];
+    s.onload=next; s.onerror=next;
+    document.head.appendChild(s);
+  }
+  next();
+}
+/* 渲染完成后把 .py-ta 变成 CodeMirror（保底重扫，幂等） */
+function initCodeMirrors(){
+  if(typeof CodeMirror==='undefined'){ ensureCM(function(){ initCodeMirrors(); }); return; }
+  document.querySelectorAll('textarea.py-ta:not(.cm-ready)').forEach(function(ta){
+    ta.classList.add('cm-ready');
+    try{
+      var readOnly = ta.hasAttribute('readonly') || ta.disabled;
+      var cm = CodeMirror.fromTextArea(ta, {
+        mode: cmModeOf(ta),
+        lineNumbers: true,
+        indentUnit: 4, tabSize: 4, indentWithTabs: false,
+        matchBrackets: true, autoCloseBrackets: true, styleActiveLine: true,
+        foldGutter: true,
+        gutters: ['CodeMirror-foldgutter','CodeMirror-linenumbers'],
+        theme: 'darcula',
+        readOnly: readOnly,
+        extraKeys: {
+          'Tab': 'indentMore','Shift-Tab': 'indentLess',
+          'Ctrl-Enter': function(m){ cmRunCurrent(m); },
+          'Ctrl-/': 'toggleComment'
+        }
+      });
+      ta.cm = cm;
+      cm.on('keyup', function(m){ });
+    }catch(e){ ta.classList.remove('cm-ready'); }
+  });
+}
+function cmVal(ta){ if(ta&&ta.cm) return ta.cm.getValue(); return ta?ta.value:''; }
+function cmSet(ta,val){ if(ta&&ta.cm){ ta.cm.setValue(String(val==null?'':val)); ta.cm.focus(); } else if(ta){ ta.value=val==null?'':val; ta.focus(); } }
+/* Ctrl-Enter 触发就近运行 */
+function cmRunCurrent(cm){
+  var wrap=cm.getWrapperElement();
+  var box=wrap?wrap.closest('.codebox'):null;
+  if(!box) return;
+  var runBtn=box.querySelector('[data-pyrun],[data-crun],[data-epyrun],[data-ecrun]');
+  if(runBtn){ runBtn.click(); }
+}
+/* renderView 完成后自动初始化编辑器（debounce，防重复扫） */
+var _cmScanTimer=null;
+function cmScanLater(){
+  if(_cmScanTimer) clearTimeout(_cmScanTimer);
+  _cmScanTimer=setTimeout(function(){ initCodeMirrors(); }, 80);
+}
 
 </script>
 <!-- 学院壳公共 DOM 注入（与 _shell.css 配套，来源唯一：样张） -->
