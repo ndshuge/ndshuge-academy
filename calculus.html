@@ -3668,8 +3668,8 @@ function quizCardsHTML(c,mode){
       h+='</div>';
     }
     h+='<div class="why-note'+(hist===1?' why-ok':(hist===0?' why-no':''))+'" id="whyNote'+qi+'">';
-    if(hist===1) h+='<div class="why-body"><span class="why-ic"></span><span><b>上次答对了。</b>'+esc(q.explain||'')+'</span></div>';
-    else if(hist===0) h+='<div class="why-body"><span class="why-ic"></span><span><b>上次答错，正确答案已标出：</b>'+esc(q.explain||'')+'</span></div>'+(q.type==='code'?'<button class="retry-btn" data-retry="'+qi+'">↻ 重新作答</button>':'');
+    if(hist===1) h+='<div class="why-body"><span class="why-ic"></span><span><b>上次答对了。</b>'+parseMath(q.explain||'')+'</span></div>';
+    else if(hist===0) h+='<div class="why-body"><span class="why-ic"></span><span><b>上次答错，正确答案已标出：</b>'+parseMath(q.explain||'')+'</span></div>'+(q.type==='code'?'<button class="retry-btn" data-retry="'+qi+'">↻ 重新作答</button>':'');
     h+='</div></div>';
   });
   return h;
@@ -3780,8 +3780,8 @@ function examHTML(c){
       });
     }
     h+='</div><div class="why-note'+(hist===1?' why-ok':(hist===0?' why-no':''))+'" id="ewhyNote'+qi+'">';
-    if(hist===1) h+='<div class="why-body"><span class="why-ic">'+IC('check')+'</span><span><b>答对了。</b>'+esc(q.explain||'')+'</span></div>';
-    else if(hist===0) h+='<div class="why-body"><span class="why-ic">'+IC('info')+'</span><span><b>上次答错，正确答案：「'+parseMath(q.options[q.answer])+'」</b><br>'+esc(q.explain||'')+'</span></div>'
+    if(hist===1) h+='<div class="why-body"><span class="why-ic">'+IC('check')+'</span><span><b>答对了。</b>'+parseMath(q.explain||'')+'</span></div>';
+    else if(hist===0) h+='<div class="why-body"><span class="why-ic">'+IC('info')+'</span><span><b>上次答错，正确答案：「'+parseMath(q.options[q.answer])+'」</b><br>'+parseMath(q.explain||'')+'</span></div>'
       +(q.type==='code'?'<button class="retry-btn" data-etry="'+qi+'">↻ 重新作答</button>':'');
     h+='</div></div>';
   });
@@ -4559,8 +4559,8 @@ scroller.addEventListener('click',function(e){
       else if(ii===q.answer) o.classList.add('correct','muted');
       if(ii===q.answer){ var m=o.querySelector('.mark'); if(m) m.style.display='inline-flex'; }
     });
-    if(ok) noteOK('whyNote'+qi,'<b>答对了。</b>'+esc(q.explain||''));
-    else noteNO('whyNote'+qi,'<b>答错了，正确答案：「'+parseMath(q.options[q.answer])+'」</b><br>'+esc(q.explain||'')+(q.type==='code'?'<br><button class="retry-btn" data-retry="'+qi+'">↻ 重新作答</button>':''));
+    if(ok) noteOK('whyNote'+qi,'<b>答对了。</b>'+parseMath(q.explain||''));
+    else noteNO('whyNote'+qi,'<b>答错了，正确答案：「'+parseMath(q.options[q.answer])+'」</b><br>'+parseMath(q.explain||'')+(q.type==='code'?'<br><button class="retry-btn" data-retry="'+qi+'">↻ 重新作答</button>':''));
     toast(ok?'✓ 答对':'看解析，再试一次', ok?'ok':'no');
     updatePgSub();
     var sm=chSummary(c);
@@ -4584,8 +4584,8 @@ scroller.addEventListener('click',function(e){
       else if(ii===eq.answer) o.classList.add('correct','muted');
       if(ii===eq.answer){ var m=o.querySelector('.mark'); if(m) m.style.display='inline-flex'; }
     });
-    if(eok) noteOK('ewhyNote'+eqi,'<b>答对了。</b>'+esc(eq.explain||''));
-    else noteNO('ewhyNote'+eqi,'<b>答错了，正确答案：「'+parseMath(eq.options[eq.answer])+'」</b><br>'+esc(eq.explain||'')+(eq.type==='code'?'<br><button class="retry-btn" data-etry="'+eqi+'">↻ 重新作答</button>':''));
+    if(eok) noteOK('ewhyNote'+eqi,'<b>答对了。</b>'+parseMath(eq.explain||''));
+    else noteNO('ewhyNote'+eqi,'<b>答错了，正确答案：「'+parseMath(eq.options[eq.answer])+'」</b><br>'+parseMath(eq.explain||'')+(eq.type==='code'?'<br><button class="retry-btn" data-etry="'+eqi+'">↻ 重新作答</button>':''));
     toast(eok?'✓ 答对':'看解析，再试一次', eok?'ok':'no');
     updatePgSub();
     var est=examStatus(cv);
@@ -4603,8 +4603,8 @@ scroller.addEventListener('click',function(e){
     if(!val){ toast('先输入答案'); return; }
     var fok=answerQuestion(cF,fi,val);
     var fq=cF.quiz[fi];
-    if(fok) noteOK('whyNote'+fi,'<b>答对了。</b>'+esc(fq.explain||''));
-    else noteNO('whyNote'+fi,'<b>答错了。</b>'+esc(fq.explain||''));
+    if(fok) noteOK('whyNote'+fi,'<b>答对了。</b>'+parseMath(fq.explain||''));
+    else noteNO('whyNote'+fi,'<b>答错了。</b>'+parseMath(fq.explain||''));
     inp.disabled=true; fgo.disabled=true;
     toast(fok?'✓ 答对':'看解析', fok?'ok':'no');
     updatePgSub();
@@ -4622,8 +4622,8 @@ scroller.addEventListener('click',function(e){
     if(!eval2){ toast('先输入答案'); return; }
     var efok=answerVol(cV2,efi,eval2);
     var efq=cV2.exam[efi];
-    if(efok) noteOK('ewhyNote'+efi,'<b>答对了。</b>'+esc(efq.explain||''));
-    else noteNO('ewhyNote'+efi,'<b>答错了。</b>'+esc(efq.explain||''));
+    if(efok) noteOK('ewhyNote'+efi,'<b>答对了。</b>'+parseMath(efq.explain||''));
+    else noteNO('ewhyNote'+efi,'<b>答错了。</b>'+parseMath(efq.explain||''));
     einp.disabled=true; efgo.disabled=true;
     toast(efok?'✓ 答对':'看解析', efok?'ok':'no');
     updatePgSub();
