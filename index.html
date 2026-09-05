@@ -566,7 +566,7 @@ body{background:radial-gradient(1200px 600px at 20% -10%,var(--bg-glow,var(--car
     <div class="brand" style="position:static;transform:none;left:auto;align-items:flex-start;pointer-events:auto;max-width:none">
       <b style="font-size:16px">🐭 鼠哥学院</b><span>FOUR ACADEMIES · ONE FAMILY</span>
     </div>
-    <button id="loginBtn" style="margin-left:auto">☁️ 登录</button>
+    <div id="acctBar" style="margin-left:auto;display:flex;align-items:center;gap:8px"></div>
   </div>
   <div id="hubscroller"><div class="view" id="view">
     <div class="kick">MOUSE ACADEMY</div>
@@ -590,15 +590,7 @@ body{background:radial-gradient(1200px 600px at 20% -10%,var(--bg-glow,var(--car
 <!-- 登录弹窗（环境光：毛玻璃遮罩 + 背景后退 + 弹簧上滑） -->
 <div id="authDim">
   <div id="authMask" onclick="closeAuth()"></div>
-  <div id="authCard">
-    <div style="font-size:11px;font-weight:800;letter-spacing:1.6px;color:var(--accent)">ACCOUNT · 账号</div>
-    <div class="auth-title">登录鼠哥学院</div>
-    <div class="auth-cap">四院同一账号：一处登录，进度各自独立、多端同步。<br>（云端账号批次即将上线，当前先用游客模式学习）</div>
-    <input class="auth-inp" type="email" id="authEmail" placeholder="邮箱">
-    <input class="auth-inp" type="password" id="authPass" placeholder="密码">
-    <button class="auth-go" onclick="authSubmit()">登录 / 注册</button>
-    <button class="auth-guest" onclick="authGuest()">先以游客身份逛逛 →</button>
-  </div>
+  <div id="authCard"><div id="authInner"></div></div>
 </div>
 <script>
 var ACADEMIES = [
@@ -672,10 +664,140 @@ function closeAuth(){
   d.classList.remove('show');
   setTimeout(function(){ if(!d.classList.contains('show')) d.style.display='none'; },540);
 }
-function authGuest(){ closeAuth(); localStorage.setItem('chip_guest','1'); hubToast('已进入游客模式：学习数据保存在本机'); }
-function authSubmit(){ closeAuth(); hubToast('云端账号正在接入（下一批上线），当前请用游客模式学习'); }
-document.getElementById('loginBtn').addEventListener('click', openAuth);
-document.getElementById('authEmail').addEventListener('keydown', function(e){ if(e.key==='Enter') authSubmit(); });
+/* ===== 总院账号（Supabase · 四院共享会话 acad_sb_session） ===== */
+var SB_URL='https://yycokuphczoxfntcwizi.supabase.co';
+var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl5Y29rdXBoY3pveGZudGN3aXppIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc0MDM3MzgsImV4cCI6MjEwMjk3OTczOH0.1vm61oyqeBmc2lL_q0-rgJT2x6TsOn_DXsQ';
+var AVS=['🦊','🐼','🐸','🐙','🦄','🐯','🐨','🐰','🦁','🐢','🐳','🦉','🐭','🐿️'];
+var selAv='🦊';
+function hubSess(){ try{ var a=JSON.parse(localStorage.getItem('acad_sb_session')); if(a&&a.access_token) return a; }catch(e){} return null; }
+function hubAuthH(){ var s=hubSess(); return s?{ 'apikey':SB_KEY, 'Authorization':'Bearer '+s.access_token, 'Content-Type':'application/json' }:null; }
+function hubProfile(){ try{ var a=JSON.parse(localStorage.getItem('acad_profile')); if(a) return a; }catch(e){} var s=hubSess(); return s&&s.user?{ username:(s.user.email||'').split('@')[0]||'同学', avatar:'🐹' }:null; }
+function acctBar(){ /* 顶栏账号态：登录/游客/用户 pill */
+  var bar=document.getElementById('acctBar'); if(!bar) return;
+  var s=hubSess(), p=hubProfile();
+  var b=document.createElement('button');
+  b.style.cssText='display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 14px;border-radius:17px;border:none;font:600 13px inherit;font-family:inherit;cursor:pointer;transition:transform .24s cubic-bezier(.34,1.56,.64,1)';
+  if(s){ b.style.background='var(--accent)'; b.style.color='#fff'; b.innerHTML=(p&&p.avatar?p.avatar:'🐹')+'&nbsp;'+((p&&p.username)||'同学')+'&nbsp;▾';
+    b.onclick=function(){ acctMenu(); };
+  } else {
+    b.style.background='var(--accent)'; b.style.color='#fff'; b.innerHTML='☁️&nbsp;登录';
+    b.onclick=openAuth;
+  }
+  bar.innerHTML=''; bar.appendChild(b);
+}
+function acctMenu(){
+  var s=hubSess(); var p=hubProfile();
+  var m=document.createElement('div');
+  m.style.cssText='position:fixed;top:58px;right:14px;background:var(--card);border:1px solid var(--sep);border-radius:16px;box-shadow:var(--sh-float);z-index:130;min-width:200px;overflow:hidden;padding:6px';
+  var it=function(t,fn,red){ var x=document.createElement('button');
+    x.textContent=t; x.style.cssText='display:block;width:100%;text-align:left;padding:10px 12px;border:none;background:none;border-radius:10px;font:600 13.5px inherit;font-family:inherit;cursor:pointer;color:'+(red?'var(--red)':'var(--ink)');
+    x.onmouseover=function(){ x.style.background='var(--fill-soft)'; }; x.onmouseout=function(){ x.style.background='none'; };
+    x.onclick=function(){ m.remove(); fn(); }; return x; };
+  m.appendChild(it('账号：'+((p&&p.username)||'同学')+'（'+(s&&s.user?(s.user.email||''):'')+'）', function(){}, 0));
+  m.appendChild(it('退出登录', function(){ hubLogout(); }, 1));
+  document.body.appendChild(m);
+  setTimeout(function(){ function ck(e){ if(!m.contains(e.target)){ m.remove(); document.removeEventListener('click',ck); } } document.addEventListener('click',ck); },0);
+}
+function hubLogout(){
+  try{ localStorage.removeItem('acad_sb_session'); localStorage.removeItem('acad_profile'); }catch(e){}
+  hubToast('已退出登录'); acctBar();
+  setTimeout(function(){ openAuth(); }, 400);
+}
+function authModeView(){ /* 渲染 authCard 内容 */
+  var wrap=document.getElementById('authInner'); if(!wrap) return;
+  var tabs='<div style="display:flex;background:var(--fill-soft);border-radius:12px;padding:3px;margin-bottom:14px">'
+    +'<button id="atLog" class="atab">登录</button><button id="atUp" class="atab">注册</button><button id="atFr" class="atab">找回</button></div>';
+  var extra='';
+  var inner='<div style="font-size:11px;font-weight:800;letter-spacing:1.6px;color:var(--accent)">ACCOUNT · 账号</div>'
+    +'<div class="auth-title">登录鼠哥学院</div>'
+    +'<div class="auth-cap">四院同一账号 · 一处登录，进度各自独立、多端同步</div>';
+  if(window._authTab==='up'){
+    inner+='<input class="auth-inp" id="auName" placeholder="昵称（2~16 位中文/字母/数字）" maxlength="16">';
+    inner+='<div style="display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 2px" id="auAvs"></div>';
+    extra='';
+  } else if(window._authTab==='fr'){
+    inner+='<div class="auth-cap" style="margin-top:2px">输入邮箱，重置链接会发到该邮箱</div>';
+  }
+  inner+='<input class="auth-inp" type="email" id="authEmail" placeholder="邮箱">'
+    +(window._authTab==='fr'?'':'<input class="auth-inp" type="password" id="authPass" placeholder="密码'+(window._authTab==='up'?'（至少 6 位）':'')+'">')
+    +'<div id="authMsg" style="font-size:12px;min-height:16px;line-height:1.5;margin:2px 0 8px;color:var(--red)"></div>'
+    +'<button class="auth-go" id="authGo">'+(window._authTab==='up'?'注册并登录':(window._authTab==='fr'?'发送重置邮件':'登录'))+'</button>'
+    +'<button class="auth-guest" onclick="authGuest()">先以游客身份逛逛 →</button>';
+  wrap.innerHTML=tabs+inner+extra;
+  wrap.querySelectorAll('.atab').forEach(function(b){
+    b.style.cssText='flex:1;border:none;background:none;border-radius:9px;padding:8px 0;font:600 13px inherit;font-family:inherit;cursor:pointer;color:var(--muted)';
+  });
+  var on=wrap.querySelector('#at'+(window._authTab==='up'?'Up':(window._authTab==='fr'?'Fr':'Log')));
+  if(on){ on.style.background='var(--card)'; on.style.color='var(--ink)'; on.style.boxShadow='0 1px 4px rgba(0,0,0,.08)'; }
+  wrap.querySelector('#atLog').onclick=function(){ window._authTab='log'; authModeView(); };
+  wrap.querySelector('#atUp').onclick=function(){ window._authTab='up'; authModeView(); };
+  wrap.querySelector('#atFr').onclick=function(){ window._authTab='fr'; authModeView(); };
+  if(window._authTab==='up'){
+    var rw=document.getElementById('auAvs');
+    AVS.forEach(function(a){ var b=document.createElement('button'); b.textContent=a;
+      b.style.cssText='width:38px;height:38px;border-radius:50%;font-size:19px;cursor:pointer;border:2px solid '+(a===selAv?'var(--accent)':'transparent')+';background:'+(a===selAv?'var(--accent-soft)':'var(--fill-soft)')+';display:flex;align-items:center;justify-content:center';
+      b.onclick=function(){ selAv=a; authModeView(); }; rw.appendChild(b); });
+  }
+  var el=document.getElementById('authEmail');
+  if(el) el.addEventListener('keydown', function(e){ if(e.key==='Enter') authDo(); });
+  document.getElementById('authGo').addEventListener('click', authDo);
+}
+function authMsg(t){ var m=document.getElementById('authMsg'); if(m){ m.textContent=t; m.style.color=t&&t.indexOf('成功')>=0?'var(--green)':'var(--red)'; } }
+function authDo(){
+  var email=(document.getElementById('authEmail').value||'').trim();
+  if(!/\S+@\S+\.\S+/.test(email)){ authMsg('请输入有效邮箱'); return; }
+  if(window._authTab==='fr'){
+    fetch(SB_URL+'/auth/v1/recover',{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY},body:JSON.stringify({email:email})})
+      .then(function(r){ authMsg('✅ 重置邮件已发送，请查收'); }).catch(function(){ authMsg('发送失败，请检查网络'); });
+    return;
+  }
+  var pass=(document.getElementById('authPass').value||'');
+  if(pass.length<6){ authMsg('密码至少 6 位'); return; }
+  if(window._authTab==='up'){
+    var nm=(document.getElementById('auName').value||'').trim();
+    if(!/^[\u4e00-\u9fa5A-Za-z0-9_]{2,16}$/.test(nm)){ authMsg('昵称需 2~16 位：中文/字母/数字/下划线'); return; }
+    fetch(SB_URL+'/auth/v1/signup',{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY},body:JSON.stringify({email:email,password:pass,data:{username:nm,avatar:selAv}})})
+      .then(function(r){ return r.json(); })
+      .then(function(j){ if(j.access_token){ hubKeep(j, nm, selAv); } else { authMsg('注册失败：'+(j.msg||j.error_description||j.message||'该邮箱可能已注册')); } })
+      .catch(function(){ authMsg('注册失败，请检查网络'); });
+    return;
+  }
+  fetch(SB_URL+'/auth/v1/token?grant_type=password',{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY},body:JSON.stringify({email:email,password:pass})})
+    .then(function(r){ return r.json(); })
+    .then(function(j){
+      if(j.access_token&&j.user){
+        var h2={ 'apikey':SB_KEY, 'Authorization':'Bearer '+j.access_token, 'Content-Type':'application/json' };
+        fetch(SB_URL+'/rest/v1/profiles?select=username,avatar&user_id=eq.'+j.user.id,{headers:h2})
+          .then(function(r){ return r.json(); })
+          .then(function(rows){
+            var nm='同学', av='🐹';
+            if(rows&&rows.length&&rows[0].username){ nm=rows[0].username; av=rows[0].avatar||'🐹'; }
+            else { nm=(email.split('@')[0])||'同学'; av='🐹'; }
+            hubKeep(j, nm, av);
+          }).catch(function(){ hubKeep(j,'同学','🐹'); });
+      } else { authMsg('登录失败：'+(j.msg||j.error_description||j.message||'邮箱或密码不对')); }
+    })
+    .catch(function(){ authMsg('登录失败，请检查网络'); });
+}
+function hubKeep(j, nm, av){
+  try{
+    localStorage.setItem('acad_sb_session', JSON.stringify({ access_token:j.access_token, refresh_token:j.refresh_token, user:j.user }));
+    localStorage.setItem('acad_profile', JSON.stringify({ username:nm, avatar:av, user_id:j.user.id }));
+    localStorage.removeItem('acad_guest');
+  }catch(e){}
+  closeAuth(); acctBar(); hubToast('✅ 已登录：'+nm+'，四院进度云端同步');
+}
+function authGuest(){ closeAuth(); try{ localStorage.setItem('acad_guest','1'); }catch(e){} hubToast('已进入游客模式：学习数据保存在本机'); }
+function openAuth(){ window._authTab=window._authTab||'log';
+  var d=document.getElementById('authDim');
+  d.style.display='flex'; d.classList.remove('show'); void d.offsetWidth;
+  requestAnimationFrame(function(){ d.classList.add('show'); });
+  authModeView();
+}
+(function(){ /* 顶栏状态 + 首次进入引导登录 */
+  acctBar();
+  if(!hubSess() && !localStorage.getItem('acad_guest')){ setTimeout(function(){ openAuth(); }, 700); }
+})();
 </script>
 </body>
 </html>

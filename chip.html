@@ -305,9 +305,9 @@ img{max-width:100%;display:block}
 .opt .k{width:28px;height:28px;border-radius:50%;flex:none;background:var(--fill);
   display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;color:var(--muted);
   transition:background .2s,color .2s}
-.opt.correct{border-color:var(--green);background:var(--green-soft)}
+.opt.correct{border-color:var(--green);color:var(--green)}
 .opt.correct .k{background:var(--green);color:#fff}
-.opt.wrong{border-color:var(--red);background:var(--red-soft)}
+.opt.wrong{border-color:var(--red);color:var(--red)}
 .opt.wrong .k{background:var(--red);color:#fff}
 .opt.muted{opacity:.45}
 .opt .mark{margin-left:auto;color:var(--green);width:22px;height:22px;display:none}
@@ -454,6 +454,376 @@ img{max-width:100%;display:block}
   font-size:10.5px;font-weight:700;letter-spacing:.5px;color:var(--muted);
   background:var(--glass);border:1px solid var(--sep);padding:3px 8px;border-radius:6px;
   -webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px)}
+/* ============================================================
+   UI 动效强化（chip 内容层 · 不删任何内容，纯增强）
+   荣誉墙 / 做题界面 / 卡片入场 / 判题反馈
+   ============================================================ */
+/* ---- 卡片入场（整页切换后内容有序浮现） ---- */
+@keyframes uiRise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes uiPop{0%{opacity:0;transform:scale(.94) translateY(6px)}100%{opacity:1;transform:scale(1) translateY(0)}}
+#view .card{animation:uiRise .5s cubic-bezier(.22,.9,.3,1) both}
+#view .hero-card{animation:uiPop .55s cubic-bezier(.24,1.2,.4,1) both}
+#view .big-entry,#view .tutor-card{animation:uiRise .55s cubic-bezier(.22,.9,.3,1) both}
+#view .big-entry{animation-delay:.06s}
+#view .tutor-card{animation-delay:.12s}
+
+/* ---- 荣誉墙 ---- */
+#legacy-honor .rank-step{animation:uiPop .4s cubic-bezier(.3,1.3,.4,1) both}
+#legacy-honor .hw-card{animation:uiPop .45s cubic-bezier(.3,1.3,.4,1) both}
+#legacy-honor .mh-card{animation:uiPop .45s cubic-bezier(.3,1.3,.4,1) both}
+#legacy-honor .card h3 .rw{animation:uiRise .4s both}
+/* 称号阶梯：完成=绿光呼吸；当前=金环脉冲 */
+@keyframes rankBreath{0%,100%{box-shadow:0 0 0 0 rgba(74,107,74,.25)}50%{box-shadow:0 0 0 6px rgba(74,107,74,0)}}
+#legacy-honor .rank-step.done{animation:rankBreath 2.4s ease-in-out infinite}
+@keyframes goldPulse{0%,100%{box-shadow:0 0 0 2px var(--gold),0 0 0 2px rgba(255,149,0,.25)}50%{box-shadow:0 0 0 2px var(--gold),0 0 0 9px rgba(255,149,0,0)}}
+#legacy-honor .rank-step.cur{animation:goldPulse 2s ease-in-out infinite}
+/* 徽章墙：已解锁徽章柔和金光脉动；悬停浮起 */
+@keyframes hwGlow{0%,100%{box-shadow:0 2px 10px rgba(184,134,11,.12)}50%{box-shadow:0 2px 16px rgba(184,134,11,.32)}}
+#legacy-honor .hw-card.got{animation:uiPop .45s both,hwGlow 3s ease-in-out 1s infinite}
+@media (hover:hover){
+  #legacy-honor .hw-card,#legacy-honor .rank-step{
+    transition:transform .28s cubic-bezier(.34,1.56,.64,1),box-shadow .28s,border-color .22s;
+  }
+  #legacy-honor .hw-card:hover{transform:translateY(-3px) scale(1.02);box-shadow:0 8px 22px rgba(0,0,0,.12)}
+  #legacy-honor .rank-step:hover{transform:translateY(-2px)}
+}
+/* 名人堂：已点亮卡点击脉冲、悬停弹簧上浮 */
+#legacy-honor .mh-card{transition:transform .32s cubic-bezier(.34,1.56,.64,1),box-shadow .3s,border-color .22s,filter .3s,opacity .3s}
+#legacy-honor .mh-card.lit:hover{transform:translateY(-4px) scale(1.02);box-shadow:0 10px 26px rgba(184,134,11,.3)}
+#legacy-honor .mh-card.lit:active{transform:translateY(0) scale(.97)}
+@keyframes mhFlash{0%{box-shadow:0 0 0 0 rgba(255,149,0,.5)}100%{box-shadow:0 0 0 0 rgba(255,149,0,0)}}
+#legacy-honor .mh-card.lit{animation:uiPop .4s both}
+/* 名人头像旋转入场后的稳持（轻）。 */
+#legacy-honor .mh-avatar{transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
+#legacy-honor .mh-card.lit:hover .mh-avatar{transform:scale(1.08)}
+
+/* ---- 做题界面：题目卡 & 选项反馈 ---- */
+#legacy-chapter .quiz{animation:uiRise .45s cubic-bezier(.22,.9,.3,1) both}
+@keyframes optPop{0%{transform:scale(.92)}50%{transform:scale(1.05)}100%{transform:scale(1)}}
+@keyframes optShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-2px)}55%{transform:translateX(2px)}80%{transform:translateX(-1px)}}
+/* framework 与 legacy 题选项共用 class：correct=绿弹、wrong=红抖 */
+.opt.correct,#legacy-chapter .opt.correct{animation:optPop .5s cubic-bezier(.3,1.4,.4,1)}
+.opt.wrong,#legacy-chapter .opt.wrong{animation:optShake .3s ease}
+/* 判题批改条滑入 */
+.why-note.why-ok,.why-note.why-no,#legacy-chapter .why-note.why-ok,#legacy-chapter .why-note.why-no{animation:uiRise .32s cubic-bezier(.22,.9,.3,1)}
+/* 结算战报出现 */
+#legacy-chapter .settle-wrap{animation:uiPop .5s cubic-bezier(.3,1.4,.4,1)}
+/* 选项悬停：上浮 + 箭头感（桌面） */
+@media (hover:hover){
+  #legacy-chapter .opt:not([data-lock]):hover{
+    transform:translateY(-2px) scale(1.012);
+    box-shadow:0 6px 14px rgba(0,0,0,.08);
+  }
+}
+/* 已锁定题卡轻轻压平，提示“已作答” */
+#legacy-chapter .quiz.done{animation:uiRise .45s both}
+@media (prefers-reduced-motion:reduce){ #view .card,#legacy-honor .rank-step,#legacy-honor .hw-card,#legacy-honor .mh-card,#legacy-chapter .quiz{animation:none} }
+/* ============================================================
+   统一按压语言（chip 内容层）：页面可点元素 = Dock 底栏同款动效
+   桌面：hover 上浮 + 阴影；触屏：按下高亮（无位移，iOS 语言）
+   仅作用于页面内容区 #view（topbar/dock 自带动效，不受影响）
+   ============================================================ */
+@media (hover:hover){
+  #view button:not(:disabled),
+  #view .opt:not([data-lock]),
+  #view .mh-card.lit{
+    transition:transform .22s var(--ease), box-shadow .22s var(--ease), filter .18s, background .18s, border-color .18s;
+  }
+  #view button:not(:disabled):hover,
+  #view .opt:not([data-lock]):hover{
+    transform:translateY(-2px);
+    box-shadow:0 4px 12px rgba(0,0,0,.07), 0 8px 20px rgba(0,0,0,.05);
+  }
+  #view button:not(:disabled):hover{
+    filter:brightness(.985);
+  }
+  #view button:not(:disabled):active,
+  #view .opt:not([data-lock]):active{
+    transform:translateY(0) scale(.985);
+    filter:brightness(.93);
+    box-shadow:0 1px 3px rgba(0,0,0,.05);
+  }
+  #view .mh-card.lit:active{
+    transform:translateY(0) scale(.985);
+    filter:brightness(.96);
+  }
+}
+@media (hover:none){
+  #view button:not(:disabled):active,
+  #view .opt:not([data-lock]):active{
+    filter:brightness(.85);
+  }
+  #view .mh-card.lit:active{
+    filter:brightness(.9);
+  }
+}
+/* 已锁定/不可点状态不参与按压 */
+#view .opt[data-lock]{pointer-events:none}
+#view button:disabled{pointer-events:none}
+
+/* ============ topbar 左右按钮：Dock 三键同款丝滑动效 ============ */
+#topbar .backbtn,#topbar .homebtn{
+  transition:transform .24s var(--ease-spring), background .18s, box-shadow .2s, color .15s;
+}
+@media (hover:hover){
+  #topbar .backbtn:hover,#topbar .homebtn:hover{
+    transform:translateY(-2px) scale(1.06);
+    background:var(--fill-soft);
+    box-shadow:0 3px 8px rgba(0,0,0,.06);
+    filter:none;
+  }
+  #topbar .backbtn:active,#topbar .homebtn:active{
+    transform:translateY(0) scale(.97);
+    filter:brightness(.92);
+    box-shadow:none;
+  }
+}
+@media (hover:none){
+  #topbar .backbtn:active,#topbar .homebtn:active{
+    background:var(--fill);
+    transform:scale(.96);
+    filter:none;
+  }
+}
+
+/* 首页：导读人卡 与 下一站 之间留出呼吸间距 */
+#view .hero-card{margin-top:26px}
+
+/* 导读人卡：名字加大（照片头像） */
+#view .tutor-card .tutor-name-big{font-size:22px;font-weight:800;letter-spacing:.3px;color:var(--ink);margin-top:1px;line-height:1.2}
+#view .tutor-card .tutor-quote{margin-top:6px}
+#view .tutor-card .tutor-photo{border-radius:16px}
+@media (min-width:640px){ #view .tutor-card .tutor-name-big{font-size:24px} }
+/* ============================================================
+   章节讲义 · 整块移用自 chip.html.bak-ios（旧版原样观感）
+   作用域隔离：#legacy-chapter 容器前缀，仅讲义页生效。
+   容器内重定义旧纸感变量，保证排版与旧版一致，不影响外壳。
+   ============================================================ */
+#legacy-chapter{
+  --bg:#FBF7EE; --ink:#2A2622; --ink2:#4A433C; --muted:#6B6158;
+  --blue:#537D96; --blue2:#3F6179; --blue-bg:rgba(83,125,150,.08);
+  --green:#4A6B4A; --red:#8B2C1F; --orange:#9D5F4D; --ochre:#8a6d1f;
+  --line:#D8CFBE; --shadow:0 2px 12px rgba(80,70,50,.08);
+  --card:#FFFFFF; --radius:14px;
+  color:var(--ink); line-height:1.7;
+}
+#legacy-chapter .card{background:var(--card); border-radius:var(--radius); padding:22px 24px; margin-bottom:16px; box-shadow:var(--shadow); border:1px solid rgba(0,0,0,.02)}
+#legacy-chapter .card h3{font-size:17px; color:var(--ink); margin-bottom:10px; display:flex; align-items:center; gap:8px; font-weight:600}
+#legacy-chapter .card h3::before{content:''; width:4px; height:16px; background:var(--blue); border-radius:2px}
+#legacy-chapter .motto{background:linear-gradient(135deg,#2A2622,#4A433C); color:#F5EFE4; border-radius:var(--radius); padding:22px 26px; margin-bottom:16px; font-style:italic; box-shadow:var(--shadow)}
+#legacy-chapter .motto .who{display:block; margin-top:8px; font-size:12.5px; color:#a1a1a6; font-style:normal; letter-spacing:.5px}
+#legacy-chapter .map{display:flex; flex-wrap:wrap; gap:8px; margin:10px 0 4px}
+#legacy-chapter .map span{border:1px solid rgba(83,125,150,.3); color:var(--blue); border-radius:980px; padding:3px 14px; font-size:13px; background:var(--blue-bg); font-weight:500}
+#legacy-chapter .story-card{background:linear-gradient(135deg,#FBF7EE,#f6efdf)}
+#legacy-chapter .story-head{display:flex;align-items:center;gap:14px;margin-bottom:12px}
+#legacy-chapter .story-name{font-family:Georgia,'Songti SC',serif;font-size:17px;font-weight:500;color:var(--ink)}
+#legacy-chapter .story-era{font-size:12px;color:var(--muted);margin-top:2px}
+#legacy-chapter .story-fact{font-size:14.5px;color:var(--ink2);line-height:1.8;border-left:2px solid var(--blue);padding-left:12px;margin-bottom:10px}
+#legacy-chapter .story-quote{font-family:Georgia,serif;font-style:italic;color:var(--ochre);font-size:14px;margin-bottom:10px}
+#legacy-chapter .story-anecdote{background:rgba(157,95,77,.07);border:1px solid rgba(157,95,77,.2);border-radius:8px;padding:10px 14px;font-size:13.5px;color:var(--ink2);line-height:1.7}
+#legacy-chapter .story-anecdote b{color:var(--ochre);font-weight:500}
+#legacy-chapter .sec{margin-bottom:20px; padding-bottom:18px; border-bottom:1px dashed var(--line)}
+#legacy-chapter .sec:last-of-type{border-bottom:none; padding-bottom:0}
+#legacy-chapter .sec h4{font-family:Georgia,'Songti SC',serif; font-size:17px; color:var(--ink); margin-bottom:8px; font-weight:500; letter-spacing:.3px}
+#legacy-chapter .sec h4 em{font-style:normal; color:var(--blue); font-size:12px; margin-right:10px; font-weight:600; background:var(--blue-bg); padding:2px 10px; border-radius:980px}
+#legacy-chapter .sec p{color:var(--ink2); margin-bottom:6px; line-height:1.9; font-size:14.5px}
+#legacy-chapter .sec .formula{background:linear-gradient(135deg,#FBF7EE,#f6efdf); border:1px solid var(--line); border-radius:12px; padding:12px 16px; margin:10px 0; font-size:16.5px; text-align:center; color:var(--ink); font-family:Georgia,serif; font-style:italic; letter-spacing:.5px}
+#legacy-chapter .example{background:linear-gradient(135deg,#F6F1E5,#f1e8d4); border-left:3px solid var(--ochre); border-radius:0 14px 14px 0; padding:18px 22px; margin:12px 0}
+#legacy-chapter .example .lbl{font-size:11px; letter-spacing:1px; color:var(--ochre); font-weight:600}
+#legacy-chapter .example p{margin:6px 0; color:var(--ink2); line-height:1.9}
+#legacy-chapter .trap{background:#F6EFE3; border:1px solid #E4D5B8; border-radius:14px; padding:14px 18px; margin:8px 0; font-size:14.5px; color:var(--ink2)}
+#legacy-chapter .trap b{color:var(--orange)}
+#legacy-chapter .quiz{border:1px solid var(--line); border-radius:16px; padding:20px 22px; margin-bottom:16px; background:var(--card); box-shadow:0 1px 4px rgba(0,0,0,.03)}
+#legacy-chapter .quiz.done{border-color:var(--green); background:#f2f8f0}
+#legacy-chapter .hall-done-tag{font-size:11px; color:var(--green); border:1px solid var(--green); border-radius:980px; padding:1px 8px; margin-right:8px; font-weight:600}
+#legacy-chapter .quiz .q{font-weight:600; margin-bottom:14px; font-size:15.5px; color:var(--ink)}
+#legacy-chapter .quiz .q .qn{color:var(--blue); margin-right:6px}
+#legacy-chapter .opts{display:flex; flex-direction:column; gap:8px}
+#legacy-chapter .opt{display:block; width:100%; text-align:left; box-sizing:border-box; border:1px solid var(--line); border-radius:12px; padding:11px 15px; cursor:pointer; background:var(--card); transition:.15s; font-size:14.5px; font-family:inherit; color:var(--ink)}
+#legacy-chapter .opt:hover{border-color:var(--blue); background:var(--blue-bg)}
+#legacy-chapter .opt.ok{border-color:var(--green); color:var(--green); font-weight:600}
+#legacy-chapter .opt.bad{border-color:var(--red); color:var(--red)}
+#legacy-chapter .opt.lock{pointer-events:none}
+#legacy-chapter .fillrow{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+#legacy-chapter .fillrow input{flex:1; min-width:220px; border:1px solid var(--line); border-radius:980px; padding:10px 18px; font-family:inherit; font-size:15px; background:#fff; color:var(--ink)}
+#legacy-chapter .fillrow input:focus{outline:none; border-color:var(--blue); box-shadow:0 0 0 3px var(--blue-bg)}
+#legacy-chapter .fillrow button{border:none; background:var(--blue); color:#fff; border-radius:980px; padding:10px 24px; font-family:inherit; font-size:14.5px; cursor:pointer; letter-spacing:.5px; font-weight:500; transition:.15s}
+#legacy-chapter .fillrow button:hover{background:var(--blue2)}
+#legacy-chapter .verdict{border-radius:14px; padding:14px 18px; margin-top:12px; font-size:14.5px; display:none; line-height:1.7}
+#legacy-chapter .verdict.show{display:block}
+#legacy-chapter .verdict.right{background:#EDF4ED; border:1px solid rgba(74,107,74,.3)}
+#legacy-chapter .verdict.wrong{background:#F7EAE6; border:1px solid rgba(139,44,31,.3)}
+#legacy-chapter .verdict .cm{font-style:italic; margin-bottom:6px; color:var(--ink2)}
+#legacy-chapter .verdict .ex{font-size:13.5px; color:var(--ink2)}
+#legacy-chapter .verdict .retry-btn{margin-top:8px; border:1px solid var(--blue); background:transparent; color:var(--blue); border-radius:980px; padding:6px 16px; font-family:inherit; font-size:13px; cursor:pointer; font-weight:500}
+#legacy-chapter .dia textarea{width:100%; min-height:100px; border:1px solid var(--line); border-radius:14px; padding:14px 16px; font-family:inherit; font-size:14.5px; background:#fff; color:var(--ink); resize:vertical; transition:.15s; box-sizing:border-box}
+#legacy-chapter .dia textarea:focus{outline:none; border-color:var(--blue); box-shadow:0 0 0 3px var(--blue-bg)}
+#legacy-chapter .dia .act{display:flex; gap:10px; margin-top:10px; flex-wrap:wrap}
+#legacy-chapter .dia button{border:1px solid var(--blue); background:transparent; color:var(--blue); border-radius:980px; padding:8px 20px; font-family:inherit; font-size:14px; cursor:pointer; font-weight:500; transition:.15s}
+#legacy-chapter .dia button.primary{background:var(--blue); color:#fff}
+#legacy-chapter .dia button:hover{background:var(--blue); color:#fff}
+#legacy-chapter .hint{font-size:13px; color:var(--ink2); margin-top:6px}
+#legacy-chapter .btn-back{display:inline-block; margin-bottom:16px; border:1px solid var(--line); background:var(--card); color:var(--ink2); border-radius:980px; padding:8px 18px; font-family:inherit; cursor:pointer; font-size:13.5px; transition:.15s}
+#legacy-chapter .btn-back:hover{border-color:var(--blue); color:var(--blue)}
+#legacy-chapter .lesson-pg{font-size:13px; color:var(--ink2); background:var(--blue-bg); border:1px solid rgba(83,125,150,.25); border-radius:980px; padding:6px 16px; display:inline-block; margin-bottom:14px}
+#legacy-chapter .settle-wrap{text-align:center; margin-top:22px}
+#legacy-chapter .settle-btn{display:inline-flex; align-items:center; gap:8px; border:none; background:linear-gradient(135deg,#537D96,#3F6179); color:#fff; border-radius:980px; padding:14px 44px; font-family:inherit; font-size:16px; cursor:pointer; font-weight:500; letter-spacing:1px; box-shadow:0 4px 16px rgba(83,125,150,.35)}
+#legacy-chapter .settle-hint{font-size:12px; color:var(--muted); margin-top:10px}
+#legacy-chapter .quizwrap{margin-top:4px}
+/* 判题结果条（why-note 复用 events 契约，呈现为旧版 verdict 观感） */
+#legacy-chapter .why-note{display:none; border-radius:14px; padding:13px 16px; margin-top:12px; font-size:14px; line-height:1.75}
+#legacy-chapter .why-note.why-ok{display:block; background:#EDF4ED; border:1px solid rgba(74,107,74,.3)}
+#legacy-chapter .why-note.why-no{display:block; background:#F7EAE6; border:1px solid rgba(139,44,31,.3)}
+#legacy-chapter .why-note b{color:var(--ink)}
+#legacy-chapter .why-ic{float:left; margin-right:8px; color:var(--green)}
+#legacy-chapter .why-no .why-ic{color:var(--red)}
+#legacy-chapter .retry-btn{display:inline-block; margin-top:8px; border:1px solid var(--blue); background:transparent; color:var(--blue); border-radius:980px; padding:6px 16px; font-family:inherit; font-size:13px; cursor:pointer; font-weight:500}
+#legacy-chapter .retry-btn:hover{background:var(--blue-bg)}
+/* 选项对/错/淡（framework 判题写 correct/wrong/muted，映射为旧版 ok/bad 观感） */
+#legacy-chapter .opt.lock{pointer-events:none}
+#legacy-chapter .opt.correct{border-color:var(--green); color:var(--green); font-weight:600}
+#legacy-chapter .opt.wrong{border-color:var(--red); color:var(--red)}
+#legacy-chapter .opt.muted{border-color:var(--green); background:#f6fbf4; color:var(--green); opacity:.75; font-weight:500}
+#legacy-chapter .opt .mark{display:none!important}
+#legacy-chapter .quiz .why-note{margin-bottom:0}
+/* ============================================================
+   荣誉墙 · 整块移用自 chip.html.bak-ios（内容结构不变）
+   v2 视觉重排（2026-09-05）：纸面展板容器 + 舒适间距/字号层级
+   作用域：#legacy-honor（弹层 .mh-modal 共享变量）
+   ============================================================ */
+#legacy-honor,
+.mh-modal{
+  --ink:#2A2622; --ink2:#3F3A33; --muted:#8B8177;
+  --blue:#3F6E8E; --blue-bg:rgba(63,110,142,.08);
+  --green:#4E7A54; --red:#A44A3A; --ochre:#8a6d1f; --gold:#C8932A;
+  --line:#E6DFD1; --card:#FFFFFF;
+  --shadow:0 6px 20px rgba(64,54,38,.06);
+}
+/* 纸面展板：与讲义同一视觉语言，白卡浮在米纸上 */
+#legacy-honor{
+  background:linear-gradient(180deg,#FDFBF6 0%,#F5EFE2 100%);
+  border:1px solid var(--sep);
+  border-radius:24px;
+  padding:20px 18px 2px;
+  box-shadow:var(--sh-card);
+}
+#legacy-honor .card{
+  background:rgba(255,255,255,.92);
+  border:1px solid #EFE8D8;
+  border-radius:18px;
+  padding:20px 22px;
+  margin:0 0 16px;
+  box-shadow:0 2px 10px rgba(64,54,38,.05);
+}
+#legacy-honor .card h3{
+  font-size:15px; font-weight:800; letter-spacing:.3px;
+  color:var(--ink); margin:0 0 2px; display:flex; align-items:center; gap:8px;
+}
+#legacy-honor .card h3::before{
+  content:''; width:3px; height:15px; border-radius:2px;
+  background:linear-gradient(180deg,#C8932A,#E4B95C); flex:none;
+}
+#legacy-honor .hint{
+  font-size:12.5px; color:var(--muted); line-height:1.75;
+  margin:2px 0 16px;
+}
+
+/* ---- 称号阶梯 ---- */
+#legacy-honor .rank-stairs{
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(152px,1fr));
+  gap:12px; margin:2px 0 4px;
+}
+#legacy-honor .rank-step{
+  border:1px solid var(--line); border-radius:16px;
+  padding:14px 10px 13px; background:#fff; text-align:center;
+  opacity:.72; transition:.2s; position:relative;
+}
+#legacy-honor .rank-step .rv{
+  font-size:10px; font-weight:800; letter-spacing:.9px; color:var(--muted);
+}
+#legacy-honor .rank-step .rn{
+  font-size:14.5px; font-weight:700; margin-top:5px; color:var(--ink);
+  line-height:1.3;
+}
+#legacy-honor .rank-step.done{
+  border-color:rgba(78,122,84,.35); opacity:1; background:linear-gradient(180deg,#F3F8F1,#EDF5EB);
+}
+#legacy-honor .rank-step.done .rn{color:#3E6B45}
+#legacy-honor .rank-step.cur{
+  border-color:#D9AE45; opacity:1;
+  background:linear-gradient(160deg,#FDF7E7,#F7EBCB);
+  transform:scale(1.03);
+}
+#legacy-honor .rank-step.cur .rn{color:#7A5A12}
+#legacy-honor .rank-step.cur .rv{color:#A9842C}
+
+/* ---- 徽章墙 ---- */
+#legacy-honor .badge-grid{
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(176px,1fr)); gap:12px;
+}
+#legacy-honor .hw-card{
+  border:1px solid var(--line); border-radius:16px;
+  padding:15px 16px; background:#fff; opacity:.66; transition:.22s;
+}
+#legacy-honor .hw-card.got{
+  opacity:1; border-color:rgba(200,147,42,.42);
+  background:linear-gradient(160deg,#FFFDF6,#FBF2DC);
+  box-shadow:0 3px 12px rgba(184,134,11,.10);
+}
+#legacy-honor .hw-card .hc{display:flex; align-items:center; gap:11px}
+#legacy-honor .hw-card .hic{
+  width:38px; height:38px; border-radius:12px; flex:none;
+  background:#E7E1D4; color:#6E665A; display:flex; align-items:center;
+  justify-content:center; font-size:18px;
+}
+#legacy-honor .hw-card.got .hic{
+  background:linear-gradient(135deg,#D9AE45,#B8860B); color:#fff;
+  box-shadow:0 3px 8px rgba(184,134,11,.3);
+}
+#legacy-honor .hw-card .hn{font-size:15px; font-weight:700; color:var(--ink)}
+#legacy-honor .hw-card .hd{font-size:12px; color:var(--muted); line-height:1.65; margin-top:6px}
+#legacy-honor .hw-card .hst{font-size:11.5px; margin-top:8px}
+#legacy-honor .hw-card.got .hst{color:#3E6B45; font-weight:700}
+#legacy-honor .hw-card:not(.got) .hst{color:#A29A8C}
+
+/* ---- 名人堂 ---- */
+#legacy-honor .hall-grid{
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(244px,1fr)); gap:14px;
+}
+#legacy-honor .mh-card{
+  border:1px solid var(--line); border-radius:18px; padding:17px;
+  background:#fff; display:flex; gap:14px; align-items:flex-start;
+  opacity:.6; filter:grayscale(.8); box-shadow:0 2px 8px rgba(64,54,38,.04);
+}
+#legacy-honor .mh-card.lit{
+  opacity:1; filter:none; border-color:rgba(200,147,42,.4);
+  background:linear-gradient(160deg,#FFFDF6,#FBF2DC);
+  box-shadow:0 4px 14px rgba(184,134,11,.14);
+}
+#legacy-honor .mh-img{
+  width:54px; height:64px; border-radius:12px; object-fit:cover; flex:none;
+  border:1px solid var(--line);
+}
+#legacy-honor .mh-avatar{
+  width:54px; height:54px; border-radius:50%; flex:none;
+  display:flex; align-items:center; justify-content:center;
+  font-size:23px; color:#fff; font-family:Georgia,'Songti SC',serif;
+  box-shadow:0 3px 10px rgba(0,0,0,.16);
+}
+#legacy-honor .mh-info{min-width:0}
+#legacy-honor .mh-name{font-size:16px; font-weight:700; color:var(--ink); line-height:1.3}
+#legacy-honor .mh-lit{
+  font-size:10px; color:#3E6B45; border:1px solid rgba(78,122,84,.4);
+  border-radius:980px; padding:1px 8px; margin-left:6px; font-weight:700; vertical-align:middle;
+}
+#legacy-honor .mh-era{font-size:12px; color:var(--muted); margin:3px 0 7px; line-height:1.5}
+#legacy-honor .mh-quote{
+  font-size:12.5px; color:#6E655A; font-style:italic; line-height:1.7;
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+}
+#legacy-honor .mh-open{font-size:11.5px; color:#7A5A12; margin-top:8px; font-weight:700}
+#legacy-honor .mh-lock{font-size:11px; color:#A29A8C; margin-top:8px}
+#legacy-honor .mh-card.lit{cursor:pointer}
 /* ============================================================
    学院壳公共 CSS 注入（唯一来源：design/对齐样张…体验版.html 之上追加）
    所有学院共用，禁止逐院改动；要改先改这里再全院重建。
@@ -10998,6 +11368,7 @@ function answerQuestion(c,i,oi){
   logStudy('quiz',c.id,c.title);
   sessionLog('lesson',c,k,ok);
   return ok;
+  try{ if(typeof sbNotify==='function') sbNotify(); }catch(_e){}
 }
 function answerVol(c,i,oi){
   var q=c.exam[i], k='e'+c.id+'_'+i;
@@ -11008,6 +11379,7 @@ function answerVol(c,i,oi){
   todayRecord(ok); statRecordQ(ok);
   logStudy('quiz',c.id,c.title);
   return ok;
+  try{ if(typeof sbNotify==='function') sbNotify(); }catch(_e){}
 }
 /* ---------- 结算：全答即通过（不要求全对），首次点亮打卡与完成 ---------- */
 function settleChapter(c, mode){
@@ -11017,13 +11389,15 @@ function settleChapter(c, mode){
   if(first){
     chDone.push(c.id); store('ch',chDone);
     dailyGoal('l');
-    settleStore['settle_'+c.id]={ts:Date.now(),pct:Math.round(sm.correct/sm.total*100),allCorrect:sm.allCorrect};
+    var _durS=0; try{ _durS=Math.max(0, Math.round(((typeof TIMER!=='undefined'?TIMER:1800)-(typeof timerLeft!=='undefined'?timerLeft:0)))); }catch(_e){}
+    settleStore['settle_'+c.id]={ts:Date.now(),pct:Math.round(sm.correct/sm.total*100),correct:sm.correct,total:sm.total,dur:_durS,allCorrect:sm.allCorrect};
     store('settle',settleStore);
     stopTimer();
     $('#cTitle').textContent='第 '+c.id+' 章完成！';
     $('#cSub').textContent=(sm.allCorrect?'随堂全对通关 · ':'答完即结算 · ')+'今日打卡 +1';
     $('#celebrate').classList.add('show');
     tap();
+    try{ if(typeof sbNotify==='function') sbNotify(); }catch(_e){}
     return true;
   }
   toast('本章已结算过，可去下一章');
@@ -11036,13 +11410,15 @@ function settleVol(c){
   var first = !settleStore[k];
   if(first){
     dailyGoal('e');
-    settleStore[k]={ts:Date.now(),correct:st.correct};
+    var _dv=0; try{ _dv=Math.max(0, Math.round(((typeof TIMER!=='undefined'?TIMER:1800)-(typeof timerLeft!=='undefined'?timerLeft:0)))); }catch(_x){}
+    settleStore[k]={ts:Date.now(),correct:st.correct,total:st.total,dur:_dv};
     store('settle',settleStore);
     stopTimer();
     $('#cTitle').textContent='第 '+c.id+' 章小卷完成！';
     $('#cSub').textContent='卷子已点亮 · 今日打卡 +1';
     $('#celebrate').classList.add('show');
     tap();
+    try{ if(typeof sbNotify==='function') sbNotify(); }catch(_e){}
     return true;
   }
   toast('这份卷子已结算过');
@@ -11071,7 +11447,7 @@ var META={
   hall:{n:'练习大厅',tab:'drill'},vol:{n:'小卷',tab:'drill'},exam:{n:'',tab:'drill'},
   wrong:{n:'错题集',tab:'drill'},fixed:{n:'已订正',tab:'drill'},
   mine:{n:'我的',tab:'mine'},rank:{n:'排行榜',tab:'mine'},calendar:{n:'打卡日历',tab:'mine'},
-  honor:{n:'荣誉墙',tab:'mine'},lab:{n:'实验室',tab:'mine'},about:{n:'关于学院',tab:'mine'},manage:{n:'管理',tab:'mine'},author:{n:'作者与幕后',tab:'mine'}
+  honor:{n:'荣誉墙',tab:'mine'},stats:{n:'进度总览',tab:'mine'},board:{n:'讨论区',tab:'mine'},feedback:{n:'反馈意见',tab:'mine'},lab:{n:'实验室',tab:'drill'},about:{n:'关于学院',tab:'mine'},manage:{n:'管理',tab:'mine'},author:{n:'作者与幕后',tab:'mine'}
 };
 var _lastNav={};
 function chById(id){ return CHAPTERS[id-1]; }
@@ -11112,18 +11488,58 @@ function go(id,p,kind){
 function goBack(){ if(!STACK.length){ toast('已经在最前面了'); return; } history.back(); }
 /* 计时离开守卫 */
 function requestNav(action){
-  if(window._cur==='chapter'&&timerRunning||window._cur==='exam'&&timerRunning){
+  /* 退出守卫 = calc2 同款 confirmBox（底部升起）：计时学习中必弹（calc2 同条件）；计时停但未做完也弹 */
+  var cw=window._cur;
+  var unfin=false; try{ unfin=!sessDone(); }catch(e){ unfin=true; }
+  if((cw==='chapter'||cw==='exam') && (timerRunning || unfin)){
     leaveAfter=action;
-    $('#confirmMsg').textContent='学习计时还没结束。现在出去本次作答进度已保存，下次进入可继续。';
+    $('#confirmMsg').textContent='本章还没做完。退出后本次作答进度不会保存，回来需要重新作答。';
     $('#confirmBox').classList.add('show');
     return;
   }
   action();
 }
-function dismissConfirm(){ leaveAfter=null; $('#confirmBox').classList.remove('show'); }
-$('#confirmStay').addEventListener('click',dismissConfirm);
-$('#confirmLeave').addEventListener('click',function(){ dismissConfirm(); stopTimer(); if(leaveAfter){ var f=leaveAfter; leaveAfter=null; f(); } });
-function guardedBack(){ requestNav(function(){ goBack(); }); }
+function clearLeave(){ leaveAfter=null; }
+function dismissConfirm(){ $('#confirmBox').classList.remove('show'); }
+$('#confirmStay').addEventListener('click',function(){ clearLeave(); dismissConfirm(); });
+/* 离开：先取出动作再关弹窗（dismissConfirm 不再吞掉 leaveAfter），随后回滚本次作答并执行返回 */
+$('#confirmLeave').addEventListener('click',function(){
+  var act=leaveAfter; leaveAfter=null;
+  dismissConfirm();
+  if(typeof stopTimer==='function'){ try{ stopTimer(); }catch(e){} }
+  try{ if(typeof sessRoll==='function') sessRoll(); }catch(e){}
+  if(typeof act==='function'){ try{ act(); }catch(e2){ try{ console.error('[confirmLeave] act fail', e2); }catch(ce){} } }
+});
+function guardedBack(){ requestNav(function(){ doBack(); }); }
+/* 显式回上一级：从导航栈取上一页渲染并同步历史，不依赖浏览器历史回退 */
+function doBack(){
+  var errMsg='';
+  var st=(typeof STACK!=='undefined'&&STACK)?STACK:null;
+  var top=null;
+  /* 从导航栈取真正的列表页（过滤掉做题页自身） */
+  while(st&&st.length){ var t=st.pop(); if(t!=='chapter'&&t!=='exam'){ top=t; break; } }
+  var root = (window._cur==='exam')?'vol':((window._lastNav&&window._lastNav.mode==='drill')?'hall':'plan');
+  if(!top){ top=root; }
+  var ok=false;
+  try{ history.replaceState({view:top},''); }catch(e){}
+  try{ doRenderView(top,true); ok=(window._cur===top); }catch(err){ errMsg=String(err&&err.message||err); }
+  if(!ok && typeof go==='function'){ try{ go(top); ok=(window._cur===top); }catch(e2){ errMsg=String(e2&&e2.message||e2); } }
+  if(!ok && top!==root){ try{ doRenderView(root,true); ok=(window._cur===root); }catch(e3){ errMsg=String(e3&&e3.message||e3); } }
+  try{
+    if(!ok){
+      try{ console.error('[doBack] fail top='+top+' cur='+window._cur+' :: '+errMsg); }catch(ce){}
+      toast('返回失败，正在回到首页…');
+      setTimeout(function(){ try{ window.location.reload(); }catch(e){} }, 500);
+    }
+  }catch(e){}
+  /* 兜底校验：400ms 后仍在做题页则强制回首页 */
+  try{
+    setTimeout(function(){
+      var c=window._cur;
+      if(c==='chapter'||c==='exam'){ try{ console.error('[doBack] stuck, force reload cur='+c); }catch(ce2){} window.location.reload(); }
+    }, 400);
+  }catch(e){}
+}
 var leaveAfter=null,timerRunning=false;
 /* ---------- 倒计时（30 分钟，可挂后台） ---------- */
 var TIMER=30*60,timerLeft=TIMER,timerIv=null;
@@ -11168,6 +11584,11 @@ renderers.home=function(){
   var nc=nextChapter();
   var h='<div class="kick">CHIP WAR ACADEMY</div><div class="h1">芯片战争学院</div>'
     +'<div class="sub">米勒《芯片战争》36 章 · 答完随堂题即点亮章节 · 进度 '+s.doneC+'/'+s.totalC+' 章</div>';
+  h+='<div class="tutor-card"><img class="tutor-photo" alt="导读人克里斯·米勒" src="data:image/webp;base64,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">'
+    +'<div class="tutor-body"><div class="tutor-cap">导读人</div>'
+    +'<div class="tutor-name-big">CHRIS MILLER</div>'
+    +'<div class="tutor-quote">'+pick(TUTOR_QUOTES)+'</div>'
+    +'<div class="tutor-name">《芯片战争》作者 · 塔夫茨大学教授</div></div></div>';
   var GEO='<svg viewBox="0 0 96 96" aria-hidden="true"><g class="geo-line"><rect x="28" y="28" width="40" height="40" rx="6"/><rect x="40" y="40" width="16" height="16" rx="3"/><path d="M40 28V20M56 28V20M40 76v-8M56 76v-8M28 40h-8M28 56h-8M68 40h8M68 56h8"/></g><circle class="geo-dot" cx="48" cy="15" r="2.6"/><circle class="geo-dot" cx="81" cy="48" r="2.6"/><circle class="geo-dot" cx="48" cy="81" r="2.4" opacity=".35"/></svg>';
   if(nc){
     h+='<div class="hero-card"><div class="deco">'+GEO+'</div>'
@@ -11187,10 +11608,7 @@ renderers.home=function(){
     +'<span class="cap">米勒读本 36 章 · 讲义 + 随堂题，答完即点亮</span>'
     +'<span class="be-meta"><span class="pill blue">已学 '+s.doneC+' / '+s.totalC+' 章</span></span></span>'
     +'<span class="be-arrow">'+IC('chev-r')+'</span></button>';
-  h+='<div class="tutor-card"><img class="tutor-photo" alt="导读人" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA5NiA5NiI+PHJlY3Qgd2lkdGg9Ijk2IiBoZWlnaHQ9Ijk2IiByeD0iMjIiIGZpbGw9IiMwQzg0RkYiLz48Y2lyY2xlIGN4PSI0OCIgY3k9IjM2IiByPSIxNiIgZmlsbD0iI2ZmZiIvPjxwYXRoIGQ9Ik0xNiA4MGMwLTE4IDE0LTI4IDMyLTI4czMyIDEwIDMyIDI4eiIgZmlsbD0iI2ZmZiIvPjwvc3ZnPg==">'
-    +'<div class="tutor-body"><div class="tutor-cap">导读人 · CHRIS MILLER</div>'
-    +'<div class="tutor-quote">'+pick(TUTOR_QUOTES)+'</div>'
-    +'<div class="tutor-name">《芯片战争》作者 · 塔夫茨大学教授</div></div></div>';
+
   return h;
 };
 var TUTOR_QUOTES=[
@@ -11223,70 +11641,130 @@ renderers.plan=function(){
 };
 
 /* ============ 学习 Tab · 章节学习（讲义 + 随堂题 + 计时 + 结算） ============ */
+function fmtDur(sec){
+  sec=Math.max(0, Math.round(sec||0));
+  var m=Math.floor(sec/60), s=sec%60;
+  return (m<10?'0':'')+m+':'+(s<10?'0':'')+s;
+}
+/* 讲义底部结算战报：已结算常驻显示（含历史记录）；做完未结算给按钮；未完给引导 */
+function settleCardHTML(c){
+  var sm=chSummary(c);
+  var rec=settleStore['settle_'+c.id];
+  if(rec){
+    var dt=new Date(rec.ts);
+    var ds=(dt.getMonth()+1)+'月'+dt.getDate()+'日 '+(dt.getHours()<10?'0':'')+dt.getHours()+':'+(dt.getMinutes()<10?'0':'')+dt.getMinutes();
+    var pct=(rec.pct!==undefined)?rec.pct:Math.round((rec.correct||0)/(rec.total||1)*100);
+    var tot=(rec.total!==undefined)?rec.total:sm.total;
+    var cor=(rec.correct!==undefined)?rec.correct:Math.round(tot*pct/100);
+    var durTxt=(rec.dur!==undefined)?fmtDur(rec.dur):'—';
+    var col=pct>=80?'var(--green)':(pct>=60?'var(--ochre)':'var(--red)');
+    return '<div class="card"><h3>📜 本节战报 · 已结算</h3>'
+      +'<div style="font-size:12px;color:var(--muted);margin:-4px 0 10px">'+ds+' · 本章已点亮 · 结果存档，永久留档</div>'
+      +'<div style="display:flex;flex-wrap:wrap;gap:24px;font-size:14.5px">'
+      +'<span>正确率 <b style="color:'+col+';font-size:20px">'+pct+'%</b>（'+cor+'/'+tot+'）</span>'
+      +'<span>用时 <b style="color:var(--blue)">'+durTxt+'</b></span>'
+      +'<span>里程碑 <b style="color:var(--blue)">已学 '+chDone.length+'/'+CHAPTERS.length+' 章</b></span>'
+      +(rec.allCorrect?'<span style="color:var(--green);font-weight:600">👑 全对通关</span>':'')
+      +'</div></div>';
+  }
+  if(sm.allDone){
+    return '<div class="settle-wrap"><button class="settle-btn" data-settle="'+c.id+'">'+IC('check')+' 结算本章</button>'
+      +'<div class="settle-hint">全部答完，点结算点亮本章与打卡；结算战报会永久留在这里。</div></div>';
+  }
+  return '<div class="card" style="text-align:center;padding:18px"><div style="color:var(--muted);font-size:13px">全部题目做完后，这里自动生成结算战报（正确率 · 用时）。</div></div>';
+}
 function chapterHTML(c,mode){
   var sm=chSummary(c), settled=chIsDone(c);
-  var isLesson=mode==='lesson';
+  var isLesson=mode!=='drill';
   var h='<div class="kick">LESSON '+('0'+c.id).slice(-2)+'</div><div class="h1">'+esc(c.title)+'</div>'
     +'<div class="sub">随堂 '+sm.total+' 题'+(isLesson?' · 30 分钟参考计时 · 答完自动结算点亮打卡':' · 刷题模式：做完即存，可反复重做')+' · 已答 '+sm.answered+'/'+sm.total+'</div>';
   if(settled) h+='<div class="pill green" style="margin-bottom:10px">'+IC('check')+' 本章已点亮 · 可随时回来重做</div>';
-  h+='<div class="card" style="border-radius:var(--r-l)"><div class="lesson-body">';
-  h+='<div class="quote-box">'+esc(c.motto||'')+(c.mottoWho?'<span class="who" style="display:block;font-size:13px;opacity:.8;margin-top:6px">—— '+esc(c.mottoWho)+'</span>':'')+'</div>';
-  (c.sections||[]).forEach(function(sec){
-    h+='<p><b style="color:var(--accent)">'+esc(sec.t)+'</b></p><p>'+esc(sec.p)+'</p>';
-    if(sec.formula) h+='<div style="background:var(--fill-soft);border-radius:10px;padding:9px 13px;font-size:15px;color:var(--ink2);font-weight:600">'+esc(sec.formula)+'</div>';
-  });
+  h+='<div id="legacy-chapter">';
+  /* 开讲词（旧版 .motto 渐变深条） */
+  h+='<div class="motto">'+esc(c.motto||'')+'<span class="who">—— '+esc(c.mottoWho||'')+'</span></div>';
+  /* 知识地图 */
+  if(c.map&&c.map.length){
+    h+='<div class="card"><h3>知识地图</h3><div class="map">'+c.map.map(function(m){return '<span>'+esc(m)+'</span>';}).join('')+'</div></div>';
+  }
+  /* 芯片史话 */
   if(c.story){
-    h+='<div style="background:var(--gold-soft);border-radius:12px;padding:13px 16px;margin-top:14px;font-size:15px;line-height:1.8">'
-      +'<b style="color:#C93400">芯片史话 · '+esc(c.story.tutor||'')+'</b><div style="color:var(--ink2)">'+esc(c.story.story||c.story.fact||'')+'</div></div>';
+    var nm=c.story.tutor||'';
+    var pv=c.story.img&&PORTRAITS[c.story.img]?'<img src="'+PORTRAITS[c.story.img]+'" alt="'+esc(nm)+'" style="width:64px;height:80px;border-radius:6px;border:1px solid var(--blue);object-fit:cover;flex-shrink:0">':'<span style="width:64px;height:80px;border-radius:6px;border:1px solid var(--blue);background:#F1E8D4;display:flex;align-items:center;justify-content:center;color:var(--blue2);font-family:Georgia,serif;font-size:22px;flex-shrink:0">'+esc(nm.charAt(0))+'</span>';
+    h+='<div class="card story-card"><h3>芯片史话 · 这一章的来处</h3>'
+      +'<div class="story-head">'+pv+'<div><div class="story-name">'+esc(nm)+'</div><div class="story-era">'+esc(c.story.era||'')+'</div></div></div>'
+      +'<div class="story-fact">'+parseMath(c.story.fact||'')+'</div>'
+      +(c.story.quote?'<div class="story-quote">'+esc(c.story.quote)+'</div>':'')
+      +(c.story.story?'<div class="story-anecdote"><b>轶事</b>　'+parseMath(c.story.story)+'</div>':'')
+      +'</div>';
   }
-  h+=storyHTML(c);
+  /* 讲义正文（旧版 .sec 分节，纸面直排） */
+  (c.sections||[]).forEach(function(sec,si){
+    h+='<div class="sec"><h4><em>§'+(si+1)+'</em>'+esc(sec.t)+'</h4>'
+      +'<p>'+parseMath(sec.p)+'</p>'
+      +(sec.formula?'<div class="formula">'+parseMath(sec.formula)+'</div>':'')
+      +'</div>';
+  });
+  /* 例题（米勒式内心独白） */
   if(c.example){
-    h+='<details style="margin-top:14px"><summary style="cursor:pointer;color:var(--accent);font-weight:700">例题 · 先试做，再对照米勒的思路</summary>'
-      +'<div style="margin-top:8px"><b>'+esc(c.example.q)+'</b>'
-      +'<div style="background:var(--fill-soft);border-radius:10px;padding:11px 14px;margin-top:8px;font-size:14.5px;line-height:1.8;color:var(--ink2)">'+esc(c.example.s)+'</div></div></details>';
+    h+='<div class="card"><h3>例题 · 米勒式内心独白</h3><div class="example"><div class="lbl">SOLVE WITH YOUR INNER MONOLOGUE</div>'
+      +'<p><b>'+parseMath(c.example.q)+'</b></p><p>'+parseMath(c.example.s)+'</p>'
+      +'<p style="font-size:13px;color:var(--ink2);margin-top:8px">米勒的原话：看求解过程教不会你思考。先挡住解答自己试做，再对照这段「内心独白」——注意看我是怎么想出来的，而不是只看我写了什么。</p>'
+      +'</div></div>';
   }
+  /* 易错陷阱 */
   if(c.traps&&c.traps.length){
-    h+='<details style="margin-top:12px"><summary style="cursor:pointer;color:var(--red);font-weight:700">易错陷阱</summary>'
-      +'<ul style="margin:8px 0 0 18px;font-size:14.5px;color:var(--ink2);line-height:1.8">'
-      +c.traps.map(function(t){ return '<li>'+esc(t)+'</li>'; }).join('')+'</ul></details>';
+    h+='<div class="card"><h3>易错陷阱</h3>'+c.traps.map(function(t,ti){return '<div class="trap"><b>陷阱'+(ti+1)+'</b>　'+parseMath(t)+'</div>';}).join('')+'</div>';
   }
-  h+='</div></div>';
-  h+=quizCardsHTML(c,mode);
-  if(sm.allDone&&!settled){
-    h+='<div style="margin-top:14px;text-align:center"><button class="btn-go" data-settle="'+c.id+'" style="margin:0">'+IC('check')+' 结算本章</button></div>';
+  /* 随堂练习（即时批改） */
+  h+='<div class="card"><h3>随堂练习（即时批改）</h3><div class="quizwrap">'+quizCardsHTML(c,mode)+'</div></div>';
+  /* 灵魂拷问（旧观感，保留 data-soulgo / soulNote 契约给事件层） */
+  if(c.dialogue&&c.dialogue.q){
+    var keys=(c.dialogue.keys||[]).slice(0,8);
+    h+='<div class="card dia"><h3>灵魂拷问（米勒的追问）</h3>'
+      +'<p style="margin-bottom:8px;color:var(--ink2)">'+parseMath(c.dialogue.q)+'</p>'
+      +(keys.length?'<p style="font-size:12.5px;color:var(--muted);margin-bottom:8px">说到这些词才算想透：'+keys.map(function(k){return '「'+esc(k)+'」';}).join(' ')+'</p>':'')
+      +'<textarea id="soulTa" placeholder="把你的想法写在这里……"></textarea>'
+      +'<div class="act"><button class="primary" data-soulgo="'+c.id+'">交给我自检</button>'
+      +(c.dialogue.model?'<button data-soulmodel="'+c.id+'">看参考思路</button>':'')
+      +'</div><div class="why-note" id="soulNote"></div></div>';
   }
-  h+=soulHTML(c);
+  /* 结算战报：常驻最下方（已结算显示历史 / 做完可结算 / 未完引导） */
+  h+='<div id="settleCard">'+settleCardHTML(c)+'</div>';
+  h+='</div>';
   return h;
 }
 function quizCardsHTML(c,mode){
+  var isLesson=mode!=='drill';
   var h='';
   (c.quiz||[]).forEach(function(q,qi){
     var k=c.id+'_'+qi;
-    var hist=(mode!=='drill')?(quizStat[k]):undefined;
-    h+='<div class="card" style="border-radius:var(--r-l);margin-top:14px">'
-      +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><span class="pill blue">随堂 '+(qi+1)+'</span>'
-      +'<span class="cap">'+(q.type==='fill'?'填空':'单选')+' · 答完锁存'+(hist!==undefined?(hist===1?' · 你答对过':' · 上次答错'):'')+'</span></div>'
-      +'<div class="q-stem">'+parseMath(q.q)+'</div><div id="qbox'+qi+'" data-k="'+k+'">';
-    var keys=q.type==='fill'?'':['A','B','C','D'].slice(0,(q.options||[]).length).join('|');
+    var hist=(isLesson)?(quizStat[k]):undefined;
+    var done=hist!==undefined;
+    var pv=quizPick[k];
+    h+='<div class="quiz'+(done?' done':'')+'" data-k="'+k+'">'
+      +'<div class="q"><span class="qn">Q'+(qi+1)+'</span>'+(done?'<span class="hall-done-tag">✓ 已做</span>':'')+parseMath(q.q)+'</div>';
     if(q.type==='fill'){
-      h+='<div style="display:flex;gap:8px;margin-top:10px"><input id="fin'+qi+'" class="fillin" data-fill="'+qi+'" placeholder="输入答案" style="flex:1;border:1.5px solid var(--sep);border-radius:12px;padding:12px 14px;font-size:16px;font-family:inherit;background:var(--card);color:var(--ink)">'
-        +'<button class="btn-go" data-fillgo="'+qi+'" style="flex:none">批改</button></div>';
+      h+='<div class="fillrow"><input id="fin'+qi+'" data-fill="'+qi+'" placeholder="输入答案"'+(done&&pv!==undefined?' value="'+esc(pv)+'" disabled':'')+'><button data-fillgo="'+qi+'"'+(done?' disabled':'')+'>批改</button></div>';
     } else {
+      h+='<div class="opts" id="qbox'+qi+'">';
       ['A','B','C','D'].slice(0,(q.options||[]).length).forEach(function(k2,i){
-        var prev=quizPick[k];
-        var cls='opt'+(hist===0&&prev===i?' wrong':'')+(hist===1&&i===q.answer?' correct':(hist===0&&i===q.answer?' correct muted':''));
-        h+='<button class="'+cls+'" data-q="'+qi+'" data-i="'+i+'"'+(hist!==undefined?' data-lock="1"':'')+'><span class="k">'+k2+'</span><span>'+parseMath(q.options[i])+'</span><span class="mark">'+IC('check')+'</span></button>';
+        var cls='opt';
+        if(done){
+          cls+=' lock';
+          if(hist===1){ if(i===q.answer) cls+=' correct'; }
+          else { if(i===pv&&i!==q.answer) cls+=' wrong'; if(i===q.answer) cls+=' correct muted'; }
+        }
+        h+='<div class="'+cls+'" data-q="'+qi+'" data-i="'+i+'" data-o="'+i+'"'+(done?' data-lock="1"':'')+'>'+k2+'. '+parseMath(q.options[i])+'<span class="mark" style="display:none"></span></div>';
       });
+      h+='</div>';
     }
-    h+='</div><div class="why-note'+(hist===1?' why-ok':(hist===0?' why-no':''))+'" id="whyNote'+qi+'">';
-    if(hist===1) h+='<div class="why-body"><span class="why-ic">'+IC('check')+'</span><span><b>答对了。</b>'+esc(q.explain||'')+'</span></div>';
-    else if(hist===0) h+='<div class="why-body"><span class="why-ic">'+IC('info')+'</span><span><b>上次答错了，正确答案：「'+parseMath(q.options[q.answer])+'」</b><br>'+esc(q.explain||'')+'</span></div>'
-      +'<button class="retry-btn" data-retry="'+qi+'">↻ 再答一次</button>';
+    h+='<div class="why-note'+(hist===1?' why-ok':(hist===0?' why-no':''))+'" id="whyNote'+qi+'">';
+    if(hist===1) h+='<div class="why-body"><span class="why-ic"></span><span><b>上次答对了。</b>'+esc(q.explain||'')+'</span></div>';
+    else if(hist===0) h+='<div class="why-body"><span class="why-ic"></span><span><b>上次答错，正确答案已标出：</b>'+esc(q.explain||'')+'</span></div>'+(q.type==='code'?'<button class="retry-btn" data-retry="'+qi+'">↻ 重新作答</button>':'');
     h+='</div></div>';
   });
   return h;
 }
-
 /* ============ 练习 Tab · 大厅（宫格 + 按章刷题） ============ */
 renderers.hall=function(){
   resyncWrong();
@@ -11297,7 +11775,7 @@ renderers.hall=function(){
   h+='<button class="tile lift" data-go="vol"><span class="t-ico" style="background:linear-gradient(135deg,#FF9F0A,#FF7A00)">'+IC('doc')+'</span><b>小卷</b><span class="cap">'+s.examFull+' / '+s.examTotal+' 份</span></button>';
   h+='<button class="tile lift" data-go="wrong"><span class="t-ico" style="background:linear-gradient(135deg,#FF453A,#D70015)">'+IC('bookx')+'</span><b>错题集</b><span class="cap">'+s.wrongPool+' 道待订正</span></button>';
   h+='<button class="tile lift" data-go="fixed"><span class="t-ico" style="background:linear-gradient(135deg,#34C759,#28A745)">'+IC('check')+'</span><b>已订正</b><span class="cap">'+s.fixedPool+' 道已掌握</span></button>';
-  h+='<button class="tile lift" data-go="honor"><span class="t-ico" style="background:linear-gradient(135deg,#AF52DE,#7D2AE0)">'+IC('trophy')+'</span><b>荣誉墙</b><span class="cap">'+curRank(s.pct).name+'</span></button>';
+  h+='<button class="tile lift" data-go="lab"><span class="t-ico" style="background:linear-gradient(135deg,#0A84FF,#5E5CE6)">'+IC('flask')+'</span><b>实验室</b><span class="cap">动手玩工艺</span></button>';
   h+='</div>';
   h+='<div class="sec-title">BY CHAPTER 按章刷题</div>';
   CHAPTERS.forEach(function(c){
@@ -11395,7 +11873,7 @@ function examHTML(c){
     h+='</div><div class="why-note'+(hist===1?' why-ok':(hist===0?' why-no':''))+'" id="ewhyNote'+qi+'">';
     if(hist===1) h+='<div class="why-body"><span class="why-ic">'+IC('check')+'</span><span><b>答对了。</b>'+esc(q.explain||'')+'</span></div>';
     else if(hist===0) h+='<div class="why-body"><span class="why-ic">'+IC('info')+'</span><span><b>上次答错，正确答案：「'+parseMath(q.options[q.answer])+'」</b><br>'+esc(q.explain||'')+'</span></div>'
-      +'<button class="retry-btn" data-etry="'+qi+'">↻ 再答一次</button>';
+      +(q.type==='code'?'<button class="retry-btn" data-etry="'+qi+'">↻ 重新作答</button>':'');
     h+='</div></div>';
   });
   return h;
@@ -11406,30 +11884,35 @@ renderers.mine=function(){
   var s=calcStats(), streak=calcStreak(), rk=curRank(s.pct);
   var h='<div class="kick">PROFILE</div><div class="h1">我的</div>'
     +'<div class="sub">账号、战果与设置（本版进度存本浏览器）</div>';
-  h+='<div class="card" style="display:flex;align-items:center;gap:14px;border-radius:var(--r-l)">'
-    +'<div style="width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,#0A84FF,#5E5CE6);display:flex;align-items:center;justify-content:center;color:#fff;flex:none;font-size:26px">🐹</div>'
-    +'<div style="min-width:0;flex:1"><b style="font-size:18px">芯片学徒</b><div style="font-size:13px;color:var(--ink2);margin-top:2px;line-height:1.5;min-width:0">'+rk.name+' · 已学 '+s.doneC+'/'+s.totalC+' 章 · 小卷 '+s.examFull+' 份</div>'
-    +'<div style="font-size:12px;color:var(--muted);margin-top:3px;line-height:1.6;min-width:0">连签 '+streak+' 天 · <span class="pill blue" style="font-size:11px;padding:2px 9px">总进度 '+s.pct+'%</span></div></div></div>';
+  var _usr=(typeof sbUser==='function')?sbUser():null;
+  var _acctName=_usr?( _usr.nick||_usr.username||_usr.email||'已登录' ):'本地模式 · 未登录';
+  var _acctSub=_usr?('云同步已开启 · 做完自动上传'):('学习记录仅存本机 · 点此登录云端');
+  h+='<button class="account-card" data-acct style="display:flex;align-items:center;gap:14px;width:100%;border-radius:var(--r-l);border:1px solid var(--sep);background:var(--card);padding:16px;text-align:left;font-family:inherit;cursor:pointer;color:var(--ink);box-shadow:var(--sh-card)">'
+    +'<span style="width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,#0A84FF,#5E5CE6);display:flex;align-items:center;justify-content:center;color:#fff;flex:none;font-size:24px">'+( _usr&&_usr.avatar?esc(_usr.avatar):'🐹')+'</span>'
+    +'<span style="min-width:0;flex:1"><b style="font-size:18px;display:block">'+esc(_acctName)+'</b>'
+    +'<span style="font-size:13px;color:var(--ink2);margin-top:2px;line-height:1.5;display:block;min-width:0">'+rk.name+' · 已学 '+s.doneC+'/'+s.totalC+' 章 · 小卷 '+s.examFull+' 份</span>'
+    +'<span style="font-size:12px;color:var(--muted);margin-top:3px;line-height:1.5;display:block;min-width:0">'+esc(_acctSub)+' · 连签 '+streak+' 天 · 总进度 '+s.pct+'%</span></span>'
+    +'<span class="garr" style="flex:none">'+IC('chev-r')+'</span></button>';
   h+='<div class="sec-title">ACHIEVE 成就</div><div class="tiles">';
   var MG=[
     {g:'calendar',ico:'calendar',bg:'linear-gradient(135deg,#34C759,#28A745)',t:'打卡日历',c:streak+' 天连签'},
-    {g:'rank',ico:'flag',bg:'linear-gradient(135deg,#FFD60A,#FF9500)',t:'排行榜',c:'云端接入中'},
+    {g:'rank',ico:'flag',bg:'linear-gradient(135deg,#FFD60A,#FF9500)',t:'排行榜',c:'真人榜'},
     {g:'honor',ico:'trophy',bg:'linear-gradient(135deg,#AF52DE,#7D2AE0)',t:'荣誉墙',c:rk.name+' · '+s.pct+'%'},
-    {g:'lab',ico:'flask',bg:'linear-gradient(135deg,#0A84FF,#5E5CE6)',t:'实验室',c:'动手玩工艺'}
+    {g:'stats',emo:'📊',bg:'linear-gradient(135deg,#5E5CE6,#5856D6)',t:'进度总览',c:'全部学习数据'}
   ];
   MG.forEach(function(x){
-    h+='<button class="tile lift" data-go="'+x.g+'"><span class="t-ico" style="background:'+x.bg+'">'+IC(x.ico)+'</span><b>'+x.t+'</b><span class="cap">'+x.c+'</span></button>';
+    h+='<button class="tile lift" data-go="'+x.g+'"><span class="t-ico" style="background:'+x.bg+'">'+(x.emo?x.emo:IC(x.ico))+'</span><b>'+x.t+'</b><span class="cap">'+x.c+'</span></button>';
   });
   h+='</div>';
   h+='<div class="sec-title">SYSTEM 设置</div><div class="group">';
+  var _u2=(typeof sbUser==='function')?sbUser():null;
   var SETS=[
+    {acct:1,ico:'person',bg:'linear-gradient(135deg,#0A84FF,#5E5CE6)',t:'账号管理',v:(_u2?('登录：'+esc(_u2.nick)):'未登录 · 去总院登录')},
     {ico:'moon',bg:'linear-gradient(135deg,#5856D6,#AF52DE)',t:'外观',v:themeLabel(),act:'theme'},
-    {ico:'phone',bg:'linear-gradient(135deg,#FF9F0A,#FF7A00)',t:'触感反馈',v:canVibrate?'开启':'设备不支持',act:''},
-    {ico:'info',bg:'linear-gradient(135deg,#8E8E93,#5A5A5E)',t:'关于学院',v:'样张真版 · '+APP_VER,act:'about'},
-    {ico:'person',bg:'linear-gradient(135deg,#0A84FF,#5E5CE6)',t:'作者与幕后',v:'鼠哥 × 拉里·佩奇',act:'author'}
+    {ico:'doc',bg:'linear-gradient(135deg,#0A84FF,#5E5CE6)',t:'数据管理',v:'导出 / 导入 / 清除（本地 + 云端）',act:'manage'}
   ];
   SETS.forEach(function(x){
-    var attr=x.act?' data-go="'+x.act+'"':'';
+    var attr=x.acct?' data-acct="1"':(x.act?' data-go="'+x.act+'"':'');
     h+='<button class="grow"'+(x.act==='theme'?' id="themeRow"':'')+attr+'>'
       +'<span class="gi" style="background:'+x.bg+'">'+IC(x.ico)+'</span><b>'+x.t+'</b>'
       +'<span class="gv"'+(x.act==='theme'?' id="themeVal"':'')+'>'+x.v+'</span>'
@@ -11438,11 +11921,13 @@ renderers.mine=function(){
   h+='</div>';
   h+='<div class="group">';
   var GROUPS=[
-    {ico:'chat',bg:'linear-gradient(135deg,#0A84FF,#5E5CE6)',t:'导出 / 导入进度',v:'备份与恢复',g:'manage'},
-    {ico:'trash',bg:'linear-gradient(135deg,#FF453A,#D70015)',t:'清除所有记录',v:'清到初始态',g:'manage'}
+    {ico:'info',bg:'linear-gradient(135deg,#8E8E93,#5A5A5E)',t:'关于学院',v:'样张真版 · '+APP_VER,g:'about'},
+    {ico:'person',bg:'linear-gradient(135deg,#0A84FF,#5E5CE6)',t:'作者与幕后',v:'鼠哥 × 拉里·佩奇',g:'author'},
+    {emo:'💬',bg:'linear-gradient(135deg,#0A84FF,#5E5CE6)',t:'讨论区',v:'大家说说话 · 交换进度',g:'board'},
+    {emo:'📮',bg:'linear-gradient(135deg,#AF52DE,#7D2AE0)',t:'反馈意见',v:'说点什么 · 建议直达',g:'feedback'}
   ];
   GROUPS.forEach(function(x){
-    h+='<button class="grow" data-go="'+x.g+'"><span class="gi" style="background:'+x.bg+'">'+IC(x.ico)+'</span>'
+    h+='<button class="grow" data-go="'+x.g+'"><span class="gi" style="background:'+x.bg+';font-size:17px">'+(x.emo?x.emo:IC(x.ico))+'</span>'
       +'<b>'+x.t+'</b><span class="gv">'+x.v+'</span><span class="garr">'+IC('chev-r')+'</span></button>';
   });
   h+='</div>';
@@ -11509,33 +11994,108 @@ renderers.rank=function(){
   return h;
 };
 
-/* ============ 荣誉墙 ============ */
+/* ============ 荣誉墙（整块移用自 chip.html.bak-ios：称号阶梯 + 徽章墙 + 名人堂 + 资料卡） ============ */
+var PORTRAITS={}; /* 旧版荣誉墙名人像空表（无画像数据时走首字母头像分支） */
 renderers.honor=function(){
   var s=calcStats(), rk=curRank(s.pct);
-  var h='<div class="kick">HONOR</div><div class="h1">荣誉墙</div>'
-    +'<div class="sub">称号按已学章节推进，徽章记录你的历史时刻</div>';
-  h+='<div class="card" style="border-radius:var(--r-l)"><div style="display:flex;align-items:center;gap:14px">'
-    +'<div style="width:56px;height:56px;border-radius:16px;background:linear-gradient(135deg,#FFD60A,#FF9500);display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:0 4px 14px rgba(255,149,0,.35)">'+IC('trophy')+'</div>'
-    +'<div><b style="font-size:20px">'+rk.name+'</b><div class="cap">当前称号 · 已学 '+s.doneC+' 章 · 总进度 '+s.pct+'%</div></div></div>'
-    +'<div class="rank-scale"><div class="rbar"><i style="width:'+s.pct+'%"></i></div>'
-    +'<div class="rrow"><span>等级进度 '+s.pct+' / 100</span><span>'+(rk.next?'下一阶：'+rk.next+'（'+rk.nextAt+'）':'已到顶')+'</span></div></div>'
-    +'<div class="rank-steps">';
-  RANKS.forEach(function(r){
-    h+='<span class="rank-step'+(r[0]===rk.name?' on':(s.pct>=r[0]?' got':''))+'">'+r[1]+'</span>';
-  });
-  h+='</div></div>';
+  var pct=s.pct;
+  var curIdx=0;
+  for(var i=0;i<RANKS.length;i++){ if(pct>=RANKS[i][0]) curIdx=i; }
+  var stairs=RANKS.map(function(r,i){
+    var cls=i<curIdx?'done':(i===curIdx?'cur':'');
+    var mark=i<curIdx?'✓':(i===curIdx?'👑':'');
+    return '<div class="rank-step '+cls+'"><div class="rv">'+mark+' '+r[0]+'%</div><div class="rn">'+r[1]+'</div></div>';
+  }).join('');
+  var icons=['📜','🔺','🌀','⚔️','🖋️','🧮','∑','🎓','📝','🏅','🧹','🚀','📆','👑'];
   var bd=badgeState(s);
-  h+='<div class="card" style="margin-top:12px"><b class="h2" style="font-size:17px">徽章 '+bd.filter(function(x){return x.got;}).length+'/'+bd.length+'</b>'
-    +'<div style="display:grid;grid-template-columns:repeat(4,1fr);margin-top:10px;gap:6px">';
-  bd.forEach(function(b){
-    h+='<div style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 0;text-align:center" title="'+esc(b.d)+'">'
-      +'<span style="width:46px;height:46px;border-radius:50%;background:'+(b.got?'linear-gradient(135deg,#0A84FF,#5E5CE6)':'var(--fill)')+';display:flex;align-items:center;justify-content:center;color:'+(b.got?'#fff':'var(--muted)')+';font-size:20px'+(b.got?'':'')+'">'+(b.got?IC('check'):'·')+'</span>'
-      +'<span class="cap" style="font-size:11px">'+b.n+'</span></div>';
-  });
-  h+='</div></div>';
-  h+=chipHallHTML();
+  var bcards=bd.map(function(b,i){
+    return '<div class="hw-card'+(b.got?' got':'')+'"><div class="hc"><div class="hic">'+(icons[i]||'⭐')+'</div><div class="hn">'+b.n+'</div></div><div class="hd">'+b.d+'</div><div class="hst">'+(b.got?'✦ 已解锁':'未解锁')+'</div></div>';
+  }).join('');
+  var palette=[['#537D96','#3F6179'],['#8a6d1f','#5c4714'],['#9D5F4D','#6e3f31'],['#3a6b47','#264a30'],['#6b5b8e','#463a5e'],['#a8733a','#6e4a1f']];
+  var hall=CHAPTERS.filter(function(c){ return c.story && c.story.tutor; }).map(function(c,i){
+    var p=palette[i%palette.length];
+    var nm=c.story.tutor.replace(/（.*/,'').trim();
+    var first=nm.charAt(0);
+    var quote=(c.story.quote||'').replace(/^「/,'').replace(/」.*$/,'').trim();
+    var lit=chIsDone(c);
+    var portrait=(c.story.img && PORTRAITS[c.story.img])
+      ? '<img src="'+PORTRAITS[c.story.img]+'" alt="'+esc(nm)+'" class="mh-img">'
+      : '<div class="mh-avatar" style="background:linear-gradient(135deg,'+p[0]+','+p[1]+')">'+first+'</div>';
+    return '<div class="mh-card'+(lit?' lit':'')+'" data-c="'+c.id+'"'+(lit?' title="点击查看 '+esc(nm)+' 的资料卡"':' title="学完本章点亮并解锁资料卡"')+'>'+portrait+'<div class="mh-info"><div class="mh-name">'+esc(nm)+(lit?' <span class="mh-lit">✦ 已学</span>':'')+'</div><div class="mh-era">'+esc(c.story.era||'')+' · 第 '+c.id+' 章</div><div class="mh-quote">'+esc(quote)+'</div>'+(lit?'<div class="mh-open">点击查看资料卡 →</div>':'<div class="mh-lock">🔒 学完本章解锁</div>')+'</div></div>';
+  }).join('');
+  var h='<div class="kick">HONOR</div><div class="h1">荣誉墙</div>'
+    +'<div class="sub">称号按已学章节推进，徽章记录你的历史时刻，学完一章点亮一位芯片人物</div>'
+    +'<div id="legacy-honor">'
+    +'<div class="card"><h3>👑 称号阶梯</h3><p class="hint">当前称号：<b style="color:#8a6d1f">'+RANKS[curIdx][1]+'</b> · 总进度 '+pct+'%'+(curIdx<RANKS.length-1 ? ' · 距「'+RANKS[curIdx+1][1]+'」还差 '+(RANKS[curIdx+1][0]-pct)+'%' : ' · 已达最高荣誉')+'</p><div class="rank-stairs">'+stairs+'</div></div>'
+    +'<div class="card"><h3>🏅 徽章墙</h3><div class="badge-grid">'+bcards+'</div></div>'
+    +'<div class="card"><h3>📜 芯片人物名人堂</h3><p class="hint">学完本章点亮对应芯片人物，点亮后可点击查看资料卡。学完的越多，名人堂越亮。</p><div class="hall-grid">'+hall+'</div></div>'
+    +'</div>';
+  setTimeout(function(){
+    var root=document.getElementById('legacy-honor');
+    if(!root) return;
+    root.querySelectorAll('.mh-card.lit').forEach(function(card){
+      card.addEventListener('click', function(){ showMathematician(CHAPTERS[+card.dataset.c-1]); });
+    });
+  },60);
   return h;
 };
+/* 名人资料卡弹层（移用自旧版） */
+function showMathematician(c){
+  if(!c || !c.story) return;
+  var nm=c.story.tutor.replace(/（.*/,'').trim();
+  var first=nm.charAt(0);
+  var palette=[['#537D96','#3F6179'],['#8a6d1f','#5c4714'],['#9D5F4D','#6e3f31'],['#3a6b47','#264a30'],['#6b5b8e','#463a5e'],['#a8733a','#6e4a1f']];
+  var p=palette[(c.id-1)%palette.length];
+  var portrait=(c.story.img && PORTRAITS[c.story.img])
+    ? '<img src="'+PORTRAITS[c.story.img]+'" style="width:110px;height:130px;border-radius:14px;object-fit:cover;border:2px solid #d4a92a;box-shadow:0 8px 24px rgba(0,0,0,.35)">'
+    : '<div style="width:110px;height:110px;border-radius:50%;background:linear-gradient(135deg,'+p[0]+','+p[1]+');display:flex;align-items:center;justify-content:center;font-size:50px;color:#fff;font-family:Georgia,serif;box-shadow:0 8px 24px rgba(0,0,0,.35)">'+first+'</div>';
+  var wrap=document.createElement('div');
+  wrap.className='mh-modal';
+  wrap.style.cssText='position:fixed;inset:0;background:rgba(30,26,20,.72);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(3px)';
+  wrap.addEventListener('click', function(e){ if(e.target===wrap) wrap.remove(); });
+  var box=document.createElement('div');
+  box.style.cssText='background:linear-gradient(160deg,#fbf6ea,#f3e7c9);border-radius:22px;padding:30px 34px;max-width:660px;width:100%;border:2px solid #d4a92a;box-shadow:0 24px 80px rgba(0,0,0,.45);max-height:90vh;overflow:auto';
+  box.innerHTML=
+    '<div style="text-align:center;margin-bottom:16px">'+portrait+'</div>'+
+    '<div style="text-align:center"><div style="font-size:25px;font-weight:600;letter-spacing:2px;color:#2d2a26">'+esc(nm)+'</div>'+
+    '<div style="font-size:13px;color:var(--muted);margin-top:5px">'+esc(c.story.era||'')+' · 第 '+c.id+' 章「'+esc(c.title)+'」</div></div>'+
+    '<div style="background:#fffdf6;border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-top:16px;font-size:14px;line-height:1.85;color:var(--ink2);border-left:3px solid #b8860b">'+parseMath(c.story.fact||'')+'</div>'+
+    (c.story.quote ? '<div style="font-style:italic;color:#8a6d1f;text-align:center;margin:16px 0 4px;font-size:15px">'+esc(c.story.quote)+'</div>' : '')+
+    (c.story.story ? '<div style="background:rgba(157,95,77,.07);border:1px solid rgba(157,95,77,.2);border-radius:12px;padding:13px 16px;margin-top:12px;font-size:13.5px;color:var(--ink2);line-height:1.75"><b style="color:var(--ochre)">📖 轶事</b>　'+parseMath(c.story.story)+'</div>' : '')+
+    '<div style="text-align:center;margin-top:20px"><button class="mh-close" style="border:none;background:linear-gradient(135deg,#b8860b,#d4a92a);color:#fff;border-radius:980px;padding:10px 34px;font-family:inherit;font-size:15px;cursor:pointer;letter-spacing:1px;box-shadow:0 4px 14px rgba(184,134,11,.35)">收下这张名片</button></div>';
+  box.querySelector('.mh-close').addEventListener('click', function(){ wrap.remove(); });
+  wrap.appendChild(box);
+  document.body.appendChild(wrap);
+}
+
+/* ============ 进度总览 ============ */
+renderers.stats=function(){
+  var s=calcStats(), streak=calcStreak(), rk=curRank(s.pct);
+  var tq=(stat&&stat.totalQ)?stat.totalQ:0, tc=(stat&&stat.totalCorrect)?stat.totalCorrect:0;
+  var bd=badgeState(s), gotN=bd.filter(function(b){return b.got;}).length;
+  var cards=[
+    {v:s.doneC+'/'+s.totalC,l:'已学章节'},
+    {v:s.examFull+'/'+s.examTotal,l:'小卷已做'},
+    {v:tq,l:'累计答题'+(tq?' · 对 '+tc:'')},
+    {v:s.wrongPool,l:'待订正错题'},
+    {v:gotN+'/'+bd.length,l:'徽章解锁'},
+    {v:streak,l:'连续打卡'}
+  ];
+  var h='<div class="kick">OVERVIEW</div><div class="h1">进度总览</div>'
+    +'<div class="sub">'+rk.name+' · 总进度 '+s.pct+'%'+(rk.next?' · 距「'+rk.next+'」还差 '+(rk.nextAt-s.pct)+'%':' · 已达最高')+'</div>';
+  h+='<div class="card" style="border-radius:var(--r-l)"><div style="display:flex;align-items:center;gap:14px">'
+    +'<div style="flex:1"><b style="font-size:22px">'+s.pct+'%</b><div class="cap">总进度</div>'
+    +'<div style="height:8px;background:var(--fill-soft);border-radius:4px;margin-top:8px;overflow:hidden"><i style="display:block;height:100%;width:'+s.pct+'%;background:linear-gradient(90deg,#0A84FF,#5E5CE6);border-radius:4px;transition:width .6s"></i></div></div>'
+    +'<div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#FFD60A,#FF9500);display:flex;align-items:center;justify-content:center;font-size:30px;flex:none">👑</div></div>'
+    +'<div class="cap" style="margin-top:8px;color:var(--ink2)">当前称号：'+rk.name+'</div></div>';
+  h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px">';
+  cards.forEach(function(cd){
+    h+='<div class="card" style="border-radius:var(--r-l);margin:0;padding:16px;text-align:center"><b style="font-size:20px;display:block">'+cd.v+'</b><span class="cap">'+cd.l+'</span></div>';
+  });
+  h+='</div>';
+  return h;
+};
+
 
 /* ============ 实验室 / 管理 / 关于 ============ */
 renderers.lab=function(){
@@ -11546,17 +12106,20 @@ renderers.lab=function(){
 };
 renderers.manage=function(){
   var s=calcStats();
-  return '<div class="kick">ACCOUNT</div><div class="h1">管理</div>'
-    +'<div class="sub">进度备份与恢复 · 数据安全 · 本机游客态（云端账号下一批接入）</div>'
-    +'<div class="card" style="border-radius:var(--r-l)"><b>📦 进度备份</b>'
-    +'<div class="cap" style="margin:6px 0 12px;line-height:1.7">导出生成一串备份码，换设备粘贴即可恢复；清除前先导出，有备无患。</div>'
-    +'<textarea id="bkText" style="width:100%;min-height:104px;border:1.5px solid var(--sep);border-radius:14px;padding:12px 14px;font-family:ui-monospace,Consolas,monospace;font-size:12px;line-height:1.6;background:var(--bg);color:var(--ink);resize:vertical" placeholder="点「导出备份」生成备份码；或粘贴备份码后点「导入恢复」…"></textarea>'
-    +'<div class="mini-row" style="margin-top:10px"><button class="mini-btn lift" id="bkExport">导出备份</button>'
-    +'<button class="mini-btn lift" id="bkImport">导入恢复</button></div>'
-    +'<div class="cap" style="margin-top:8px;line-height:1.6;color:var(--muted)">当前：本地游客 · 已学 '+s.doneC+'/'+s.totalC+' 章 · 总进度 '+s.pct+'%</div></div>'
-    +'<div class="card" style="margin-top:12px;border:1px solid rgba(255,59,48,.25)"><b style="color:var(--red)">🗑 清除所有记录</b>'
-    +'<div class="cap" style="margin:6px 0 12px;line-height:1.7">将清空全部学习数据（章节进度 / 徽章 / 错题 / 足迹 / 打卡），回到初始状态。为防误触，<b>需要输入「清除记录」四个字确认</b>。建议先导出备份。</div>'
-    +'<button class="btn-go" id="wipeOpen" style="background:var(--red);box-shadow:0 6px 18px var(--red-soft)">清除所有记录</button></div>';
+  return '<div class="kick">DATA</div><div class="h1">数据管理</div>'
+    +'<div class="sub">导出 / 导入备份 · 清除所有记录（本地与云端一并删除）</div>'
+    +'<div class="card" style="border-radius:var(--r-l)">'
+    +'<b style="font-size:16px">📦 备份与恢复</b>'
+    +'<div class="cap" style="margin:6px 0 12px;line-height:1.7">导出生成一串备份码，换设备 / 清空前粘贴即可恢复；云端登录时进度会自动同步，备份码用作额外保险。</div>'
+    +'<textarea id="bkText" style="width:100%;min-height:100px;border:1.5px solid var(--sep);border-radius:14px;padding:12px 14px;font-family:ui-monospace,Consolas,monospace;font-size:12px;line-height:1.6;background:var(--bg);color:var(--ink);resize:vertical" placeholder="点「导出备份」生成备份码；或粘贴备份码后点「导入恢复」…"></textarea>'
+    +'<div class="mini-row" style="margin-top:10px"><button class="mini-btn lift" id="bkExport">'+IC('doc')+' 导出备份</button>'
+    +'<button class="mini-btn lift" id="bkImport">'+IC('download','').replace('</span>','<path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg></span>')+' 导入恢复</button></div>'
+    +'<div style="height:1px;background:var(--sep);margin:16px 0 14px"></div>'
+    +'<b style="color:var(--red);font-size:16px">🗑 清除所有记录</b>'
+    +'<div class="cap" style="margin:6px 0 12px;line-height:1.7">将<b>永久删除本地与云端全部记录</b>（章节进度 / 徽章 / 错题 / 足迹 / 打卡 / 云端档案），回到初始状态，不可撤销。为防误触，需输入「清除记录」确认。建议先导出备份。</div>'
+    +'<button class="btn-go" id="wipeOpen" style="background:var(--red);box-shadow:0 6px 18px var(--red-soft)">清除所有记录（本地 + 云端）</button>'
+    +'<div class="cap" style="margin-top:10px;line-height:1.6;color:var(--muted)">当前：本地游客 · 已学 '+s.doneC+'/'+s.totalC+' 章 · 总进度 '+s.pct+'%</div>'
+    +'</div>';
 };
 ;
 renderers.about=function(){
@@ -11807,11 +12370,7 @@ function sessDone(){
   return true;
 }
 function renderView(id, isBack){
-  if(id !== window._cur && (window._cur === 'chapter' || window._cur === 'exam') && !sessDone()){
-    _pendingNav = { id: id, isBack: !!isBack };
-    showLeaveGuard();
-    return;
-  }
+  /* 退出确认统一走 requestNav → confirmBox（calc2 同款）；页面渲染直通 */
   doRenderView(id, isBack);
 }
 
@@ -11827,6 +12386,12 @@ function toast(msg){
   el.className='toast'; el.innerHTML='<span class="ic t-ic">'+I['check']+'</span><span>'+msg+'</span>';
   box.appendChild(el);
   setTimeout(function(){ el.classList.add('leaving'); setTimeout(function(){ if(el.parentNode) el.parentNode.removeChild(el); },300); },2200);
+}
+function refreshSettleCard(c){
+  try{
+    var el=document.getElementById('settleCard');
+    if(el && typeof settleCardHTML==='function') el.innerHTML=settleCardHTML(c);
+  }catch(e){}
 }
 function updatePgSub(){
   var el=document.getElementById('pgSub'); if(!el) return;
@@ -11845,7 +12410,7 @@ function noteNO(id,html){ var n=document.getElementById(id); if(n){ n.className=
 scroller.addEventListener('click',function(e){
   /* 结算按钮 */
   var setBtn=e.target.closest('[data-settle]');
-  if(setBtn){ tap(); var c=chById(+setBtn.getAttribute('data-settle')); if(c) settleChapter(c,'lesson'); return; }
+  if(setBtn){ tap(); var c=chById(+setBtn.getAttribute('data-settle')); if(c){ var _ok=settleChapter(c,'lesson'); if(_ok){ try{ refreshSettleCard(c); }catch(e){} } } return; }
   /* 答错后再答一次（随堂） */
   var retry=e.target.closest('[data-retry]');
   if(retry){
@@ -11902,11 +12467,11 @@ scroller.addEventListener('click',function(e){
       if(ii===q.answer){ var m=o.querySelector('.mark'); if(m) m.style.display='inline-flex'; }
     });
     if(ok) noteOK('whyNote'+qi,'<b>答对了。</b>'+esc(q.explain||''));
-    else noteNO('whyNote'+qi,'<b>答错了，正确答案：「'+parseMath(q.options[q.answer])+'」</b><br>'+esc(q.explain||'')+'<br><button class="retry-btn" data-retry="'+qi+'">↻ 再答一次</button>');
+    else noteNO('whyNote'+qi,'<b>答错了，正确答案：「'+parseMath(q.options[q.answer])+'」</b><br>'+esc(q.explain||'')+(q.type==='code'?'<br><button class="retry-btn" data-retry="'+qi+'">↻ 重新作答</button>':''));
     toast(ok?'✓ 答对':'看解析，再试一次');
     updatePgSub();
     var sm=chSummary(c);
-    if(sm.allDone&&!chIsDone(c)) setTimeout(function(){ settleChapter(c,'lesson'); },900);
+    if(sm.allDone&&!chIsDone(c)) setTimeout(function(){ if(settleChapter(c,'lesson')){ try{ refreshSettleCard(c); }catch(e){} } },900);
     return;
   }
   /* 小卷题作答 */
@@ -11927,7 +12492,7 @@ scroller.addEventListener('click',function(e){
       if(ii===eq.answer){ var m=o.querySelector('.mark'); if(m) m.style.display='inline-flex'; }
     });
     if(eok) noteOK('ewhyNote'+eqi,'<b>答对了。</b>'+esc(eq.explain||''));
-    else noteNO('ewhyNote'+eqi,'<b>答错了，正确答案：「'+parseMath(eq.options[eq.answer])+'」</b><br>'+esc(eq.explain||'')+'<br><button class="retry-btn" data-etry="'+eqi+'">↻ 再答一次</button>');
+    else noteNO('ewhyNote'+eqi,'<b>答错了，正确答案：「'+parseMath(eq.options[eq.answer])+'」</b><br>'+esc(eq.explain||'')+(eq.type==='code'?'<br><button class="retry-btn" data-etry="'+eqi+'">↻ 重新作答</button>':''));
     toast(eok?'✓ 答对':'看解析，再试一次');
     updatePgSub();
     var est=examStatus(cv);
@@ -11951,7 +12516,7 @@ scroller.addEventListener('click',function(e){
     toast(fok?'✓ 答对':'看解析');
     updatePgSub();
     var smF=chSummary(cF);
-    if(smF.allDone&&!chIsDone(cF)) setTimeout(function(){ settleChapter(cF,'lesson'); },900);
+    if(smF.allDone&&!chIsDone(cF)) setTimeout(function(){ if(settleChapter(cF,'lesson')){ try{ refreshSettleCard(cF); }catch(e){} } },900);
     return;
   }
   var efgo=e.target.closest('[data-efillgo]');
@@ -12145,6 +12710,7 @@ function beginStudy(){
   var ctx=startCtx; if(!ctx) return;
   closeStart();
   studyTimerEnter();
+  sessSnap();   /* 新会话快照：退出做题页时回滚，本次作答不留 */
   if(ctx.kind==='exam'){ _lastNav.exam=ctx.id; go('exam',ctx.id); startTimer(); }
   else { _lastNav.chapter=ctx.id; _lastNav.mode=(ctx.kind==='drill')?'drill':'lesson'; go('chapter',ctx.id); startTimer(); }
 }
@@ -12164,7 +12730,7 @@ document.querySelectorAll('.dock-btn').forEach(function(b){
   });
 });
 document.addEventListener('keydown',function(e){
-  if(e.key==='Escape'){ $('#celebrate').classList.remove('show'); dismissConfirm(); closeStart(); }
+  if(e.key==='Escape'){ $('#celebrate').classList.remove('show'); dismissConfirm(); closeStart(); if(typeof hideLeaveGuard==='function') hideLeaveGuard(); }
 });
 /* startSheet DOM 在 script 之后，绑定需等 DOM 就绪 */
 document.addEventListener('DOMContentLoaded',function(){
@@ -12188,6 +12754,20 @@ document.addEventListener('DOMContentLoaded',function(){
   history.replaceState({view:'home'},'');
   renderView('home',false);
 })();
+
+/* Dock 显隐覆盖：三大根页显示，二级页隐藏并收缩底部留白 */
+function paintDock(id){
+  var m=META[id]||{}; var curTab=m.tab||'learn';
+  var root=(id==='home'||id==='hall'||id==='mine');
+  try{
+    var dk=document.getElementById('dock');
+    if(dk) dk.style.display = root ? 'flex' : 'none';
+    var sc=document.getElementById('scroller');
+    if(sc) sc.style.paddingBottom = root ? '' : '72px';
+  }catch(e){}
+  var btns=document.querySelectorAll('.dock-btn');
+  for(var i=0;i<btns.length;i++){ btns[i].classList.toggle('on', btns[i].getAttribute('data-tab')===curTab); }
+}
 
 /* 实验室滑块委托 */
 scroller.addEventListener('input',function(ev){
@@ -12219,7 +12799,7 @@ function showWipeDialog(){
   var box=document.createElement('div');
   box.style.cssText='background:var(--card);border-radius:24px;padding:24px;max-width:430px;width:100%;box-shadow:var(--sh-float)';
   box.innerHTML='<b style="color:var(--red);font-size:17px">⚠ 清除所有记录</b>'
-    +'<div style="color:var(--ink2);font-size:13.5px;line-height:1.8;margin:10px 0">将永久清除全部学习数据：章节进度、徽章、名人堂、错题集、学习足迹。回到初始状态，不可撤销。<br>输入 <b style="color:var(--red)">清除记录</b> 确认：</div>'
+    +'<div style="color:var(--ink2);font-size:13.5px;line-height:1.8;margin:10px 0">将永久删除<b>本地与云端全部记录</b>：章节进度、徽章、错题、足迹、打卡、云端档案。回到初始状态，不可撤销。<br>输入 <b style="color:var(--red)">清除记录</b> 确认：</div>'
     +'<input id="wipeWord" placeholder="输入「清除记录」" style="width:100%;box-sizing:border-box;border:1.5px solid var(--sep);border-radius:12px;padding:12px 14px;font:14.5px inherit;font-family:inherit;background:var(--bg);color:var(--ink);outline:none">'
     +'<div style="display:flex;gap:10px;margin-top:14px">'
     +'<button id="wipeDo" style="flex:1;height:44px;border:none;border-radius:12px;background:var(--red);color:#fff;font:600 14px inherit;font-family:inherit;cursor:pointer">确认清除</button>'
@@ -12230,13 +12810,29 @@ function showWipeDialog(){
   document.getElementById('wipeDo').onclick=function(){
     var v=(inp&&inp.value||'').trim();
     if(v!=='清除记录'){ toast('输入不一致，未清除'); return; }
-    wipeAll();
-    toast('已清除，回到初始态');
-    setTimeout(function(){ location.reload(); },600);
+    /* 先清云端（若已接入登录），再清本地，最后登出回游客态 */
+    var doLocal=function(){
+      wipeAll();
+      try{ if(typeof sbLogout==='function') sbLogout(); }catch(_e){}
+      toast('本地与云端记录已清除，回到初始态');
+      setTimeout(function(){ location.reload(); },700);
+    };
+    try{
+      if(typeof sbClearCloud==='function'){ toast('正在清除云端…'); sbClearCloud(doLocal); return; }
+    }catch(_e){}
+    doLocal();
   };
   document.getElementById('wipeNo').onclick=function(){ closeWipeDialog(); };
 }
 function closeWipeDialog(){ var w=document.getElementById('wipeDlg'); if(w) w.remove(); }
+/* 账号管理入口（顶部账号卡）：云接入后由云模块注册 showAcctMgmt 接管 */
+scroller.addEventListener('click', function(ev){
+  var acc=ev.target.closest('[data-acct]');
+  if(!acc) return;
+  tap();
+  try{ if(typeof showAcctMgmt==='function'){ showAcctMgmt(); return; } }catch(e){}
+  toast('云端账号接入中 · 当前为本地模式，学习记录只存本机');
+});
 scroller.addEventListener('click', function(ev){
   if(ev.target.closest('#wipeOpen')){ showWipeDialog(); return; }
   var sg=ev.target.closest('[data-soulgo]');
@@ -12271,7 +12867,7 @@ scroller.addEventListener('click', function(ev){
   }
 });
 
-/* ===== 学习离开守卫弹层（框架玻璃质感；继续做题 / 离开不保存） ===== */
+/* ===== 学习离开守卫弹层（框架玻璃质感；唯一守卫：退出进度不保存） ===== */
 function showLeaveGuard(){
   if (document.getElementById('lgWrap')) return;
   var wrap = document.createElement('div');
@@ -12282,21 +12878,541 @@ function showLeaveGuard(){
   requestAnimationFrame(function(){ card.style.transform = 'translateY(0) scale(1)'; card.style.opacity = '1'; });
   card.innerHTML = '<div style="width:54px;height:54px;border-radius:50%;background:var(--gold-soft);display:flex;align-items:center;justify-content:center;font-size:26px">⏳</div>'
     + '<b style="display:block;font-size:18px;margin-top:12px">学习还没完成</b>'
-    + '<div style="color:var(--ink2);font-size:13.5px;line-height:1.8;margin:10px 0 4px">离开做题页后，<b>本次作答进度不会保存</b>。回来需要重新作答。<br>挂后台 / 锁屏不算离开，可放心切走再回来继续。</div>'
+    + '<div style="color:var(--ink2);font-size:13.5px;line-height:1.8;margin:10px 0 4px"><b>退出后本次作答进度不会保存</b>，回来需要重新作答。<br>挂后台 / 锁屏不算离开，可放心切走再回来继续。</div>'
     + '<div style="display:flex;gap:10px;margin-top:16px">'
     + '<button id="lgStay" style="flex:1;height:46px;border:none;border-radius:14px;background:var(--accent);color:#fff;font:600 14.5px inherit;font-family:inherit;cursor:pointer">继续做题</button>'
-    + '<button id="lgLeave" style="flex:1;height:46px;border:none;border-radius:14px;background:var(--red-soft);color:var(--red);font:600 14.5px inherit;font-family:inherit;cursor:pointer">离开不保存</button></div>';
+    + '<button id="lgLeave" style="flex:1;height:46px;border:none;border-radius:14px;background:var(--red-soft);color:var(--red);font:600 14.5px inherit;font-family:inherit;cursor:pointer">退出并离开</button></div>';
   wrap.appendChild(card);
   wrap.onclick = function(e){ if (e.target === wrap) hideLeaveGuard(); };
   document.body.appendChild(wrap);
-  document.getElementById('lgStay').onclick = hideLeaveGuard;
+  document.getElementById('lgStay').onclick = function(){
+    var n = _pendingNav; _pendingNav = null;
+    hideLeaveGuard();
+    /* _back：顶栏返回被拦，尚未发生任何导航，无需回退 */
+    if(n && n._back) return;
+    if(n){ if(n.isBack) history.forward(); else history.back(); }
+  };
   document.getElementById('lgLeave').onclick = function(){
     var n = _pendingNav; _pendingNav = null;
     hideLeaveGuard();
-    if (n) doRenderView(n.id, n.isBack);
+    if(typeof stopTimer === 'function'){ try{ stopTimer(); }catch(e){} }
+    /* 确认退出：回滚本次作答（真正不保存、从头再来） */
+    try{ if(typeof sessRoll === 'function') sessRoll(); }catch(e){}
+    if(!n) return;
+    if(n._back){
+      /* 顶栏返回：手动渲染上一页并同步历史，避免 base popstate 再次触发守卫 */
+      var st=(typeof STACK!=='undefined'&&STACK)?STACK:null;
+      var top=(st&&st.length)?st[st.length-1]:'home';
+      if(st&&st.length) st.pop();
+      if(typeof doRenderView==='function') doRenderView(top,true);
+      try{ history.replaceState({view:top},''); }catch(e){}
+    } else {
+      if(typeof doRenderView==='function') doRenderView(n.id, n.isBack);
+    }
   };
 }
 function hideLeaveGuard(){ var w = document.getElementById('lgWrap'); if (w) w.remove(); }
+
+/* ===== 学习会话快照 / 回滚（鼠哥定稿：退出做题页即清掉本次作答，真正从头再来） ===== */
+var _sessSnapData = null;
+function sessSnap(){
+  try{
+    _sessSnapData = {
+      qs: JSON.parse(JSON.stringify(quizStat || {})),
+      qp: JSON.parse(JSON.stringify(quizPick || {})),
+      wr: (wrongPool || []).slice(),
+      fx: (fixedPool || []).slice(),
+      hd: (hallDone || []).slice(),
+      st: stat ? JSON.parse(JSON.stringify(stat)) : null,
+      ts: todayStat ? JSON.parse(JSON.stringify(todayStat)) : null
+    };
+  }catch(e){ _sessSnapData = null; }
+}
+function sessRoll(){
+  if(!_sessSnapData) return;
+  try{
+    quizStat = _sessSnapData.qs;  store('quizStat', quizStat);
+    quizPick = _sessSnapData.qp;  store('quizPick', quizPick);
+    wrongPool = _sessSnapData.wr; store('wrong', wrongPool);
+    fixedPool = _sessSnapData.fx; store('fixed', fixedPool);
+    hallDone = _sessSnapData.hd;  store('hall', hallDone);
+    if(_sessSnapData.st){ stat = _sessSnapData.st; store('stat', stat); }
+    if(_sessSnapData.ts){ todayStat = _sessSnapData.ts; store('tstat', todayStat); }
+  }catch(e){}
+  _sessSnapData = null;
+}
+/* 关闭 / 刷新兜底：做题未完成直接走也清本次 */
+window.addEventListener('pagehide', function(){
+  var cw = window._cur;
+  if((cw === 'chapter' || cw === 'exam') && typeof sessDone === 'function' && !sessDone()){
+    try{ sessRoll(); }catch(e){}
+  }
+});
+
+/* ============================================================
+   chip2 云客户端（Supabase · 登录在总院，此处复用共享登录态）
+   功能：自动同步 / 作答推送 / 云排行榜(app=chip) / 账号管理 / 清云
+   仅作学院侧接入；登录/注册/找回在总院门户完成。
+   ============================================================ */
+var SB_URL = 'https://yycokuphczoxfntcwizi.supabase.co';
+var SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl5Y29rdXBoY3pveGZudGN3aXppIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc0MDM3MzgsImV4cCI6MjEwMjk3OTczOH0.1vm61oyqeBmc2lL_q0-rgJT2x6TsOn_DXsQ';
+var SB_APP = 'chip';
+var SB_PORTAL = 'https://ndshuge.github.io/ndshuge-academy/';
+
+/* ---------- 登录态（共享键 acad_sb_session / acad_profile，四院同域互通） ---------- */
+function sbSession(){
+  try{
+    var a = JSON.parse(localStorage.getItem('acad_sb_session'));
+    if(a && a.access_token) return a;
+    var b = JSON.parse(localStorage.getItem('academy_sb_session')); /* 兼容旧键 */
+    if(b && b.access_token){ localStorage.setItem('acad_sb_session', JSON.stringify(b)); return b; }
+  }catch(e){}
+  return null;
+}
+function sbSaveSession(s){ try{ localStorage.setItem('acad_sb_session', JSON.stringify(s)); }catch(e){} }
+function sbDropSession(){ try{ localStorage.removeItem('acad_sb_session'); }catch(e){} }
+function sbAuthHeaders(){
+  var s = sbSession();
+  return s ? { 'Authorization': 'Bearer ' + s.access_token, 'Content-Type': 'application/json', 'apikey': SB_KEY } : null;
+}
+function sbProfile(){
+  try{
+    var p = JSON.parse(localStorage.getItem('acad_profile')) || JSON.parse(localStorage.getItem('academy_profile')) || JSON.parse(localStorage.getItem('chip_profile'));
+    if(p) return p;
+  }catch(e){}
+  var s = sbSession();
+  return s && s.user ? { username: '同学', avatar: '🐹', user_id: s.user.id } : null;
+}
+function sbUser(){ var s = sbSession(); if(!s || !s.user) return null; var p = sbProfile(); return { id: s.user.id, nick: (p && (p.username || p.nick)) || '同学', avatar: (p && p.avatar) || '🐹' }; }
+
+async function sbEnsureToken(){
+  var s = sbSession(); if(!s) return false;
+  try{
+    var payload = JSON.parse(atob(s.access_token.split('.')[1]));
+    if(Date.now() < (payload.exp * 1000) - 60000) return true;
+  }catch(e){ return false; }
+  if(!s.refresh_token) return false;
+  try{
+    var r = await fetch(SB_URL + '/auth/v1/token?grant_type=refresh_token', { method: 'POST', headers: { 'Content-Type': 'application/json', 'apikey': SB_KEY }, body: JSON.stringify({ refresh_token: s.refresh_token }) });
+    var j = await r.json();
+    if(j.access_token){ sbSaveSession({ access_token: j.access_token, refresh_token: j.refresh_token || s.refresh_token, user: j.user || s.user }); return true; }
+  }catch(e){}
+  sbDropSession(); return false;
+}
+
+/* ---------- 进度打包 / 合并（与旧引擎同语义：并集去重不互覆） ---------- */
+function sbPack(){
+  return {
+    ch: load('ch', []), hall: load('hall', []), wrong: load('wrong', []),
+    fixed: load('fixed', []), log: load('log', []), quizStat: load('quizStat', {}),
+    tstat: load('tstat', {}), quizPick: load('quizPick', {}), settle: load('settle', {})
+  };
+}
+var SB_MERGE_ARR = ['ch','hall','wrong','fixed','log'];
+var SB_MERGE_OBJ = ['quizStat','tstat','quizPick','settle'];
+function sbSanitize(d){ return d && typeof d === 'object' ? d : {}; }
+function sbMerge(local, cloud){
+  var out = {}; local = sbSanitize(local); cloud = sbSanitize(cloud);
+  SB_MERGE_ARR.forEach(function(k){
+    var a = local[k] || [], b = cloud[k] || [];
+    if(!Array.isArray(a)) a = []; if(!Array.isArray(b)) b = [];
+    var seen = {}, m = [];
+    a.concat(b).forEach(function(x){ var kk = (typeof x === 'object' && x !== null) ? JSON.stringify(x) : String(x); if(!seen[kk]){ seen[kk] = 1; m.push(x); } });
+    out[k] = m;
+  });
+  SB_MERGE_OBJ.forEach(function(k){
+    var o = {}, a = local[k] || {}, b = cloud[k] || {};
+    if(typeof a !== 'object') a = {}; if(typeof b !== 'object') b = {};
+    Object.keys(a).forEach(function(x){ o[x] = a[x]; }); Object.keys(b).forEach(function(x){ o[x] = b[x]; });
+    out[k] = o;
+  });
+  return out;
+}
+function sbApplyLocal(m){
+  try{
+    if(m.ch){ chDone = m.ch; store('ch', chDone); }
+    if(m.hall){ hallDone = m.hall; store('hall', hallDone); }
+    if(m.wrong){ wrongPool = m.wrong; store('wrong', wrongPool); }
+    if(m.fixed){ fixedPool = m.fixed; store('fixed', fixedPool); }
+    if(m.quizStat){ quizStat = m.quizStat; store('quizStat', quizStat); }
+    if(m.quizPick){ quizPick = m.quizPick; store('quizPick', quizPick); }
+    if(m.settle){ settleStore = m.settle; store('settle', settleStore); }
+    if(m.tstat){ todayStat = m.tstat; store('tstat', todayStat); }
+  }catch(e){}
+}
+function sbCloudData(d){ return (d && d.data && d.data[SB_APP]) ? d.data[SB_APP] : null; }
+
+/* ---------- 拉取并合并云端（打开学院 / 手动同步） ---------- */
+async function sbSyncFromCloud(silent){
+  var s = sbSession(); if(!s || !s.user){ if(!silent) toast('未登录，去总院登录后可云同步'); return false; }
+  if(!(await sbEnsureToken())){ if(!silent) toast('登录已失效，请去总院重新登录'); return false; }
+  var h = sbAuthHeaders(); if(!h) return false;
+  if(!silent) toast('正在同步并合并两端进度…');
+  try{
+    var r = await fetch(SB_URL + '/rest/v1/progress?select=data&user_id=eq.' + s.user.id, { headers: h });
+    var rows = await r.json();
+    var d = sbCloudData(rows && rows.length ? rows[0] : null);
+    if(d){
+      var merged = sbMerge(sbPack(), d);
+      sbApplyLocal(merged);
+      if(!silent) toast('✅ 已合并云端进度（取并集，不丢数据）');
+    } else if(!silent) {
+      toast('云端暂无记录，本次先上传');
+    }
+    await sbPush(true);
+    try{ if(window._cur === 'mine' || window._cur === 'home' || window._cur === 'hall'){ doRenderView(window._cur, true); } }catch(e){}
+    return true;
+  }catch(e){ if(!silent) toast('云端同步失败，请检查网络'); return false; }
+}
+
+/* ---------- 推送（防抖 2s；推送前合并云端最新防覆盖） ---------- */
+var sbTimer = null;
+async function sbPush(immediate){
+  var s = sbSession(); if(!s) return;
+  if(!immediate){ clearTimeout(sbTimer); sbTimer = setTimeout(function(){ sbPush(true); }, 2000); return; }
+  if(!(await sbEnsureToken())) return;
+  try{
+    var h = sbAuthHeaders(); if(!h) return;
+    var r = await fetch(SB_URL + '/rest/v1/progress?select=data&user_id=eq.' + s.user.id, { headers: h });
+    var rows = await r.json();
+    var row = rows && rows.length ? rows[0] : null;
+    var data2 = (row && row.data && typeof row.data === 'object') ? row.data : {};
+    var cloudD = sbCloudData(row);
+    var calc = sbPack();
+    if(cloudD){ var merged = sbMerge(calc, cloudD); sbApplyLocal(merged); data2[SB_APP] = merged; }
+    else { data2[SB_APP] = calc; }
+    var hh = Object.assign({}, h, { 'Prefer': 'resolution=merge-duplicates' });
+    if(row){
+      await fetch(SB_URL + '/rest/v1/progress?user_id=eq.' + s.user.id, { method: 'PATCH', headers: h, body: JSON.stringify({ data: data2 }) });
+    } else {
+      await fetch(SB_URL + '/rest/v1/progress', { method: 'POST', headers: hh, body: JSON.stringify({ user_id: s.user.id, data: data2 }) });
+    }
+    sbPushRank();
+  }catch(e){}
+}
+function sbNotify(){ try{ if(sbSession()) sbPush(false); }catch(e){} }
+
+/* ---------- 排行榜推送（app=chip） ---------- */
+function sbPushRank(){
+  try{
+    var s = sbSession(); if(!s || !s.user) return;
+    var st = calcStats(), p = sbProfile(); if(!p) return;
+    var rk = curRank(st.pct);
+    var h = sbAuthHeaders(); if(!h) return;
+    var hh = Object.assign({}, h, { 'Prefer': 'resolution=merge-duplicates' });
+    var rb = { user_id: s.user.id, app: SB_APP, username: p.username || '同学', avatar: p.avatar || '🐹', pct: st.pct, done: st.doneC, lessons: st.doneC, rank_name: rk.name, updated_at: new Date().toISOString() };
+    fetch(SB_URL + '/rest/v1/leaderboard', { method: 'POST', headers: hh, body: JSON.stringify(rb) }).catch(function(){});
+  }catch(e){}
+}
+
+/* ---------- 清云端（本院命名空间，供清除记录联动） ---------- */
+function sbClearCloud(done){
+  try{
+    var s = sbSession(); if(!s || !s.user){ if(typeof done === 'function') done(); return; }
+    sbEnsureToken().then(function(ok){
+      if(!ok){ if(typeof done === 'function') done(); return; }
+      var h = sbAuthHeaders(); if(!h){ if(typeof done === 'function') done(); return; }
+      fetch(SB_URL + '/rest/v1/progress?select=data&user_id=eq.' + s.user.id, { headers: h })
+        .then(function(r){ return r.json(); })
+        .then(function(rows){
+          var data = (rows && rows.length && rows[0].data && typeof rows[0].data === 'object') ? rows[0].data : {};
+          if(data[SB_APP]) delete data[SB_APP];
+          if(rows && rows.length) return fetch(SB_URL + '/rest/v1/progress?user_id=eq.' + s.user.id, { method: 'PATCH', headers: h, body: JSON.stringify({ data: data }) });
+          return null;
+        })
+        .then(function(){
+          var h2 = sbAuthHeaders();
+          if(h2) fetch(SB_URL + '/rest/v1/leaderboard?user_id=eq.' + s.user.id + '&app=eq.' + SB_APP, { method: 'DELETE', headers: h2 }).catch(function(){});
+          if(typeof done === 'function') done();
+        })
+        .catch(function(){ if(typeof done === 'function') done(); });
+    });
+  }catch(e){ if(typeof done === 'function') done(); }
+}
+
+/* ---------- 登出（仅清本机会话；总院重新登录即恢复） ---------- */
+function sbLogout(){
+  sbDropSession();
+  try{ localStorage.removeItem('acad_profile'); }catch(e){}
+  toast('已退出登录');
+  try{ if(window._cur === 'mine') doRenderView('mine', true); }catch(e){}
+}
+
+/* ---------- 账号管理（大弹窗：头像 / 昵称 / 密码 / 退出） ---------- */
+var SB_AVATARS=['🦊','🐼','🐸','🐙','🦄','🐯','🐨','🐰','🦁','🐢','🐳','🦉','🐭','🐿️'];
+var SB_AV_COLORS=['#537D96','#5B8C5A','#6D9B7C','#C77B6D','#A67BB8','#D9A441','#8FA3B8','#C75B7A','#B57F5E','#7BA6A0','#A08BD1','#D08159','#9B8579','#C77B3D'];
+function sbAvColor(a){ var i=SB_AVATARS.indexOf(a); return SB_AV_COLORS[i>=0?i:0]; }
+function sbRefreshMine(){
+  try{ if(window._cur==='mine' && typeof doRenderView==='function') doRenderView('mine', true); }catch(e){}
+}
+function sbSaveProfile(upd, cb){
+  var s=sbSession(); if(!s||!s.user){ toast('未登录'); if(cb) cb(false); return; }
+  sbEnsureToken().then(function(ok){
+    if(!ok){ toast('登录已失效，请重新登录'); if(cb) cb(false); return; }
+    var h=sbAuthHeaders(); if(!h) return;
+    var body={};
+    if(upd.username!==undefined) body.username=upd.username;
+    if(upd.avatar!==undefined) body.avatar=upd.avatar;
+    fetch(SB_URL+'/rest/v1/profiles?user_id=eq.'+s.user.id, { method:'PATCH', headers:h, body: JSON.stringify(body) })
+      .then(function(rr){
+        if(!rr.ok && rr.status!==204) throw new Error('HTTP'+rr.status);
+        var p=sbProfile()||{};
+        if(upd.username!==undefined) p.username=upd.username;
+        if(upd.avatar!==undefined) p.avatar=upd.avatar;
+        p.user_id=s.user.id;
+        try{ localStorage.setItem('acad_profile', JSON.stringify(p)); }catch(e){}
+        toast('✅ 已保存');
+        sbPushRank();
+        sbRefreshMine();
+        if(cb) cb(true);
+      })
+      .catch(function(){ toast('保存失败（昵称可能已被占用）'); if(cb) cb(false); });
+  });
+}
+function showAcctMgmt(){
+  var u=sbUser?sbUser():null;
+  var s=sbSession();
+  var email=(s&&s.user&&s.user.email)||'';
+  var wrap=document.createElement('div');
+  wrap.id='acctWrap';
+  wrap.style.cssText='position:fixed;inset:0;background:rgba(10,10,14,.55);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px;-webkit-backdrop-filter:blur(18px) saturate(1.3);backdrop-filter:blur(18px) saturate(1.3)';
+  wrap.onclick=function(e){ if(e.target===wrap) wrap.remove(); };
+  var card=document.createElement('div');
+  card.style.cssText='background:var(--card);border-radius:26px;padding:24px;max-width:560px;width:100%;max-height:88vh;overflow:auto;box-shadow:var(--sh-float);transform:translateY(10px) scale(.98);opacity:0;transition:transform .32s cubic-bezier(.24,1.4,.4,1),opacity .24s';
+  requestAnimationFrame(function(){ card.style.transform='none'; card.style.opacity='1'; });
+  if(!u||!s){
+    card.innerHTML='<div style="text-align:center;padding:30px 10px">'
+      +'<span style="font-size:46px">🐹</span><div class="h2" style="margin-top:12px">账号管理</div>'
+      +'<div class="cap" style="margin-top:6px;line-height:1.8">登录一次，四院通用；进度自动云端同步，换设备不丢。</div>'
+      +'<a href="' + SB_PORTAL + '" style="display:block;margin:18px auto 0;width:200px;height:48px;line-height:48px;border-radius:14px;background:var(--accent);color:#fff;font:600 15px inherit;font-family:inherit;text-decoration:none">去总院登录 / 注册</a>'
+      +'<button id="acctClose" style="margin:12px auto 0;display:block;border:none;background:none;color:var(--muted);font:inherit;font-size:13px;cursor:pointer">暂不登录 · 先本地学</button></div>';
+    wrap.appendChild(card);
+    document.body.appendChild(wrap);
+    var cl=document.getElementById('acctClose'); if(cl) cl.onclick=function(){ wrap.remove(); };
+    return;
+  }
+  var av='<div style="display:flex;align-items:center;gap:18px">'
+    +'<div id="acctAvBig" style="width:76px;height:76px;border-radius:50%;background:'+sbAvColor(u.avatar)+';display:flex;align-items:center;justify-content:center;font-size:38px;flex:none">'+esc(u.avatar)+'</div>'
+    +'<div style="flex:1;min-width:0"><b style="font-size:20px">'+esc(u.nick)+'</b>'
+    +'<div style="font-size:12.5px;color:var(--muted);margin-top:3px;overflow:hidden;text-overflow:ellipsis">'+esc(email||'已登录')+'</div>'
+    +'<div style="font-size:12px;color:var(--muted);margin-top:2px">chip 学院 · 云同步已开启</div></div></div>';
+  var body='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px"><b style="font-size:18px">账号管理</b><button id="acctX" style="border:none;background:var(--fill-soft);width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:14px;color:var(--muted)">✕</button></div>'
+    + av
+    + '<div style="margin-top:18px"><b style="font-size:14px">换头像</b><div id="acctAvRow" style="display:flex;gap:8px;overflow-x:auto;margin-top:8px;padding-bottom:6px"></div></div>'
+    + '<div style="margin-top:16px"><b style="font-size:14px">昵称</b><div style="display:flex;gap:8px;margin-top:8px">'
+    + '<input id="acctName" value="'+esc(u.nick)+'" maxlength="16" style="flex:1;border:1.5px solid var(--sep);border-radius:12px;padding:11px 13px;font:15px inherit;font-family:inherit;background:var(--bg);color:var(--ink)">'
+    + '<button id="acctNameSave" style="flex:none;border:none;border-radius:12px;background:var(--accent);color:#fff;padding:0 20px;font:600 14px inherit;font-family:inherit;cursor:pointer">保存</button></div></div>'
+    + '<div style="margin-top:16px"><b style="font-size:14px">修改密码</b><div style="display:flex;gap:8px;margin-top:8px">'
+    + '<input id="acctPw1" type="password" placeholder="新密码（至少 6 位）" style="flex:1;min-width:0;border:1.5px solid var(--sep);border-radius:12px;padding:11px 13px;font:14px inherit;font-family:inherit;background:var(--bg);color:var(--ink)">'
+    + '<input id="acctPw2" type="password" placeholder="再输一次" style="flex:1;min-width:0;border:1.5px solid var(--sep);border-radius:12px;padding:11px 13px;font:14px inherit;font-family:inherit;background:var(--bg);color:var(--ink)">'
+    + '<button id="acctPwSave" style="flex:none;border:none;border-radius:12px;background:var(--fill-soft);color:var(--ink2);padding:0 18px;font:600 13px inherit;font-family:inherit;cursor:pointer">改密</button></div></div>'
+    + '<button id="acctLogout" style="width:100%;height:46px;border:none;border-radius:14px;background:var(--red-soft);color:var(--red);font:600 14.5px inherit;font-family:inherit;cursor:pointer;margin-top:20px">退出登录</button>';
+  card.innerHTML=body;
+  wrap.appendChild(card);
+  document.body.appendChild(wrap);
+  /* 头像选择 */
+  var row=document.getElementById('acctAvRow');
+  var cur=u.avatar||'🦊';
+  SB_AVATARS.forEach(function(a,i){
+    var b=document.createElement('button');
+    b.textContent=a;
+    b.style.cssText='width:44px;height:44px;border-radius:50%;font-size:22px;flex:none;cursor:pointer;background:'+(a===cur?'var(--accent-soft)':'var(--fill-soft)')+';border:2px solid '+(a===cur?'var(--accent)':'transparent')+';display:flex;align-items:center;justify-content:center';
+    b.onclick=function(){
+      cur=a;
+      SB_AVATARS.forEach(function(a2,k2){ row.children[k2].style.borderColor=(a2===cur?'var(--accent)':'transparent'); row.children[k2].style.background=(a2===cur?'var(--accent-soft)':'var(--fill-soft)'); });
+      var big=document.getElementById('acctAvBig');
+      if(big){ big.textContent=a; big.style.background=sbAvColor(a); }
+      sbSaveProfile({avatar:a});
+    };
+    row.appendChild(b);
+  });
+  var ns=document.getElementById('acctNameSave');
+  if(ns) ns.onclick=function(){
+    var nm=(document.getElementById('acctName').value||'').trim();
+    if(!/^[\u4e00-\u9fa5A-Za-z0-9_]{2,16}$/.test(nm)){ toast('昵称 2~16 位：中文/字母/数字/下划线'); return; }
+    sbSaveProfile({username:nm});
+  };
+  var ps=document.getElementById('acctPwSave');
+  if(ps) ps.onclick=function(){
+    var n1=(document.getElementById('acctPw1').value||''), n2=(document.getElementById('acctPw2').value||'');
+    if(n1.length<6){ toast('新密码至少 6 位'); return; }
+    if(n1!==n2){ toast('两次输入不一致'); return; }
+    sbEnsureToken().then(function(ok){
+      if(!ok){ toast('登录已失效'); return; }
+      var ss=sbSession();
+      fetch(SB_URL+'/auth/v1/user', { method:'PUT', headers:{ 'apikey':SB_KEY, 'Authorization':'Bearer '+ss.access_token, 'Content-Type':'application/json' }, body: JSON.stringify({ password:n1 }) })
+        .then(function(r){ return r.json(); })
+        .then(function(j){ if(j&&j.id){ toast('✅ 密码已更新'); document.getElementById('acctPw1').value=''; document.getElementById('acctPw2').value=''; } else { toast('修改失败：'+(j.msg||j.message||j.error_description||'未知')); } })
+        .catch(function(){ toast('修改失败，请检查网络'); });
+    });
+  };
+  var lg=document.getElementById('acctLogout');
+  if(lg) lg.onclick=function(){ wrap.remove(); sbLogout(); };
+  var x=document.getElementById('acctX'); if(x) x.onclick=function(){ wrap.remove(); };
+}
+
+/* ---------- 云排行榜（覆盖 renderers.rank） ---------- */
+function sbRankHTML(){
+  var u = sbUser(), s = sbSession();
+  var h = '<div class="kick">LEADERBOARD</div><div class="h1">排行榜</div>'
+    + '<div class="sub">芯片学院 · 按已学章节与总进度排 · 真人榜</div>';
+  if(!u || !s){ h += sbRankEmpty('登录后加入全院排行榜'); return h; }
+  h += '<div class="card" style="border-radius:var(--r-l);text-align:center;padding:22px" id="rankBox"><div style="color:var(--muted)">加载中…</div></div>';
+  setTimeout(function(){
+    fetch(SB_URL + '/rest/v1/leaderboard?select=user_id,username,avatar,pct,done,rank_name&order=pct.desc,updated_at.asc&app=eq.' + SB_APP + '&limit=100', { headers: sbAuthHeaders() })
+      .then(function(r){ return r.json(); })
+      .then(function(rows){ paintRank(rows, u); })
+      .catch(function(){ var b = document.getElementById('rankBox'); if(b) b.innerHTML = sbRankEmpty('加载失败，请检查网络'); });
+  }, 60);
+  return h;
+}
+function sbRankEmpty(tip){
+  return '<div class="card" style="border-radius:var(--r-l);text-align:center;padding:30px 20px">'
+    + '<span style="font-size:40px">🏆</span><div class="h2" style="margin-top:10px">' + tip + '</div>'
+    + '<div style="margin-top:12px"><a href="' + SB_PORTAL + '" class="btn-go" style="text-decoration:none;display:inline-flex">去总院登录</a></div></div>';
+}
+function paintRank(rows, u){
+  var box = document.getElementById('rankBox'); if(!box) return;
+  if(!rows || !rows.length){ box.innerHTML = sbRankEmpty('还没有人上榜，快去学习成为第一名！'); return; }
+  var medals = ['🥇','🥈','🥉'];
+  var html = '';
+  var myRank = -1, me = u.id;
+  rows.forEach(function(r, i){
+    if(r.user_id === me) myRank = i + 1;
+    var isMe = r.user_id === me;
+    html += '<div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:14px;margin-top:8px;' + (isMe ? 'background:var(--accent-soft);border:1px solid var(--accent)' : 'background:var(--fill-soft)') + '">'
+      + '<span style="width:34px;text-align:center;font-size:18px;flex:none">' + ((i < 3) ? medals[i] : '<b style="font-size:14px;color:var(--muted)">' + (i + 1) + '</b>') + '</span>'
+      + '<span style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#0A84FF,#5E5CE6);display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff;flex:none">' + esc(r.avatar || '🐹') + '</span>'
+      + '<span style="flex:1;min-width:0;text-align:left"><b style="display:block;font-size:15px">' + esc(r.username) + (isMe ? ' <span style="font-size:11px;color:var(--accent)">我</span>' : '') + '</b>'
+      + '<span style="font-size:12px;color:var(--muted)">' + esc(r.rank_name || '') + ' · 已学 ' + r.done + ' 章</span></span>'
+      + '<b style="font-size:18px;color:' + (r.pct >= 80 ? 'var(--green)' : r.pct >= 60 ? 'var(--gold)' : 'var(--muted)') + '">' + r.pct + '%</b></div>';
+  });
+  if(myRank > 0) html = '<div style="text-align:center;font-size:13px;color:var(--muted);margin-bottom:6px">你当前第 <b style="color:var(--accent)">' + myRank + '</b> 名</div>' + html;
+  box.innerHTML = html;
+}
+renderers.rank = function(){ return sbRankHTML(); };
+
+/* ---------- 反馈意见（表 feedback，app=chip） ---------- */
+renderers.feedback=function(){
+  var u=sbUser?sbUser():null;
+  var h='<div class="kick">FEEDBACK</div><div class="h1">反馈意见</div>'
+    +'<div class="sub">Bug、想法、下一章想学什么——直接说</div>';
+  if(!u){
+    h+='<div class="card" style="border-radius:var(--r-l);text-align:center;padding:30px 20px">'
+      +'<span style="font-size:40px">💬</span><div class="h2" style="margin-top:10px">登录后再反馈</div>'
+      +'<div class="cap" style="margin-top:6px;line-height:1.7">反馈会署上你的名字，方便跟进。<br>先去总院登录一次（四院通用）。</div>'
+      +'<div style="margin-top:14px"><a href="' + SB_PORTAL + '" class="btn-go" style="text-decoration:none;display:inline-flex">去总院登录</a></div></div>';
+    return h;
+  }
+  h+='<div class="card" style="border-radius:var(--r-l)">'
+    +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><span style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#0A84FF,#5E5CE6);display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff">'+esc(u.avatar)+'</span>'
+    +'<b>'+esc(u.nick)+'</b><span class="cap">· 将作为 chip 学院反馈提交</span></div>'
+    +'<textarea id="fbText" rows="5" placeholder="写下你的意见、建议或遇到的 Bug…" style="width:100%;box-sizing:border-box;border:1.5px solid var(--sep);border-radius:14px;padding:12px 14px;font:14.5px/1.8 inherit;font-family:inherit;background:var(--bg);color:var(--ink);resize:vertical"></textarea>'
+    +'<button class="btn-go" id="fbSend" style="width:100%;justify-content:center;margin-top:12px">发送反馈</button></div>';
+  return h;
+};
+function sendFeedback(){
+  var u2=(typeof sbUser==='function')?sbUser():null;
+  if(!u2){ toast('请先登录再反馈'); return; }
+  var el=document.getElementById('fbText');
+  var c=(el&&el.value||'').trim();
+  if(!c){ toast('先写下你的意见'); return; }
+  var h=sbAuthHeaders(); if(!h){ toast('登录已失效，请去总院重新登录'); return; }
+  var hh=Object.assign({}, h, { 'Prefer': 'return=minimal' });
+  fetch(SB_URL+'/rest/v1/feedback', { method:'POST', headers: hh, body: JSON.stringify({ user_id: u2.id, username: u2.nick, avatar: u2.avatar, content: c, app: SB_APP }) })
+    .then(function(r){ if(r.ok){ toast('✅ 已发送，感谢反馈！'); if(el) el.value=''; } else { toast('发送失败，请稍后再试'); } })
+    .catch(function(){ toast('发送失败，请检查网络'); });
+}
+scroller.addEventListener('click', function(ev){
+  var fb=ev.target.closest('#fbSend');
+  if(fb){ tap(); sendFeedback(); }
+});
+
+/* ---------- 讨论区（app=chip · feedback 表承载，content 以 [讨论] 前缀区分） ---------- */
+var BD_TAG = '[讨论] ';
+renderers.board=function(){
+  var u=sbUser?sbUser():null;
+  var h='<div class="kick">BOARD</div><div class="h1">讨论区</div>'
+    +'<div class="sub">同学间说说话 · 分享进度与心得（登录后发言）</div>';
+  if(!u){
+    h+='<div class="card" style="border-radius:var(--r-l);text-align:center;padding:30px 20px">'
+      +'<span style="font-size:40px">💬</span><div class="h2" style="margin-top:10px">登录后参与讨论</div>'
+      +'<div class="cap" style="margin-top:6px;line-height:1.7">先去总院登录一次，就能在这和大家聊天了。</div>'
+      +'<div style="margin-top:14px"><a href="' + SB_PORTAL + '" class="btn-go" style="text-decoration:none;display:inline-flex">去总院登录</a></div></div>';
+    return h;
+  }
+  h+='<div style="display:flex;gap:8px;margin-bottom:12px">'
+    +'<input id="bdText" placeholder="说点什么…（按 Enter 发送）" style="flex:1;border:1.5px solid var(--sep);border-radius:14px;padding:12px 14px;font:15px inherit;font-family:inherit;background:var(--card);color:var(--ink)">'
+    +'<button id="bdSend" style="flex:none;border:none;border-radius:14px;background:var(--accent);color:#fff;padding:0 22px;font:600 14px inherit;font-family:inherit;cursor:pointer">发送</button></div>'
+    +'<div id="boardList"><div class="card" style="border-radius:var(--r-l);text-align:center;padding:24px;color:var(--muted)">加载中…</div></div>';
+  setTimeout(function(){ bdLoad(); }, 60);
+  return h;
+};
+function bdLoad(){
+  var list=document.getElementById('boardList'); if(!list) return;
+  list.innerHTML='<div class="card" style="border-radius:var(--r-l);text-align:center;padding:24px;color:var(--muted)">加载中…</div>';
+  fetch(SB_URL+'/rest/v1/feedback?select=user_id,username,avatar,content,created_at&app=eq.'+SB_APP+'&order=created_at.desc&limit=60', { headers: sbAuthHeaders() })
+    .then(function(r){ return r.json(); })
+    .then(function(rows){ bdPaint(rows||[]); })
+    .catch(function(){ list.innerHTML='<div class="card" style="border-radius:var(--r-l);text-align:center;padding:24px;color:var(--muted)">加载失败，请检查网络</div>'; });
+}
+function bdPaint(rows){
+  var list=document.getElementById('boardList'); if(!list) return;
+  var mine=(sbUser?sbUser():{id:''}).id;
+  var items=rows.filter(function(x){ return x && x.content && x.content.indexOf(BD_TAG)===0; });
+  if(!items.length){
+    list.innerHTML='<div class="card" style="border-radius:var(--r-l);text-align:center;padding:30px"><span style="font-size:36px">💬</span><div class="cap" style="margin-top:8px">还没有人发言，来抢沙发！</div></div>';
+    return;
+  }
+  var html='';
+  items.forEach(function(x){
+    var t=new Date(x.created_at);
+    var p=function(n){return (n<10?'0':'')+n;};
+    var isMe=(mine && x.user_id===mine);
+    html+='<div class="card" style="border-radius:var(--r-l);padding:14px 16px;margin-bottom:10px;border-color:'+(isMe?'var(--accent)':'var(--sep)')+'">'
+      +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">'
+      +'<span style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#0A84FF,#5E5CE6);display:flex;align-items:center;justify-content:center;font-size:17px;color:#fff">'+esc(x.avatar||'🐹')+'</span>'
+      +'<b style="font-size:13.5px">'+esc(x.username||'同学')+(isMe?'<span style="color:var(--accent);font-size:11px;margin-left:5px">我</span>':'')+'</b>'
+      +'<span style="font-size:11px;color:var(--muted)">'+p(t.getMonth()+1)+'-'+p(t.getDate())+' '+p(t.getHours())+':'+p(t.getMinutes())+'</span></div>'
+      +'<div style="font-size:14.5px;color:var(--ink2);line-height:1.7;white-space:pre-wrap;word-break:break-word">'+esc(x.content.slice(BD_TAG.length))+'</div></div>';
+  });
+  list.innerHTML=html;
+}
+function bdSend(){
+  var u=(typeof sbUser==='function')?sbUser():null;
+  if(!u){ toast('登录后才能发言'); return; }
+  var el=document.getElementById('bdText');
+  var v=(el&&el.value||'').trim();
+  if(!v){ toast('先写点什么'); return; }
+  var h=sbAuthHeaders(); if(!h){ toast('登录已失效'); return; }
+  var hh=Object.assign({}, h, { 'Prefer': 'return=minimal' });
+  fetch(SB_URL+'/rest/v1/feedback', { method:'POST', headers: hh, body: JSON.stringify({ user_id: u.id, username: u.nick, avatar: u.avatar, content: BD_TAG + v, app: SB_APP }) })
+    .then(function(r){ if(r.ok){ if(el) el.value=''; bdLoad(); } else { toast('发送失败，稍后再试'); } })
+    .catch(function(){ toast('发送失败，请检查网络'); });
+}
+scroller.addEventListener('click', function(ev){
+  var bd=ev.target.closest('#bdSend');
+  if(bd){ tap(); bdSend(); }
+});
+var bdInp=null;
+scroller.addEventListener('keydown', function(ev){
+  if(ev.target && ev.target.id==='bdText' && ev.key==='Enter'){ ev.preventDefault(); bdSend(); }
+});
+
+/* ---------- 启动：恢复登录态并拉取合并 ---------- */
+function cloudInit(){
+  if(!sbSession()) return;
+  try{
+    sbSyncFromCloud(true).then(function(){ sbPushRank(); }).catch(function(){});
+  }catch(e){}
+  /* 回前台静默同步 */
+  document.addEventListener('visibilitychange', function(){
+    if(document.visibilityState === 'visible' && sbSession()){ try{ sbSyncFromCloud(true); }catch(e){} }
+  });
+}
+
+/* 启动即同步（登录态来自总院共享会话） */
+try{ cloudInit(); }catch(_e){}
 
 </script>
 <!-- 学院壳公共 DOM 注入（与 _shell.css 配套，来源唯一：样张） -->
