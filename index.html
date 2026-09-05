@@ -544,23 +544,63 @@ body{background:radial-gradient(1200px 600px at 20% -10%,var(--bg-glow,var(--car
 /* 登录按钮（Dock 款 hover） */
 #loginBtn{display:inline-flex;align-items:center;gap:5px;height:34px;padding:0 14px;border-radius:17px;border:none;background:var(--accent);color:#fff;font:600 13px inherit;font-family:inherit;cursor:pointer;box-shadow:0 3px 10px var(--accent-soft);transition:transform .26s cubic-bezier(.34,1.56,.64,1),filter .18s}
 @media(hover:hover){ #loginBtn:hover{transform:translateY(-6px) scale(1.09);filter:brightness(.94)} }
-/* 登录弹窗（环境光 sheet：背景后退 + 毛玻璃遮罩 + 弹簧上滑） */
+/* ===== 登录弹窗 · Apple 底部 Sheet 精致版 ===== */
 #authDim{position:fixed;inset:0;z-index:90;display:none;align-items:flex-end;justify-content:center}
 #authDim.show{display:flex}
-#authMask{position:absolute;inset:0;background:rgba(0,0,0,.42);opacity:0;transition:opacity .3s var(--ease);-webkit-backdrop-filter:blur(20px) saturate(1.4);backdrop-filter:blur(20px) saturate(1.4)}
+#authMask{position:absolute;inset:0;background:rgba(0,0,0,.45);opacity:0;
+  transition:opacity .32s var(--ease);
+  -webkit-backdrop-filter:blur(24px) saturate(1.5);backdrop-filter:blur(24px) saturate(1.5)}
 #authDim.show #authMask{opacity:1}
-#authCard{position:relative;width:100%;max-width:520px;margin:0 auto 0;background:var(--card);border-radius:28px 28px 0 0;box-shadow:var(--sh-float);padding:26px 24px calc(20px + env(safe-area-inset-bottom,0px));transform:translateY(120%) scale(.96);transition:transform .5s cubic-bezier(.24,1.42,.4,1)}
-#authDim.show #authCard{transform:translateY(0) scale(1)}
+#authCard{position:relative;width:100%;max-width:560px;margin:0 auto;
+  background:var(--card);border-radius:32px 32px 0 0;
+  box-shadow:0 -8px 40px rgba(0,0,0,.18);
+  padding:20px 22px calc(24px + env(safe-area-inset-bottom,0px));
+  border-top:1px solid var(--glass-edge);
+  transform:translateY(115%);transition:transform .56s cubic-bezier(.28,1.36,.4,1);
+  will-change:transform;overflow:hidden}
+#authDim.show #authCard{transform:translateY(0)}
+#authCard::before{content:'';display:block;width:38px;height:5px;border-radius:3px;
+  background:var(--fill);margin:0 auto 14px}  /* 顶部抓条 */
 #hubapp{transform-origin:center bottom;transition:transform .5s cubic-bezier(.32,.72,0,1)}
-#authDim.show ~ #hubapp{transform:scale(.93)}
-.auth-title{font-size:22px;font-weight:800;letter-spacing:-.3px}
-.auth-cap{font-size:13px;color:var(--muted);margin-top:4px;line-height:1.6}
-.auth-inp{width:100%;box-sizing:border-box;border:1.5px solid var(--sep);border-radius:14px;padding:13px 15px;font:15px inherit;font-family:inherit;background:var(--bg);color:var(--ink);margin-top:11px;outline:none}
-.auth-inp:focus{border-color:var(--accent)}
-.auth-go{width:100%;height:50px;margin-top:14px;border:none;border-radius:15px;background:var(--accent);color:#fff;font:700 16px inherit;font-family:inherit;cursor:pointer;box-shadow:0 6px 18px var(--accent-soft)}
-@media(hover:none){ .auth-go:active{filter:brightness(.85)} }
-.auth-guest{width:100%;height:44px;margin-top:6px;border:none;background:transparent;color:var(--muted);font:600 14px inherit;font-family:inherit;cursor:pointer;border-radius:12px}
-@media(hover:none){ .auth-guest:active{background:var(--fill-soft)} }
+#authDim.show ~ #hubapp{transform:scale(.92)}
+/* 内容排版 */
+.auth-kicker{font-size:11px;font-weight:800;letter-spacing:1.8px;color:var(--accent);text-align:center;margin-top:2px}
+.auth-title{font-size:24px;font-weight:800;letter-spacing:-.4px;text-align:center;margin-top:3px}
+.auth-cap{font-size:13.5px;color:var(--muted);text-align:center;margin:5px 0 2px;line-height:1.6}
+/* 分段控件（tabs） */
+.atabs{display:flex;background:var(--fill-soft);border-radius:12px;padding:3px;margin:18px 0 6px;gap:3px}
+.atabs button{flex:1;border:none;background:none;border-radius:9px;padding:9px 0;
+  font:600 13.5px inherit;font-family:inherit;cursor:pointer;color:var(--muted);
+  transition:background .25s var(--ease),color .25s var(--ease),box-shadow .25s}
+.atabs button.on{background:var(--card);color:var(--ink);box-shadow:0 1px 5px rgba(0,0,0,.09)}
+/* 表单 */
+.auth-f{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+.auth-inp{width:100%;box-sizing:border-box;border:1.5px solid var(--sep);border-radius:14px;
+  padding:14px 16px;font:15.5px inherit;font-family:inherit;background:var(--bg);color:var(--ink);outline:none;
+  transition:border-color .2s,box-shadow .2s,background .2s}
+.auth-inp::placeholder{color:var(--muted)}
+.auth-inp:focus{border-color:var(--accent);background:var(--card);
+  box-shadow:0 0 0 4px var(--accent-soft)}
+.auth-note{display:flex;gap:7px;align-items:flex-start;font-size:12.5px;color:var(--muted);
+  line-height:1.6;background:var(--fill-soft);border-radius:12px;padding:10px 12px}
+#authMsg{font-size:12.5px;min-height:15px;line-height:1.5;color:var(--red);padding:0 2px}
+/* 头像选择 */
+.av-grid{display:flex;gap:7px;flex-wrap:wrap;justify-content:center;margin:4px 0 2px}
+.av-grid button{width:42px;height:42px;border-radius:50%;font-size:21px;cursor:pointer;border:2px solid transparent;
+  display:flex;align-items:center;justify-content:center;transition:transform .18s var(--ease),border-color .2s,background .2s}
+.av-grid button:active{transform:scale(.92)}
+/* 主按钮 */
+.auth-go{width:100%;height:52px;margin-top:6px;border:none;border-radius:15px;color:#fff;
+  font:700 16px inherit;font-family:inherit;cursor:pointer;letter-spacing:.3px;
+  background:linear-gradient(135deg,#0A84FF,#0066CC);
+  box-shadow:0 8px 22px rgba(10,132,255,.35),inset 0 1px 0 rgba(255,255,255,.25);
+  transition:transform .18s var(--ease),filter .18s,box-shadow .2s}
+@media(hover:hover){ .auth-go:hover{filter:brightness(1.06);box-shadow:0 10px 28px rgba(10,132,255,.45)} }
+.auth-go:active{transform:scale(.97)}
+.auth-guest{width:100%;height:44px;margin-top:8px;border:none;background:transparent;
+  color:var(--muted);font:600 14px inherit;font-family:inherit;cursor:pointer;border-radius:12px}
+@media(hover:hover){ .auth-guest:hover{color:var(--ink)} }
+.auth-guest:active{background:var(--fill-soft)}
 </style></head>
 <body>
 <div id="hubapp" style="height:100dvh;display:flex;flex-direction:column">
@@ -721,46 +761,50 @@ function hubLogout(){
   hubToast('已退出登录'); acctBar();
   setTimeout(function(){ openAuth(); }, 400);
 }
-function authModeView(){ /* 渲染 authCard 内容 */
+function authModeView(){ /* 渲染 authCard 内容（Apple 精致版） */
   var wrap=document.getElementById('authInner'); if(!wrap) return;
-  var tabs='<div style="display:flex;background:var(--fill-soft);border-radius:12px;padding:3px;margin-bottom:14px">'
-    +'<button id="atLog" class="atab">登录</button><button id="atUp" class="atab">注册</button><button id="atFr" class="atab">找回</button></div>';
-  var extra='';
-  var inner='<div style="font-size:11px;font-weight:800;letter-spacing:1.6px;color:var(--accent)">ACCOUNT · 账号</div>'
-    +'<div class="auth-title">登录鼠哥学院</div>'
-    +'<div class="auth-cap">四院同一账号 · 一处登录，进度各自独立、多端同步</div>';
+  var T={log:'登录',up:'注册',fr:'找回'};
+  var tabs='<div class="atabs">'
+    +'<button id="atLog"'+(window._authTab==='log'?' class="on"':'')+'>登录</button>'
+    +'<button id="atUp"'+(window._authTab==='up'?' class="on"':'')+'>注册</button>'
+    +'<button id="atFr"'+(window._authTab==='fr'?' class="on"':'')+'>找回</button></div>';
+  var kick = window._authTab==='up' ? 'CREATE ACCOUNT · 注册' : (window._authTab==='fr' ? 'RECOVER · 找回' : 'WELCOME BACK · 欢迎回来');
+  var title = window._authTab==='up' ? '创建账号' : (window._authTab==='fr' ? '找回密码' : '登录鼠哥学院');
+  var cap = window._authTab==='up' ? '四院同一账号 · 一处注册，全站通用'
+        : (window._authTab==='fr' ? '输入注册邮箱，重置链接会发到该邮箱' : '四院同一账号 · 一处登录，进度各自独立、多端同步');
+  var inner='<div class="auth-kicker">'+kick+'</div>'
+    +'<div class="auth-title">'+title+'</div>'
+    +'<div class="auth-cap">'+cap+'</div>'
+    +'<div class="auth-f">';
   if(window._authTab==='up'){
     inner+='<input class="auth-inp" id="auName" placeholder="昵称（2~16 位中文/字母/数字）" maxlength="16">';
-    inner+='<div style="display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 2px" id="auAvs"></div>';
-    extra='';
-  } else if(window._authTab==='fr'){
-    inner+='<div class="auth-cap" style="margin-top:2px">输入邮箱，重置链接会发到该邮箱</div>';
+    inner+='<div class="av-grid" id="auAvs"></div>';
   }
   inner+='<input class="auth-inp" type="email" id="authEmail" placeholder="邮箱">'
-    +(window._authTab==='fr'?'':'<input class="auth-inp" type="password" id="authPass" placeholder="密码'+(window._authTab==='up'?'（至少 6 位）':'')+'">')
-    +(window._authTab==='up'?'<div style="font-size:12px;color:var(--muted);line-height:1.6;margin:4px 2px 2px;display:flex;gap:5px"><span style="flex:none">🔒</span><span>设置一个好记的密码。我们不会窃取你的数据，但请别把它设成和常用密码相同。</span></div>':'')
-    +'<div id="authMsg" style="font-size:12px;min-height:16px;line-height:1.5;margin:2px 0 8px;color:var(--red)"></div>'
+    +(window._authTab==='fr'?'':'<input class="auth-inp" type="password" id="authPass" placeholder="密码'+(window._authTab==='up'?'（至少 6 位）':'')+'">');
+  if(window._authTab==='up'){
+    inner+='<div class="auth-note"><span style="flex:none">🔒</span><span>设置一个好记的密码。我们不会窃取你的数据，但请别把它设成和常用密码相同。</span></div>';
+  }
+  inner+='<div id="authMsg"></div>'
+    +'</div>'
     +'<button class="auth-go" id="authGo">'+(window._authTab==='up'?'注册并登录':(window._authTab==='fr'?'发送重置邮件':'登录'))+'</button>'
     +'<button class="auth-guest" onclick="authGuest()">先以游客身份逛逛 →</button>';
-  wrap.innerHTML=tabs+inner+extra;
-  wrap.querySelectorAll('.atab').forEach(function(b){
-    b.style.cssText='flex:1;border:none;background:none;border-radius:9px;padding:8px 0;font:600 13px inherit;font-family:inherit;cursor:pointer;color:var(--muted)';
-  });
-  var on=wrap.querySelector('#at'+(window._authTab==='up'?'Up':(window._authTab==='fr'?'Fr':'Log')));
-  if(on){ on.style.background='var(--card)'; on.style.color='var(--ink)'; on.style.boxShadow='0 1px 4px rgba(0,0,0,.08)'; }
+  wrap.innerHTML=tabs+inner;
   wrap.querySelector('#atLog').onclick=function(){ window._authTab='log'; authModeView(); };
   wrap.querySelector('#atUp').onclick=function(){ window._authTab='up'; authModeView(); };
   wrap.querySelector('#atFr').onclick=function(){ window._authTab='fr'; authModeView(); };
   if(window._authTab==='up'){
     var rw=document.getElementById('auAvs');
     AVS.forEach(function(a){ var b=document.createElement('button'); b.textContent=a;
-      b.style.cssText='width:38px;height:38px;border-radius:50%;font-size:19px;cursor:pointer;border:2px solid '+(a===selAv?'var(--accent)':'transparent')+';background:'+(a===selAv?'var(--accent-soft)':'var(--fill-soft)')+';display:flex;align-items:center;justify-content:center';
+      b.style.borderColor=a===selAv?'var(--accent)':'transparent';
+      b.style.background=a===selAv?'var(--accent-soft)':'var(--fill-soft)';
       b.onclick=function(){ selAv=a; authModeView(); }; rw.appendChild(b); });
   }
   var el=document.getElementById('authEmail');
   if(el) el.addEventListener('keydown', function(e){ if(e.key==='Enter') authDo(); });
   document.getElementById('authGo').addEventListener('click', authDo);
 }
+
 function authMsg(t){ var m=document.getElementById('authMsg'); if(m){ m.textContent=t; m.style.color=t&&t.indexOf('成功')>=0?'var(--green)':'var(--red)'; } }
 function authDo(){
   var email=(document.getElementById('authEmail').value||'').trim();
