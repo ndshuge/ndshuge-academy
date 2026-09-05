@@ -3267,6 +3267,7 @@ function chapterHTML(c,mode){
     h+='<div style="background:var(--gold-soft);border-radius:12px;padding:13px 16px;margin-top:14px;font-size:15px;line-height:1.8">'
       +'<b style="color:#C93400">芯片史话 · '+esc(c.story.tutor||'')+'</b><div style="color:var(--ink2)">'+esc(c.story.story||c.story.fact||'')+'</div></div>';
   }
+  h+=storyHTML(c);
   if(c.example){
     h+='<details style="margin-top:14px"><summary style="cursor:pointer;color:var(--accent);font-weight:700">例题 · 先试做，再对照米勒的思路</summary>'
       +'<div style="margin-top:8px"><b>'+esc(c.example.q)+'</b>'
@@ -3282,6 +3283,7 @@ function chapterHTML(c,mode){
   if(sm.allDone&&!settled){
     h+='<div style="margin-top:14px;text-align:center"><button class="btn-go" data-settle="'+c.id+'" style="margin:0">'+IC('check')+' 结算本章</button></div>';
   }
+  h+=soulHTML(c);
   return h;
 }
 function quizCardsHTML(c,mode){
@@ -3601,18 +3603,19 @@ function cMemDraw(){
 
 renderers.manage=function(){
   var s=calcStats();
-  var h='<div class="kick">ACCOUNT</div><div class="h1">管理</div>'
-    +'<div class="sub">进度备份与恢复 · 本地游客态（云登录下一批接回）</div>';
-  h+='<div class="card" style="border-radius:var(--r-l)"><b>📦 进度备份</b>'
-    +'<div class="cap" style="margin:6px 0 12px;line-height:1.7">导出生成一串备份码（含学习数据），换设备粘贴即可恢复。</div>'
-    +'<textarea id="bkText" style="width:100%;min-height:110px;border:1.5px solid var(--sep);border-radius:12px;padding:10px 12px;font-family:ui-monospace,Consolas,monospace;font-size:12px;background:var(--bg);color:var(--ink);resize:vertical" placeholder="点「导出备份」生成备份码；或粘贴备份码后点「导入恢复」…"></textarea>'
-    +'<div class="mini-row" style="margin-top:10px"><button class="mini-btn lift" id="bkExport">'+IC('doc')+' 导出备份</button>'
-    +'<button class="mini-btn lift" id="bkImport">'+IC('download','').replace('</span>','<path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg></span>')+' 导入恢复</button></div></div>';
-  h+='<div class="card" style="margin-top:12px"><b>👤 当前状态</b><div class="cap" style="margin:4px 0 2px;line-height:1.5">本地游客 · 已学 '+s.doneC+'/'+s.totalC+' 章 · '+s.pct+'%</div>'
-    +'<div class="group" style="margin-top:0"><button class="grow" id="wipeBtn" data-wipe="1"><span class="gi" style="background:linear-gradient(135deg,#FF453A,#D70015)">'+IC('trash')+'</span>'
-    +'<b>清除所有记录</b><span class="cap" style="font-size:13px;color:var(--red)">回到初始态</span><span class="garr">'+IC('chev-r')+'</span></button></div></div>';
-  return h;
+  return '<div class="kick">ACCOUNT</div><div class="h1">管理</div>'
+    +'<div class="sub">进度备份与恢复 · 数据安全 · 本机游客态（云端账号下一批接入）</div>'
+    +'<div class="card" style="border-radius:var(--r-l)"><b>📦 进度备份</b>'
+    +'<div class="cap" style="margin:6px 0 12px;line-height:1.7">导出生成一串备份码，换设备粘贴即可恢复；清除前先导出，有备无患。</div>'
+    +'<textarea id="bkText" style="width:100%;min-height:104px;border:1.5px solid var(--sep);border-radius:14px;padding:12px 14px;font-family:ui-monospace,Consolas,monospace;font-size:12px;line-height:1.6;background:var(--bg);color:var(--ink);resize:vertical" placeholder="点「导出备份」生成备份码；或粘贴备份码后点「导入恢复」…"></textarea>'
+    +'<div class="mini-row" style="margin-top:10px"><button class="mini-btn lift" id="bkExport">导出备份</button>'
+    +'<button class="mini-btn lift" id="bkImport">导入恢复</button></div>'
+    +'<div class="cap" style="margin-top:8px;line-height:1.6;color:var(--muted)">当前：本地游客 · 已学 '+s.doneC+'/'+s.totalC+' 章 · 总进度 '+s.pct+'%</div></div>'
+    +'<div class="card" style="margin-top:12px;border:1px solid rgba(255,59,48,.25)"><b style="color:var(--red)">🗑 清除所有记录</b>'
+    +'<div class="cap" style="margin:6px 0 12px;line-height:1.7">将清空全部学习数据（章节进度 / 徽章 / 错题 / 足迹 / 打卡），回到初始状态。为防误触，<b>需要输入「清除记录」四个字确认</b>。建议先导出备份。</div>'
+    +'<button class="btn-go" id="wipeOpen" style="background:var(--red);box-shadow:0 6px 18px var(--red-soft)">清除所有记录</button></div>';
 };
+;
 renderers.about=function(){
   return '<div class="kick">ABOUT</div><div class="h1">关于学院</div>'
     +'<div class="sub">C 语言学院 · framework v2 · 对齐样张 + HIG 动效</div>'
@@ -3647,6 +3650,31 @@ renderers.author=function(){
     +'<button class="btn-go" data-go="home" style="margin-top:16px;width:100%;justify-content:center">回去学习</button>'
     +'</div>';
 };
+
+/* ===== 丢失功能找回：灵魂拷问自检 + 史话故事卡（通用 helper） ===== */
+function storyHTML(c){
+  if(!c.story || !c.story.tutor) return '';
+  return '<div class="card" style="border-radius:var(--r-l);margin-top:14px">'
+    +'<div style="display:flex;gap:13px;align-items:center;margin-bottom:8px">'
+    +'<span style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#0A84FF,#5E5CE6);display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;flex:none;font-family:Georgia,serif">'+esc((c.story.tutor||'?').charAt(0))+'</span>'
+    +'<div><b style="font-size:15px">'+esc(c.story.tutor||'')+'</b><div class="cap">'+esc(c.story.era||'')+'</div></div></div>'
+    +'<div style="font-size:14px;color:var(--ink2);line-height:1.85">'+parseMath(c.story.fact||'')+'</div>'
+    +(c.story.quote?'<div style="margin-top:10px;padding:11px 14px;border-left:3px solid var(--accent);background:var(--fill-soft);border-radius:10px;font-size:14px;color:var(--ink2);line-height:1.7">'+parseMath(c.story.quote)+'</div>':'')
+    +(c.story.story?'<div style="margin-top:10px;font-size:13px;color:var(--muted);line-height:1.8">轶事 · '+parseMath(c.story.story)+'</div>':'')
+    +'</div>';
+}
+function soulHTML(c){
+  if(!c.dialogue || !c.dialogue.q) return '';
+  var keys = (c.dialogue.keys || []).slice(0,8);
+  return '<div class="card" style="border-radius:var(--r-l);margin-top:14px">'
+    +'<b style="font-size:15px">💬 灵魂拷问</b>'
+    +'<div class="q-stem" style="font-size:16px">'+parseMath(c.dialogue.q)+'</div>'
+    +(keys.length?'<div class="cap" style="margin-bottom:8px">说到这些词才算想透：'+keys.map(function(k){return '「'+esc(k)+'」';}).join(' ')+'</div>':'')
+    +'<textarea id="soulTa" rows="3" placeholder="把你的回答写在这里，先让本学院做关键词初判…" style="width:100%;box-sizing:border-box;border:1.5px solid var(--sep);border-radius:12px;padding:11px 13px;font:14px/1.7 inherit;font-family:inherit;background:var(--bg);color:var(--ink);resize:vertical"></textarea>'
+    +'<div class="mini-row" style="margin-top:10px"><button class="mini-btn lift" data-soulgo="'+c.id+'">自检一下</button>'
+    +(c.dialogue.model?'<button class="mini-btn lift" data-soulmodel="'+c.id+'" style="background:var(--fill-soft);box-shadow:none">看参考思路</button>':'')
+    +'</div><div class="why-note" id="soulNote"></div></div>';
+}
 
 /* ============================================================
    事件委托 · 静态绑定 · 启动（样张结构保真）
@@ -4031,6 +4059,67 @@ scroller.addEventListener('click',function(ev){
   var s=document.getElementById('memS'); if(!s) return;
   s.value=(parseInt(s.value,10)+1)%8;
   try{ cMemDraw(); }catch(e){}
+});
+
+/* 清除输入确认弹层 */
+function showWipeDialog(){
+  var wrap = document.createElement('div');
+  wrap.id='wipeDlg';
+  wrap.style.cssText='position:fixed;inset:0;background:rgba(10,10,14,.5);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;-webkit-backdrop-filter:blur(14px) saturate(1.3);backdrop-filter:blur(14px) saturate(1.3)';
+  wrap.onclick=function(e){ if(e.target===wrap) closeWipeDialog(); };
+  var box=document.createElement('div');
+  box.style.cssText='background:var(--card);border-radius:24px;padding:24px;max-width:430px;width:100%;box-shadow:var(--sh-float)';
+  box.innerHTML='<b style="color:var(--red);font-size:17px">⚠ 清除所有记录</b>'
+    +'<div style="color:var(--ink2);font-size:13.5px;line-height:1.8;margin:10px 0">将永久清除全部学习数据：章节进度、徽章、名人堂、错题集、学习足迹。回到初始状态，不可撤销。<br>输入 <b style="color:var(--red)">清除记录</b> 确认：</div>'
+    +'<input id="wipeWord" placeholder="输入「清除记录」" style="width:100%;box-sizing:border-box;border:1.5px solid var(--sep);border-radius:12px;padding:12px 14px;font:14.5px inherit;font-family:inherit;background:var(--bg);color:var(--ink);outline:none">'
+    +'<div style="display:flex;gap:10px;margin-top:14px">'
+    +'<button id="wipeDo" style="flex:1;height:44px;border:none;border-radius:12px;background:var(--red);color:#fff;font:600 14px inherit;font-family:inherit;cursor:pointer">确认清除</button>'
+    +'<button id="wipeNo" style="flex:1;height:44px;border:none;border-radius:12px;background:var(--fill-soft);color:var(--ink2);font:600 14px inherit;font-family:inherit;cursor:pointer">取消</button></div>';
+  wrap.appendChild(box);
+  document.body.appendChild(wrap);
+  var inp=document.getElementById('wipeWord'); if(inp) inp.focus();
+  document.getElementById('wipeDo').onclick=function(){
+    var v=(inp&&inp.value||'').trim();
+    if(v!=='清除记录'){ toast('输入不一致，未清除'); return; }
+    wipeAll();
+    toast('已清除，回到初始态');
+    setTimeout(function(){ location.reload(); },600);
+  };
+  document.getElementById('wipeNo').onclick=function(){ closeWipeDialog(); };
+}
+function closeWipeDialog(){ var w=document.getElementById('wipeDlg'); if(w) w.remove(); }
+scroller.addEventListener('click', function(ev){
+  if(ev.target.closest('#wipeOpen')){ showWipeDialog(); return; }
+  var sg=ev.target.closest('[data-soulgo]');
+  if(sg){
+    var ta=document.getElementById('soulTa');
+    var c=CHAPTERS[+sg.getAttribute('data-soulgo')-1];
+    if(!c||!c.dialogue) return;
+    var val=(ta&&ta.value||'').trim();
+    if(!val){ toast('先写下你的想法'); return; }
+    var ks=(c.dialogue.keys||[]);
+    var hit=ks.filter(function(k){ return val.indexOf(k)>-1 || val.indexOf(k.replace(/^\s+|\s+$/g,''))>-1; });
+    var note=document.getElementById('soulNote');
+    if(note){
+      if(hit.length>=Math.min(2,ks.length||2)){
+        note.className='why-note why-ok';
+        note.innerHTML='<div class="why-body"><span class="why-ic">'+IC('check')+'</span><span><b>自检通过。</b>你提到了 '+hit.length+' 个关键点（'+hit.slice(0,4).map(function(x){return '「'+x+'」';}).join('')+'），思路对路了。想看参考思路就点旁边的按钮。</span></div>';
+      } else {
+        note.className='why-note why-no';
+        note.innerHTML='<div class="why-body"><span class="why-ic">'+IC('info')+'</span><span><b>再想想。</b>目前只踩到 '+hit.length+' 个关键点，试试从「'+((c.dialogue.keys||[]).slice(0,3).join('」「'))+'」这些角度说清楚因果。</span></div>';
+      }
+    }
+    return;
+  }
+  var sm=ev.target.closest('[data-soulmodel]');
+  if(sm){
+    var c2=CHAPTERS[+sm.getAttribute('data-soulmodel')-1];
+    var note2=document.getElementById('soulNote');
+    if(note2&&c2&&c2.dialogue){
+      note2.className='why-note why-ok';
+      note2.innerHTML='<div class="why-body"><span class="why-ic">'+IC('info')+'</span><span><b>参考思路</b><br>'+esc(c2.dialogue.model||'')+'</span></div>';
+    }
+  }
 });
 
 </script>

@@ -382,3 +382,64 @@ scroller.addEventListener('click',function(ev){
   s.value=(parseInt(s.value,10)+1)%8;
   try{ cMemDraw(); }catch(e){}
 });
+
+/* 清除输入确认弹层 */
+function showWipeDialog(){
+  var wrap = document.createElement('div');
+  wrap.id='wipeDlg';
+  wrap.style.cssText='position:fixed;inset:0;background:rgba(10,10,14,.5);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;-webkit-backdrop-filter:blur(14px) saturate(1.3);backdrop-filter:blur(14px) saturate(1.3)';
+  wrap.onclick=function(e){ if(e.target===wrap) closeWipeDialog(); };
+  var box=document.createElement('div');
+  box.style.cssText='background:var(--card);border-radius:24px;padding:24px;max-width:430px;width:100%;box-shadow:var(--sh-float)';
+  box.innerHTML='<b style="color:var(--red);font-size:17px">⚠ 清除所有记录</b>'
+    +'<div style="color:var(--ink2);font-size:13.5px;line-height:1.8;margin:10px 0">将永久清除全部学习数据：章节进度、徽章、名人堂、错题集、学习足迹。回到初始状态，不可撤销。<br>输入 <b style="color:var(--red)">清除记录</b> 确认：</div>'
+    +'<input id="wipeWord" placeholder="输入「清除记录」" style="width:100%;box-sizing:border-box;border:1.5px solid var(--sep);border-radius:12px;padding:12px 14px;font:14.5px inherit;font-family:inherit;background:var(--bg);color:var(--ink);outline:none">'
+    +'<div style="display:flex;gap:10px;margin-top:14px">'
+    +'<button id="wipeDo" style="flex:1;height:44px;border:none;border-radius:12px;background:var(--red);color:#fff;font:600 14px inherit;font-family:inherit;cursor:pointer">确认清除</button>'
+    +'<button id="wipeNo" style="flex:1;height:44px;border:none;border-radius:12px;background:var(--fill-soft);color:var(--ink2);font:600 14px inherit;font-family:inherit;cursor:pointer">取消</button></div>';
+  wrap.appendChild(box);
+  document.body.appendChild(wrap);
+  var inp=document.getElementById('wipeWord'); if(inp) inp.focus();
+  document.getElementById('wipeDo').onclick=function(){
+    var v=(inp&&inp.value||'').trim();
+    if(v!=='清除记录'){ toast('输入不一致，未清除'); return; }
+    wipeAll();
+    toast('已清除，回到初始态');
+    setTimeout(function(){ location.reload(); },600);
+  };
+  document.getElementById('wipeNo').onclick=function(){ closeWipeDialog(); };
+}
+function closeWipeDialog(){ var w=document.getElementById('wipeDlg'); if(w) w.remove(); }
+scroller.addEventListener('click', function(ev){
+  if(ev.target.closest('#wipeOpen')){ showWipeDialog(); return; }
+  var sg=ev.target.closest('[data-soulgo]');
+  if(sg){
+    var ta=document.getElementById('soulTa');
+    var c=CHAPTERS[+sg.getAttribute('data-soulgo')-1];
+    if(!c||!c.dialogue) return;
+    var val=(ta&&ta.value||'').trim();
+    if(!val){ toast('先写下你的想法'); return; }
+    var ks=(c.dialogue.keys||[]);
+    var hit=ks.filter(function(k){ return val.indexOf(k)>-1 || val.indexOf(k.replace(/^\s+|\s+$/g,''))>-1; });
+    var note=document.getElementById('soulNote');
+    if(note){
+      if(hit.length>=Math.min(2,ks.length||2)){
+        note.className='why-note why-ok';
+        note.innerHTML='<div class="why-body"><span class="why-ic">'+IC('check')+'</span><span><b>自检通过。</b>你提到了 '+hit.length+' 个关键点（'+hit.slice(0,4).map(function(x){return '「'+x+'」';}).join('')+'），思路对路了。想看参考思路就点旁边的按钮。</span></div>';
+      } else {
+        note.className='why-note why-no';
+        note.innerHTML='<div class="why-body"><span class="why-ic">'+IC('info')+'</span><span><b>再想想。</b>目前只踩到 '+hit.length+' 个关键点，试试从「'+((c.dialogue.keys||[]).slice(0,3).join('」「'))+'」这些角度说清楚因果。</span></div>';
+      }
+    }
+    return;
+  }
+  var sm=ev.target.closest('[data-soulmodel]');
+  if(sm){
+    var c2=CHAPTERS[+sm.getAttribute('data-soulmodel')-1];
+    var note2=document.getElementById('soulNote');
+    if(note2&&c2&&c2.dialogue){
+      note2.className='why-note why-ok';
+      note2.innerHTML='<div class="why-body"><span class="why-ic">'+IC('info')+'</span><span><b>参考思路</b><br>'+esc(c2.dialogue.model||'')+'</span></div>';
+    }
+  }
+});
