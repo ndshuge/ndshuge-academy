@@ -11531,6 +11531,7 @@ renderers.honor=function(){
       +'<span class="cap" style="font-size:11px">'+b.n+'</span></div>';
   });
   h+='</div></div>';
+  h+=chipHallHTML();
   return h;
 };
 
@@ -11557,9 +11558,13 @@ renderers.manage=function(){
 };
 renderers.about=function(){
   return '<div class="kick">ABOUT</div><div class="h1">关于学院</div>'
-    +'<div class="sub">芯片战争学院 · 样张真版 '+APP_VER+'</div>'
-    +'<div class="card" style="border-radius:var(--r-l)"><div class="lesson-body"><p>以「对齐样张 v2」为界面底座（iOS 26 玻璃语汇），接入 <b>芯片战争学院真实内容引擎</b>：36 章讲义、随堂判题、章节结算、小卷、错题池、称号徽章与跨院打卡，全部读写线上同款存储键。</p>'
-    +'<p>按压反馈走 iOS 高亮语言、桌面细滚动条、页面推入转场、30 分钟参考计时与结算动画均沿用样张。</p></div></div>';
+    +'<div class="sub">芯片战争学院 · framework v2 · 对齐样张 + HIG 动效</div>'
+    +'<div class="card" style="border-radius:var(--r-l)"><div class="lesson-body">'
+    +'<p>米勒《芯片战争》36 章 · 材料、制造与地缘权力的七十年。讲义 + 随堂题，答完点亮章节。</p>'
+    +'<p>界面与动效统一走 <b>Apple 设计语言（framework v2）</b>：双舞台转场、Interactive Pop 跟手返回、Sheet 环境光、滚动视觉降噪、Dock 款悬停；内容为本院真实全书数据，进度按院存于本机（键隔离），打卡四院共通。</p>'
+    +'<p>导读人：克里斯·米勒。称号与徽章在荣誉墙可见。</p>'
+    +'<div style="margin-top:10px;padding:11px 14px;border-radius:12px;background:var(--fill-soft);font-size:13.5px;color:var(--ink2)">云端账号（多端同步 / 排行榜 / 留言）正在接入：登录弹窗已就位，账号批次上线后自动生效。</div>'
+    +'</div></div>';
 };
 var APP_VER='v5.0 · 2026-09-04';
 /* 补充线性图标（Lucide 官方 path） */
@@ -11709,6 +11714,52 @@ function drawMoore(){
   st.textContent = '摩尔定律：元件数约每两年翻一倍。指数增长在头几年不起眼，后来越来越陡——1965 年的预测，跑了半个世纪。';
 }
 
+/* ===== 芯片人物名人堂（学完本章点亮，点亮可点开资料卡） ===== */
+function chipHallHTML(){
+  var palette=[['#0A84FF','#5E5CE6'],['#FF9F0A','#FF7A00'],['#FF453A','#D70015'],['#34C759','#28A745'],['#AF52DE','#7D2AE0'],['#5856D6','#AF52DE']];
+  var cards = CHAPTERS.map(function(c){
+    if(!c.story || !c.story.tutor) return '';
+    var nm = c.story.tutor.replace(/（.*/,'').trim();
+    var lit = chIsDone(c);
+    var p2 = palette[(c.id-1) % palette.length];
+    var quote = (c.story.quote || '').replace(/^「/,'').replace(/」.*$/,'').trim();
+    return '<button class="hall-card'+(lit?' lit':'')+'" data-tutor="'+c.id+'" style="text-align:left;border:1px solid '+(lit?'rgba(0,122,255,.4)':'var(--sep)')+';background:var(--card);border-radius:18px;padding:13px 14px;display:flex;gap:12px;align-items:center;width:100%;box-shadow:var(--sh-card);cursor:pointer">'
+      +'<span style="width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,'+p2[0]+','+p2[1]+');display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;flex:none;font-family:Georgia,serif">'+esc(nm.charAt(0))+'</span>'
+      +'<span style="flex:1;min-width:0"><b style="font-size:14.5px;color:var(--ink)">'+esc(nm)+'</b>'
+      +'<span class="cap" style="display:block;font-size:11.5px;margin-top:2px;line-height:1.5">'+esc(c.story.era||'')+' · 第 '+c.id+' 章</span>'
+      +(quote?'<span class="cap" style="display:block;font-size:11.5px;margin-top:2px;color:var(--muted);line-height:1.5">「'+esc(quote)+'」</span>':'')+'</span>'
+      +(lit?'<span>'+IC('chev-r')+'</span>':'<span class="cap" style="font-size:11px">🔒 学完点亮</span>')
+      +'</button>';
+  }).join('');
+  return '<div class="card" style="border-radius:var(--r-l);margin-top:14px"><b style="font-size:16px">📜 芯片人物名人堂</b>'
+    +'<div class="cap" style="margin:4px 0 12px;line-height:1.7">学完本章点亮对应芯片人物，点亮后可点开资料卡。学得越多，名人堂越亮。</div>'
+    +'<div style="display:grid;grid-template-columns:1fr;gap:10px">'+cards+'</div></div>';
+}
+function chipProfile(c){
+  if(!c || !c.story) return;
+  var nm = c.story.tutor.replace(/（.*/,'').trim();
+  var palette=[['#0A84FF','#5E5CE6'],['#FF9F0A','#FF7A00'],['#FF453A','#D70015'],['#34C759','#28A745'],['#AF52DE','#7D2AE0'],['#5856D6','#AF52DE']];
+  var p2 = palette[(c.id-1) % palette.length];
+  var wrap=document.createElement('div');
+  wrap.style.cssText='position:fixed;inset:0;background:rgba(10,10,14,.5);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;-webkit-backdrop-filter:blur(14px) saturate(1.3);backdrop-filter:blur(14px) saturate(1.3)';
+  wrap.onclick=function(e){ if(e.target===wrap) wrap.remove(); };
+  var box=document.createElement('div');
+  box.style.cssText='background:var(--card);border-radius:26px;padding:26px;max-width:560px;width:100%;max-height:86vh;overflow:auto;box-shadow:var(--sh-float);transform:translateY(24px) scale(.97);opacity:0;transition:transform .4s cubic-bezier(.24,1.42,.4,1),opacity .3s';
+  requestAnimationFrame(function(){ box.style.transform='translateY(0) scale(1)'; box.style.opacity='1'; });
+  box.innerHTML='<div style="display:flex;gap:16px;align-items:center">'
+    +'<span style="width:74px;height:74px;border-radius:22px;background:linear-gradient(135deg,'+p2[0]+','+p2[1]+');display:flex;align-items:center;justify-content:center;color:#fff;font-size:30px;flex:none;font-family:Georgia,serif">'+esc(nm.charAt(0))+'</span>'
+    +'<div style="min-width:0"><b style="font-size:19px">'+esc(nm)+'</b><div class="cap" style="margin-top:3px">'+esc(c.story.era||'')+' · 第 '+c.id+' 章人物</div></div></div>'
+    +'<div style="font-size:14px;color:var(--ink2);line-height:1.9;margin-top:16px">'+parseMath(c.story.fact||'')+'</div>'
+    +(c.story.quote?'<div style="margin-top:14px;padding:12px 15px;border-left:3px solid var(--accent);background:var(--fill-soft);border-radius:10px;color:var(--ink2);font-size:14px;line-height:1.7">'+parseMath(c.story.quote)+'</div>':'')
+    +(c.story.story?'<div style="margin-top:12px;font-size:13.5px;color:var(--muted);line-height:1.8">轶事 · '+parseMath(c.story.story)+'</div>':'');
+  var btn=document.createElement('button');
+  btn.textContent='知道了';
+  btn.style.cssText='margin-top:18px;width:100%;height:46px;border:none;border-radius:14px;background:var(--accent);color:#fff;font:600 15px inherit;font-family:inherit;cursor:pointer';
+  btn.onclick=function(){ wrap.remove(); };
+  box.appendChild(btn);
+  wrap.appendChild(box);
+  document.body.appendChild(wrap);
+}
 
 /* ============================================================
    事件委托 · 静态绑定 · 启动（样张结构保真）
@@ -12094,6 +12145,15 @@ scroller.addEventListener('input',function(ev){
   else if(t.id==='mooreS'){ v=document.getElementById('mooreV'); fn=drawMoore; }
   if(v) v.textContent=t.value;
   if(fn){ try{ fn(); }catch(e){} }
+});
+
+scroller.addEventListener('click', function(ev){
+  var tc = ev.target.closest('[data-tutor]');
+  if(!tc) return;
+  var c = CHAPTERS[+tc.getAttribute('data-tutor') - 1];
+  if(!c) return;
+  if(!chIsDone(c)){ toast('🔒 学完本章解锁此人资料卡'); return; }
+  chipProfile(c);
 });
 
 </script>

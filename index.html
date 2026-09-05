@@ -529,6 +529,7 @@ img{max-width:100%;display:block}
 .ch-row .cap{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
 /* ===== 门户 v3 专属 ===== */
+a{text-decoration:none;color:inherit}
 body{background:radial-gradient(1200px 600px at 20% -10%,var(--bg-glow,var(--card)),transparent),var(--bg);overflow:hidden}
 #hubscroller{position:absolute;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:20px 16px 60px;scrollbar-width:thin}
 .acgrid{display:grid;grid-template-columns:1fr;gap:14px;margin-top:6px}
@@ -538,13 +539,34 @@ body{background:radial-gradient(1200px 600px at 20% -10%,var(--bg-glow,var(--car
 .ac-name{font-size:17px;font-weight:700}
 .ac-stat{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:2px}
 .foot-note{text-align:center;color:var(--muted);font-size:12px;line-height:1.9;margin-top:24px}
+/* 登录按钮（Dock 款 hover） */
+#loginBtn{display:inline-flex;align-items:center;gap:5px;height:34px;padding:0 14px;border-radius:17px;border:none;background:var(--accent);color:#fff;font:600 13px inherit;font-family:inherit;cursor:pointer;box-shadow:0 3px 10px var(--accent-soft);transition:transform .26s cubic-bezier(.34,1.56,.64,1),filter .18s}
+@media(hover:hover){ #loginBtn:hover{transform:translateY(-6px) scale(1.09);filter:brightness(.94)} }
+/* 登录弹窗（环境光 sheet：背景后退 + 毛玻璃遮罩 + 弹簧上滑） */
+#authDim{position:fixed;inset:0;z-index:90;display:none;align-items:flex-end;justify-content:center}
+#authDim.show{display:flex}
+#authMask{position:absolute;inset:0;background:rgba(0,0,0,.42);opacity:0;transition:opacity .3s var(--ease);-webkit-backdrop-filter:blur(20px) saturate(1.4);backdrop-filter:blur(20px) saturate(1.4)}
+#authDim.show #authMask{opacity:1}
+#authCard{position:relative;width:100%;max-width:520px;margin:0 10px 14px;background:var(--card);border-radius:28px;box-shadow:var(--sh-float);padding:26px 24px calc(20px + env(safe-area-inset-bottom,0px));transform:translateY(120%) scale(.96);transition:transform .5s cubic-bezier(.24,1.42,.4,1)}
+#authDim.show #authCard{transform:translateY(0) scale(1)}
+#hubapp{transform-origin:center bottom;transition:transform .5s cubic-bezier(.32,.72,0,1)}
+#authDim.show ~ #hubapp{transform:scale(.93)}
+.auth-title{font-size:22px;font-weight:800;letter-spacing:-.3px}
+.auth-cap{font-size:13px;color:var(--muted);margin-top:4px;line-height:1.6}
+.auth-inp{width:100%;box-sizing:border-box;border:1.5px solid var(--sep);border-radius:14px;padding:13px 15px;font:15px inherit;font-family:inherit;background:var(--bg);color:var(--ink);margin-top:11px;outline:none}
+.auth-inp:focus{border-color:var(--accent)}
+.auth-go{width:100%;height:50px;margin-top:14px;border:none;border-radius:15px;background:var(--accent);color:#fff;font:700 16px inherit;font-family:inherit;cursor:pointer;box-shadow:0 6px 18px var(--accent-soft)}
+@media(hover:none){ .auth-go:active{filter:brightness(.85)} }
+.auth-guest{width:100%;height:44px;margin-top:6px;border:none;background:transparent;color:var(--muted);font:600 14px inherit;font-family:inherit;cursor:pointer;border-radius:12px}
+@media(hover:none){ .auth-guest:active{background:var(--fill-soft)} }
 </style></head>
 <body>
-<div id="app" style="height:100dvh">
+<div id="hubapp" style="height:100dvh;display:flex;flex-direction:column">
   <div id="topbar">
     <div class="brand" style="position:static;transform:none;left:auto;align-items:flex-start;pointer-events:auto;max-width:none">
       <b style="font-size:16px">🐭 鼠哥学院</b><span>FOUR ACADEMIES · ONE FAMILY</span>
     </div>
+    <button id="loginBtn" style="margin-left:auto">☁️ 登录</button>
   </div>
   <div id="hubscroller"><div class="view" id="view">
     <div class="kick">MOUSE ACADEMY</div>
@@ -564,6 +586,19 @@ body{background:radial-gradient(1200px 600px at 20% -10%,var(--bg-glow,var(--car
 
     <div class="foot-note">学习进度按院独立记录 · 四院同一账号体系 · 源码公开于 GitHub<br>由鼠哥发起、拉里·佩奇搭建 · 有问题在学院里「留言」</div>
   </div></div>
+</div>
+<!-- 登录弹窗（环境光：毛玻璃遮罩 + 背景后退 + 弹簧上滑） -->
+<div id="authDim">
+  <div id="authMask" onclick="closeAuth()"></div>
+  <div id="authCard">
+    <div style="font-size:11px;font-weight:800;letter-spacing:1.6px;color:var(--accent)">ACCOUNT · 账号</div>
+    <div class="auth-title">登录鼠哥学院</div>
+    <div class="auth-cap">四院同一账号：一处登录，进度各自独立、多端同步。<br>（云端账号批次即将上线，当前先用游客模式学习）</div>
+    <input class="auth-inp" type="email" id="authEmail" placeholder="邮箱">
+    <input class="auth-inp" type="password" id="authPass" placeholder="密码">
+    <button class="auth-go" onclick="authSubmit()">登录 / 注册</button>
+    <button class="auth-guest" onclick="authGuest()">先以游客身份逛逛 →</button>
+  </div>
 </div>
 <script>
 var ACADEMIES = [
@@ -616,6 +651,31 @@ if('serviceWorker' in navigator){
     }).catch(function(){});
   });
 }
+/* 登录弹窗（环境光动效：遮罩毛玻璃淡入 + 卡片弹簧上滑 + 背景页 scale 后退） */
+var _toastT=null;
+function hubToast(msg){
+  var el=document.getElementById('hubToast');
+  if(!el){ el=document.createElement('div'); el.id='hubToast';
+    el.style.cssText='position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#1D1D1F;color:#fff;font-size:13px;padding:10px 18px;border-radius:20px;z-index:120;box-shadow:0 8px 24px rgba(0,0,0,.3);opacity:0;transition:opacity .3s;max-width:86vw;text-align:center';
+    document.body.appendChild(el); }
+  el.textContent=msg; el.style.opacity='1';
+  clearTimeout(_toastT); _toastT=setTimeout(function(){ el.style.opacity='0'; },2600);
+}
+function openAuth(){
+  var d=document.getElementById('authDim');
+  d.classList.remove('show'); d.style.display='flex';
+  void d.offsetWidth;
+  requestAnimationFrame(function(){ d.classList.add('show'); });
+}
+function closeAuth(){
+  var d=document.getElementById('authDim');
+  d.classList.remove('show');
+  setTimeout(function(){ if(!d.classList.contains('show')) d.style.display='none'; },540);
+}
+function authGuest(){ closeAuth(); localStorage.setItem('chip_guest','1'); hubToast('已进入游客模式：学习数据保存在本机'); }
+function authSubmit(){ closeAuth(); hubToast('云端账号正在接入（下一批上线），当前请用游客模式学习'); }
+document.getElementById('loginBtn').addEventListener('click', openAuth);
+document.getElementById('authEmail').addEventListener('keydown', function(e){ if(e.key==='Enter') authSubmit(); });
 </script>
 </body>
 </html>

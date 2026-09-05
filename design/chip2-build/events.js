@@ -383,3 +383,12 @@ scroller.addEventListener('input',function(ev){
   if(v) v.textContent=t.value;
   if(fn){ try{ fn(); }catch(e){} }
 });
+
+scroller.addEventListener('click', function(ev){
+  var tc = ev.target.closest('[data-tutor]');
+  if(!tc) return;
+  var c = CHAPTERS[+tc.getAttribute('data-tutor') - 1];
+  if(!c) return;
+  if(!chIsDone(c)){ toast('🔒 学完本章解锁此人资料卡'); return; }
+  chipProfile(c);
+});
