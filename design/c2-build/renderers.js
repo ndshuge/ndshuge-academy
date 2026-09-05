@@ -16,7 +16,7 @@ var _swapBusy = false; /* 兼容旧调用遗留 */
    页面切换动效 = apple-ui-动效实验室 同款（class push/pushBack）
    其余机制不变（导航栈/参数页/守卫/主题）
    ============================================================ */
-function renderView(id,isBack){
+function doRenderView(id,isBack){
   var html=renderers[id]?renderers[id]():'<div class="cap">页面不存在</div>';
   var m=META[id]||{n:'C 语言学院'};
   var nn=m.n;
@@ -575,4 +575,30 @@ function soulHTML(c){
     +'<div class="mini-row" style="margin-top:10px"><button class="mini-btn lift" data-soulgo="'+c.id+'">自检一下</button>'
     +(c.dialogue.model?'<button class="mini-btn lift" data-soulmodel="'+c.id+'" style="background:var(--fill-soft);box-shadow:none">看参考思路</button>':'')
     +'</div><div class="why-note" id="soulNote"></div></div>';
+}
+
+/* ===== 学习会话守卫（离开做题页 → 确认；后台/锁屏不拦） ===== */
+var _pendingNav = null;
+function sessChap(){
+  if(window._cur === 'chapter') return chById((_lastNav && _lastNav.chapter) || 1);
+  if(window._cur === 'exam') return chById((_lastNav && _lastNav.exam) || 1);
+  return null;
+}
+function sessDone(){
+  var c = sessChap(); if(!c) return true;
+  if(window._cur === 'chapter'){
+    if(chIsDone(c)) return true;
+    var sm = chSummary(c);
+    return sm.total > 0 && sm.answered >= sm.total;
+  }
+  if(window._cur === 'exam'){ var st = examStatus(c); return st.total > 0 && st.full; }
+  return true;
+}
+function renderView(id, isBack){
+  if(id !== window._cur && (window._cur === 'chapter' || window._cur === 'exam') && !sessDone()){
+    _pendingNav = { id: id, isBack: !!isBack };
+    showLeaveGuard();
+    return;
+  }
+  doRenderView(id, isBack);
 }

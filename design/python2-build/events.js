@@ -432,3 +432,81 @@ scroller.addEventListener('click', function(ev){
     }
   }
 });
+
+scroller.addEventListener('click', function(ev){
+  var run = ev.target.closest('[data-coderun]');
+  if (run) { codeRun(ev, +run.getAttribute('data-coderun')); return; }
+  var go = ev.target.closest('[data-codego]');
+  if (go) { codeCheck(ev, +go.getAttribute('data-codego')); return; }
+});
+function _cd(qi){ return document.getElementById('cd' + qi); }
+function _cout(qi){ return document.getElementById('cout' + qi); }
+function _cdst(qi){ return document.getElementById('cdst' + qi); }
+function codeRun(ev, qi){
+  ev.stopPropagation && ev.stopPropagation();
+  var ta = _cd(qi), out = _cout(qi), st = _cdst(qi);
+  if (!ta) return;
+  if (st) st.textContent = '运行中…';
+  runPyCode(ta.value).then(function(r){
+    if (out){ out.style.display = 'block'; out.textContent = r.err ? ('⚠ ' + r.err) : (r.out || '(无输出)'); }
+    if (st) st.textContent = r.err ? '运行出错' : '✓ 运行完成';
+  }).catch(function(err){
+    if (out){ out.style.display = 'block'; out.textContent = '⚠ ' + String(err.message || err); }
+    if (st) st.textContent = '环境未就绪';
+  });
+}
+function codeCheck(ev, qi){
+  ev.stopPropagation && ev.stopPropagation();
+  var ta = _cd(qi), out = _cout(qi), st = _cdst(qi);
+  var c = CHAPTERS[(_lastNav.chapter || _chid || 1) - 1];
+  if (!ta || !c || !c.quiz) return;
+  var q = c.quiz[qi]; if (!q) return;
+  if (st) st.textContent = '判题中…';
+  runPyCode(ta.value).then(function(r){
+    var ok = !r.err && String(r.out || '').replace(/\s+$/,'') === String(q.expect || '').replace(/\s+$/,'');
+    if (out){ out.style.display = 'block'; out.textContent = r.err ? ('⚠ ' + r.err) : ('你的输出：\n' + (r.out || '(空)') + (ok ? '' : '\n\n期望输出：\n' + q.expect)); }
+    var key = c.id + '_' + qi;
+    quizStat[key] = ok ? 1 : 0; store('quizStat', quizStat);
+    poolMove(key, ok); todayRecord(ok); statRecordQ(ok);
+    logStudy('quiz', c.id, c.title);
+    var n = document.getElementById('whyNote' + qi);
+    if (n){
+      n.className = 'why-note ' + (ok ? 'why-ok' : 'why-no');
+      n.innerHTML = ok
+        ? '<div class="why-body"><span class="why-ic">' + IC('check') + '</span><span><b>通过！输出与期望一致。</b>' + esc(q.explain || '') + '</span></div>'
+        : '<div class="why-body"><span class="why-ic">' + IC('info') + '</span><span><b>输出不对。</b>' + esc(q.hint || q.explain || '') + '</span></div>';
+    }
+    if (st) st.textContent = ok ? '✓ 通过' : '✗ 未通过';
+    toast(ok ? '✓ 判题通过' : '看输出，再调一次');
+  }).catch(function(err){
+    if (out){ out.style.display = 'block'; out.textContent = '⚠ ' + String(err.message || err); }
+    if (st) st.textContent = '环境未就绪';
+  });
+}
+
+/* ===== 学习离开守卫弹层（框架玻璃质感；继续做题 / 离开不保存） ===== */
+function showLeaveGuard(){
+  if (document.getElementById('lgWrap')) return;
+  var wrap = document.createElement('div');
+  wrap.id = 'lgWrap';
+  wrap.style.cssText = 'position:fixed;inset:0;background:rgba(10,10,14,.5);z-index:300;display:flex;align-items:center;justify-content:center;padding:22px;-webkit-backdrop-filter:blur(16px) saturate(1.3);backdrop-filter:blur(16px) saturate(1.3)';
+  var card = document.createElement('div');
+  card.style.cssText = 'background:var(--card);border-radius:24px;padding:24px;max-width:380px;width:100%;box-shadow:var(--sh-float);transform:translateY(16px) scale(.97);opacity:0;transition:transform .36s cubic-bezier(.24,1.42,.4,1),opacity .28s';
+  requestAnimationFrame(function(){ card.style.transform = 'translateY(0) scale(1)'; card.style.opacity = '1'; });
+  card.innerHTML = '<div style="width:54px;height:54px;border-radius:50%;background:var(--gold-soft);display:flex;align-items:center;justify-content:center;font-size:26px">⏳</div>'
+    + '<b style="display:block;font-size:18px;margin-top:12px">学习还没完成</b>'
+    + '<div style="color:var(--ink2);font-size:13.5px;line-height:1.8;margin:10px 0 4px">离开做题页后，<b>本次作答进度不会保存</b>。回来需要重新作答。<br>挂后台 / 锁屏不算离开，可放心切走再回来继续。</div>'
+    + '<div style="display:flex;gap:10px;margin-top:16px">'
+    + '<button id="lgStay" style="flex:1;height:46px;border:none;border-radius:14px;background:var(--accent);color:#fff;font:600 14.5px inherit;font-family:inherit;cursor:pointer">继续做题</button>'
+    + '<button id="lgLeave" style="flex:1;height:46px;border:none;border-radius:14px;background:var(--red-soft);color:var(--red);font:600 14.5px inherit;font-family:inherit;cursor:pointer">离开不保存</button></div>';
+  wrap.appendChild(card);
+  wrap.onclick = function(e){ if (e.target === wrap) hideLeaveGuard(); };
+  document.body.appendChild(wrap);
+  document.getElementById('lgStay').onclick = hideLeaveGuard;
+  document.getElementById('lgLeave').onclick = function(){
+    var n = _pendingNav; _pendingNav = null;
+    hideLeaveGuard();
+    if (n) doRenderView(n.id, n.isBack);
+  };
+}
+function hideLeaveGuard(){ var w = document.getElementById('lgWrap'); if (w) w.remove(); }

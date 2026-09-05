@@ -16,7 +16,7 @@ var _swapBusy = false; /* 兼容旧调用遗留 */
    页面切换动效 = apple-ui-动效实验室 同款（class push/pushBack）
    其余机制不变（导航栈/参数页/守卫/主题）
    ============================================================ */
-function renderView(id,isBack){
+function doRenderView(id,isBack){
   var html=renderers[id]?renderers[id]():'<div class="cap">页面不存在</div>';
   var m=META[id]||{n:'Python 学院'};
   var nn=m.n;
@@ -194,12 +194,14 @@ function quizCardsHTML(c,mode){
     var hist=(mode!=='drill')?(quizStat[k]):undefined;
     h+='<div class="card" style="border-radius:var(--r-l);margin-top:14px">'
       +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><span class="pill blue">随堂 '+(qi+1)+'</span>'
-      +'<span class="cap">'+(q.type==='fill'?'填空':'单选')+' · 答完锁存'+(hist!==undefined?(hist===1?' · 你答对过':' · 上次答错'):'')+'</span></div>'
+      +'<span class="cap">'+(q.type==='fill'?'填空':(q.type==='code'?'编程 · 真运行':'单选'))+' · 答完锁存'+(hist!==undefined?(hist===1?' · 你答对过':' · 上次答错'):'')+'</span></div>'
       +'<div class="q-stem">'+parseMath(q.q)+'</div><div id="qbox'+qi+'" data-k="'+k+'">';
     var keys=q.type==='fill'?'':['A','B','C','D'].slice(0,(q.options||[]).length).join('|');
     if(q.type==='fill'){
       h+='<div style="display:flex;gap:8px;margin-top:10px"><input id="fin'+qi+'" class="fillin" data-fill="'+qi+'" placeholder="输入答案" style="flex:1;border:1.5px solid var(--sep);border-radius:12px;padding:12px 14px;font-size:16px;font-family:inherit;background:var(--card);color:var(--ink)">'
         +'<button class="btn-go" data-fillgo="'+qi+'" style="flex:none">批改</button></div>';
+    } else if(q.type==='code'){
+      h+=codeCardHTML(q,qi,k,hist);
     } else {
       ['A','B','C','D'].slice(0,(q.options||[]).length).forEach(function(k2,i){
         var prev=quizPick[k];
@@ -315,6 +317,8 @@ function examHTML(c){
     if(q.type==='fill'){
       h+='<div style="display:flex;gap:8px;margin-top:10px"><input class="fillin" data-efill="'+qi+'" placeholder="输入答案" style="flex:1;border:1.5px solid var(--sep);border-radius:12px;padding:12px 14px;font-size:16px;font-family:inherit;background:var(--card);color:var(--ink)">'
         +'<button class="btn-go" data-efillgo="'+qi+'" style="flex:none">批改</button></div>';
+    } else if(q.type==='code'){
+      h+=codeCardHTML(q,qi,k,hist);
     } else {
       ['A','B','C','D'].slice(0,(q.options||[]).length).forEach(function(k2,i){
         var cls='opt'+(hist===0&&quizPick[k]===i?' wrong':'')+(hist===1&&i===q.answer?' correct':(hist===0&&i===q.answer?' correct muted':''));
@@ -580,4 +584,30 @@ function soulHTML(c){
     +'<div class="mini-row" style="margin-top:10px"><button class="mini-btn lift" data-soulgo="'+c.id+'">自检一下</button>'
     +(c.dialogue.model?'<button class="mini-btn lift" data-soulmodel="'+c.id+'" style="background:var(--fill-soft);box-shadow:none">看参考思路</button>':'')
     +'</div><div class="why-note" id="soulNote"></div></div>';
+}
+
+/* ===== 学习会话守卫（离开做题页 → 确认；后台/锁屏不拦） ===== */
+var _pendingNav = null;
+function sessChap(){
+  if(window._cur === 'chapter') return chById((_lastNav && _lastNav.chapter) || 1);
+  if(window._cur === 'exam') return chById((_lastNav && _lastNav.exam) || 1);
+  return null;
+}
+function sessDone(){
+  var c = sessChap(); if(!c) return true;
+  if(window._cur === 'chapter'){
+    if(chIsDone(c)) return true;
+    var sm = chSummary(c);
+    return sm.total > 0 && sm.answered >= sm.total;
+  }
+  if(window._cur === 'exam'){ var st = examStatus(c); return st.total > 0 && st.full; }
+  return true;
+}
+function renderView(id, isBack){
+  if(id !== window._cur && (window._cur === 'chapter' || window._cur === 'exam') && !sessDone()){
+    _pendingNav = { id: id, isBack: !!isBack };
+    showLeaveGuard();
+    return;
+  }
+  doRenderView(id, isBack);
 }
