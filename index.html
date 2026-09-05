@@ -44,22 +44,7 @@
   --ease:cubic-bezier(.32,.72,0,1);
   --ease-spring:cubic-bezier(.34,1.56,.64,1);
 }
-@media (prefers-color-scheme: dark){
-  :root:not([data-theme=light]){
-    --bg:#000; --bg-glow:#1C1C1E;
-    --card:#1C1C1E; --fill:#2C2C2E; --fill-soft:rgba(120,120,128,.16);
-    --ink:#F5F5F7; --ink2:#C7C7CC; --muted:#8E8E93;
-    --sep:rgba(84,84,88,.45);
-    --accent:#0A84FF; --accent-soft:rgba(10,132,255,.22);
-    --green:#32D74B; --green-soft:rgba(48,209,88,.16);
-    --red:#FF453A; --red-soft:rgba(255,69,58,.14);
-    --gold:#FF9F0A; --gold-soft:rgba(255,159,10,.18);
-    --purple:#BF5AF2; --purple-soft:rgba(191,90,242,.18);
-    --glass:rgba(22,22,24,.55);
-    --glass-edge:rgba(255,255,255,.14);
-    --sh-card:0 1px 2px rgba(0,0,0,.5);
-  }
-}
+
 :root[data-theme=dark]{
   --bg:#000; --bg-glow:#1C1C1E;
   --card:#1C1C1E; --fill:#2C2C2E; --fill-soft:rgba(120,120,128,.16);
@@ -602,13 +587,26 @@ body{background:radial-gradient(1200px 600px at 20% -10%,var(--bg-glow,var(--car
 @media(hover:hover){ .auth-guest:hover{color:var(--ink)} }
 .auth-guest:active{background:var(--fill-soft)}
 </style></head>
-<body>
+<body><script>
+/* 主题跟随：默认浅色；读共享键 acad_theme（在学院里切换外观时写入） */
+(function(){
+  try{
+    var t = localStorage.getItem('acad_theme');
+    if(t === 'dark') document.documentElement.setAttribute('data-theme','dark');
+    else if(t === 'light') document.documentElement.setAttribute('data-theme','light');
+  }catch(e){}
+})();
+</script>
+
 <div id="hubapp" style="height:100dvh;display:flex;flex-direction:column">
   <div id="topbar">
     <div class="brand" style="position:static;transform:none;left:auto;align-items:flex-start;pointer-events:auto;max-width:none">
       <b style="font-size:16px">🐭 鼠哥学院</b><span>FOUR ACADEMIES · ONE FAMILY</span>
     </div>
-    <div id="acctBar" style="margin-left:auto;display:flex;align-items:center;gap:8px"></div>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+      <button id="hubSyncBtn" style="display:inline-flex;align-items:center;gap:4px;height:34px;padding:0 12px;border-radius:17px;border:none;background:var(--fill-soft);color:var(--ink);font:600 13px inherit;font-family:inherit;cursor:pointer;transition:transform .24s cubic-bezier(.34,1.56,.64,1),filter .18s" title="从云端拉取四院进度并合并（取并集，不覆盖本地）">☁️<span style="font-size:12px">同步</span></button>
+      <div id="acctBar" style="display:flex;align-items:center;gap:8px"></div>
+    </div>
   </div>
   <div id="hubscroller"><div class="view" id="view">
     <div class="kick">MOUSE ACADEMY</div>
@@ -661,6 +659,7 @@ function acStreak(id){
     return n;
   }catch(e){ return 0; }
 }
+function paintHub(){
 document.getElementById('acGrid').innerHTML = ACADEMIES.map(function(a){
   var ch = cnt(PRE[a.id], 'ch'), ex = cnt(PRE[a.id], 'examDone'), tt = TOT[a.id];
   var stTxt = ch > 0 ? ('已学 ' + Math.min(ch, tt) + '/' + tt + ' 章') : (ex > 0 ? ('小卷 ' + ex + ' 份') : '开卷中');
@@ -691,6 +690,48 @@ try{
   var hl = document.getElementById('hubLine'); if(hl) hl.textContent = line;
   var pp = document.getElementById('hubPills'); if(pp) pp.innerHTML = hp;
 }catch(e){}
+}
+paintHub();
+
+/* 云端同步：拉取四院云端进度（progress.data.{chip,calculus,python,c}），与本地取并集合并后重绘 */
+function hubSync(silent){
+  var s = hubSess(); if(!s || !s.user){ if(!silent) hubToast('未登录：点右上角「登录」后可同步云端进度'); return Promise.resolve(false); }
+  if(!silent) hubToast('正在同步并合并四院进度…');
+  var h = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + s.access_token, 'Content-Type': 'application/json' };
+  return fetch(SB_URL + '/rest/v1/progress?select=data&user_id=eq.' + s.user.id, { headers: h })
+    .then(function(r){ return r.json(); })
+    .then(function(rows){
+      var data = (rows && rows.length && rows[0] && rows[0].data && typeof rows[0].data === 'object') ? rows[0].data : null;
+      if(!data){ if(!silent) hubToast('云端暂无进度记录'); return false; }
+      var PRE2 = { chip:'chip_', calculus:'pjc_', python:'pyc_', c:'cc_' };
+      var ARR = ['ch','hall','wrong','fixed','log'];
+      var OBJ = ['quizStat','tstat','quizPick','settle'];
+      var changed = false;
+      Object.keys(PRE2).forEach(function(app){
+        var cd = data[app]; if(!cd || typeof cd !== 'object') return;
+        ARR.forEach(function(k){
+          var b = cd[k]; if(!Array.isArray(b) || !b.length) return;
+          var key = PRE2[app] + k, a = [];
+          try{ var cur = JSON.parse(localStorage.getItem(key)); if(Array.isArray(cur)) a = cur; }catch(e){}
+          var seen = {}, m = [];
+          a.concat(b).forEach(function(x){ var kk = (typeof x === 'object' && x !== null) ? JSON.stringify(x) : String(x); if(!seen[kk]){ seen[kk] = 1; m.push(x); } });
+          if(m.length !== a.length){ try{ localStorage.setItem(key, JSON.stringify(m)); changed = true; }catch(e){} }
+        });
+        OBJ.forEach(function(k){
+          var b = cd[k]; if(!b || typeof b !== 'object') return;
+          var key = PRE2[app] + k, o = {};
+          try{ var cur = JSON.parse(localStorage.getItem(key)); if(cur && typeof cur === 'object') o = cur; }catch(e){}
+          var any = false;
+          Object.keys(b).forEach(function(x){ if(!(x in o)) any = true; o[x] = b[x]; });
+          if(any){ try{ localStorage.setItem(key, JSON.stringify(o)); changed = true; }catch(e){} }
+        });
+      });
+      if(!silent) hubToast(changed ? '✅ 已从云端合并进度（取并集，不覆盖本地）' : '云端与本地的进度一致');
+      return true;
+    })
+    .catch(function(){ if(!silent) hubToast('同步失败，请检查网络'); return false; })
+    .then(function(ok){ paintHub(); return ok; });
+}
 
 if('serviceWorker' in navigator){
   window.addEventListener('load', function(){
@@ -848,7 +889,8 @@ function hubKeep(j, nm, av){
     localStorage.setItem('acad_profile', JSON.stringify({ username:nm, avatar:av, user_id:j.user.id }));
     localStorage.removeItem('acad_guest');
   }catch(e){}
-  closeAuth(); acctBar(); hubToast('✅ 已登录：'+nm+'，四院进度云端同步');
+  closeAuth(); acctBar(); hubToast('✅ 已登录：'+nm+'，正在拉取云端进度…');
+  hubSync(true);
 }
 function authGuest(){ closeAuth(); try{ localStorage.setItem('acad_guest','1'); }catch(e){} hubToast('已进入游客模式：学习数据保存在本机'); }
 function openAuth(){ window._authTab=window._authTab||'log';
@@ -859,7 +901,11 @@ function openAuth(){ window._authTab=window._authTab||'log';
 }
 (function(){ /* 顶栏状态 + 首次进入引导登录 */
   acctBar();
+  var sb = document.getElementById('hubSyncBtn');
+  if(sb) sb.addEventListener('click', function(){ hubSync(false); });
   if(!hubSess() && !localStorage.getItem('acad_guest')){ setTimeout(function(){ openAuth(); }, 700); }
+  else if(hubSess()){ hubSync(true); }
+  document.addEventListener('visibilitychange', function(){ if(document.visibilityState==='visible' && hubSess()){ hubSync(true); } });
 })();
 </script>
 </body>
