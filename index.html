@@ -747,10 +747,10 @@ var _toastT=null;
 function hubToast(msg){
   var el=document.getElementById('hubToast');
   if(!el){ el=document.createElement('div'); el.id='hubToast';
-    el.style.cssText='position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#1D1D1F;color:#fff;font-size:13px;padding:10px 18px;border-radius:20px;z-index:120;box-shadow:0 8px 24px rgba(0,0,0,.3);opacity:0;transition:opacity .3s;max-width:86vw;text-align:center';
+    el.style.cssText='position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#1D1D1F;color:#fff;font-size:13px;padding:10px 18px;border-radius:20px;z-index:9999;box-shadow:0 8px 24px rgba(0,0,0,.3);opacity:0;transition:opacity .3s, transform .3s;max-width:86vw;text-align:center';
     document.body.appendChild(el); }
-  el.textContent=msg; el.style.opacity='1';
-  clearTimeout(_toastT); _toastT=setTimeout(function(){ el.style.opacity='0'; },2600);
+  el.textContent=msg; el.style.opacity='1'; el.style.transform='translateX(-50%)';
+  clearTimeout(_toastT); _toastT=setTimeout(function(){ el.style.opacity='0'; el.style.transform='translateX(-50%) translateY(12px)'; },2400);
 }
 function openAuth(){
   var d=document.getElementById('authDim');
@@ -883,12 +883,26 @@ function authDo(){
     })
     .catch(function(){ authMsg('登录失败，请检查网络'); });
 }
+/* 确保云端 profiles 有当前用户的行（注册/登录后调用；否则改昵称 PATCH 打空枪） */
+function hubEnsureProfile(nm, av){
+  var s = hubSess(); if(!s || !s.user) return;
+  var h2 = { 'apikey':SB_KEY, 'Authorization':'Bearer '+s.access_token, 'Content-Type':'application/json' };
+  fetch(SB_URL + '/rest/v1/profiles?select=user_id&user_id=eq.' + s.user.id, { headers: h2 })
+    .then(function(r){ return r.json(); })
+    .then(function(rows){
+      if(rows && rows.length) return;
+      var hh = Object.assign({}, h2, { 'Prefer':'return=minimal' });
+      return fetch(SB_URL + '/rest/v1/profiles', { method:'POST', headers: hh,
+        body: JSON.stringify({ user_id:s.user.id, username:nm || '同学', avatar:av || '🐹' }) });
+    }).catch(function(){});
+}
 function hubKeep(j, nm, av){
   try{
     localStorage.setItem('acad_sb_session', JSON.stringify({ access_token:j.access_token, refresh_token:j.refresh_token, user:j.user }));
     localStorage.setItem('acad_profile', JSON.stringify({ username:nm, avatar:av, user_id:j.user.id }));
     localStorage.removeItem('acad_guest');
   }catch(e){}
+  hubEnsureProfile(nm, av);
   closeAuth(); acctBar(); hubToast('✅ 已登录：'+nm+'，正在拉取云端进度…');
   hubSync(true);
 }
