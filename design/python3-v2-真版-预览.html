@@ -506,12 +506,12 @@ input[type=text],input[type=email],input[type=password],input[type=number],input
   position:absolute;left:0;right:0;bottom:0;margin:0 auto;max-width:560px;
   background:var(--card);border-radius:30px 30px 0 0;
   box-shadow:var(--sh-float);padding:26px 22px calc(20px + env(safe-area-inset-bottom,0px));
-  transform:translateY(120%) scale(.92);
-  transition:transform .52s cubic-bezier(.24,1.42,.4,1);
+  transform:translateY(110%);
+  transition:transform .5s cubic-bezier(.33,1,.68,1);
   border-top:1px solid var(--sep);
   will-change:transform;
 }
-#startSheet.show .ss-card{transform:translateY(0) scale(1)}
+#startSheet.show .ss-card{transform:translateY(0)}
 #startSheet .ss-mask{position:absolute;inset:0;background:rgba(0,0,0,.42);opacity:0;transition:opacity .32s var(--ease)}
 #startSheet.show .ss-mask{opacity:1}
 #startSheet .ss-grip{width:40px;height:4px;border-radius:2px;background:var(--fill);margin:0 auto 18px}

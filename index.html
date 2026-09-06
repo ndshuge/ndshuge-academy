@@ -605,7 +605,7 @@ body{background:radial-gradient(1200px 600px at 20% -10%,var(--bg-glow,var(--car
     </div>
     <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
       <button id="hubSyncBtn" style="display:inline-flex;align-items:center;gap:4px;height:34px;padding:0 12px;border-radius:17px;border:none;background:var(--fill-soft);color:var(--ink);font:600 13px inherit;font-family:inherit;cursor:pointer;transition:transform .24s cubic-bezier(.34,1.56,.64,1),filter .18s" title="从云端拉取四院进度并合并（取并集，不覆盖本地）">☁️<span style="font-size:12px">同步</span></button>
-      <div id="acctBar" style="display:flex;align-items:center;gap:8px"></div>
+      <button id="hubReloadBtn" style="display:inline-flex;align-items:center;gap:4px;height:34px;padding:0 12px;border-radius:17px;border:none;background:var(--accent-soft);color:var(--accent);font:600 13px inherit;font-family:inherit;cursor:pointer;transition:transform .24s cubic-bezier(.34,1.56,.64,1),filter .18s" title="强制刷新到最新版本（清缓存）">🔄<span style="font-size:12px">刷新</span></button>
     </div>
   </div>
   <div id="hubscroller"><div class="view" id="view" style="padding-top:10px">
@@ -833,18 +833,7 @@ function paintAcctLine(){
   var c=document.getElementById('acctLineCard');
   if(c) c.onclick=function(){ if(s){ acctMenu(); } else { openAuth(); } };
 }
-function acctBar(){ /* 顶栏账号态：登录/游客/用户 pill */
-  var bar=document.getElementById('acctBar'); if(!bar) return;
-  var s=hubSess(), p=hubProfile();
-  var b=document.createElement('button');
-  b.style.cssText='display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 14px;border-radius:17px;border:none;font:600 13px inherit;font-family:inherit;cursor:pointer;transition:transform .24s cubic-bezier(.34,1.56,.64,1)';
-  if(s){ b.style.background='var(--accent)'; b.style.color='#fff'; b.innerHTML=(p&&p.avatar?p.avatar:'🐹')+'&nbsp;'+((p&&p.username)||'同学')+'&nbsp;▾';
-    b.onclick=function(){ acctMenu(); };
-  } else {
-    b.style.background='var(--accent)'; b.style.color='#fff'; b.innerHTML='☁️&nbsp;登录';
-    b.onclick=openAuth;
-  }
-  bar.innerHTML=''; bar.appendChild(b);
+function acctBar(){ /* 账号态入口：由标题下方账号栏承载（右上角 pill 已移除） */
   paintAcctLine();
 }
 function acctMenu(){
@@ -980,6 +969,14 @@ function openAuth(){ window._authTab=window._authTab||'log';
   acctBar();
   var sb = document.getElementById('hubSyncBtn');
   if(sb) sb.addEventListener('click', function(){ hubSync(false); });
+  var rb = document.getElementById('hubReloadBtn');
+  if(rb) rb.addEventListener('click', function(){
+    hubToast('正在刷新到最新版本…');
+    try{
+      var u = location.href.split('#')[0].split('?')[0];
+      location.href = u + '?v=' + Date.now();
+    }catch(e){ location.reload(); }
+  });
   if(!hubSess() && !localStorage.getItem('acad_guest')){ setTimeout(function(){ openAuth(); }, 700); }
   else if(hubSess()){ hubSync(true); }
   document.addEventListener('visibilitychange', function(){ if(document.visibilityState==='visible' && hubSess()){ hubSync(true); } });
