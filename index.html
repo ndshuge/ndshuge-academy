@@ -526,6 +526,13 @@ body{background:radial-gradient(1200px 600px at 20% -10%,var(--bg-glow,var(--car
 .ac-name{font-size:17px;font-weight:700}
 .ac-stat{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:2px}
 .foot-note{text-align:center;color:var(--muted);font-size:12px;line-height:1.9;margin-top:24px}
+/* ===== 账号栏 / 账号面板 Apple 动效（门户） ===== */
+#acctLineCard{transition:transform .26s cubic-bezier(.34,1.56,.64,1),box-shadow .22s,filter .15s}
+@media(hover:hover){ #acctLineCard:hover{transform:translateY(-2px);box-shadow:var(--sh-float)} }
+#acctLineCard:active{transform:translateY(0) scale(.975);filter:brightness(.94)}
+.hubbtn{transition:transform .22s cubic-bezier(.34,1.56,.64,1),filter .16s,background .2s}
+@media(hover:hover){ .hubbtn:hover{transform:translateY(-1.5px);filter:brightness(.97)} }
+.hubbtn:active{transform:scale(.97);filter:brightness(.9)}
 /* 登录按钮（Dock 款 hover） */
 #loginBtn{display:inline-flex;align-items:center;gap:5px;height:34px;padding:0 14px;border-radius:17px;border:none;background:var(--accent);color:#fff;font:600 13px inherit;font-family:inherit;cursor:pointer;box-shadow:0 3px 10px var(--accent-soft);transition:transform .26s cubic-bezier(.34,1.56,.64,1),filter .18s}
 @media(hover:hover){ #loginBtn:hover{transform:translateY(-6px) scale(1.09);filter:brightness(.94)} }
@@ -830,7 +837,7 @@ function paintAcctLine(){
     +'<span style="font-size:12px;color:var(--muted);display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+hubEsc(sub)+'</span></span>'
     +'<span style="flex:none;font-size:12.5px;font-weight:600;color:var(--accent)">'+hubEsc(act)+' ›</span></div>';
   var c=document.getElementById('acctLineCard');
-  if(c) c.onclick=function(){ if(s){ acctMenu(); } else { openAuth(); } };
+  if(c) c.onclick=function(){ if(s){ hubAcctPanel(); } else { openAuth(); } };
 }
 function acctBar(){ /* 账号态入口：由标题下方账号栏承载（右上角 pill 已移除） */
   paintAcctLine();
@@ -935,6 +942,108 @@ function authDo(){
     .catch(function(){ authMsg('登录失败，请检查网络'); });
 }
 /* 确保云端 profiles 有当前用户的行（注册/登录后调用；否则改昵称 PATCH 打空枪） */
+/* ===== 门户账号管理面板（与学院同款：头像 / 昵称 / 密码 / 退出）===== */
+var HUB_AVS=['🦊','🐼','🐸','🐙','🦄','🐯','🐨','🐰','🦁','🐢','🐳','🦉','🐭','🐿️'];
+var HUB_AVC=['#537D96','#5B8C5A','#6D9B7C','#C77B6D','#A67BB8','#D9A441','#8FA3B8','#C75B7A','#B57F5E','#7BA6A0','#A08BD1','#D08159','#9B8579','#C77B3D'];
+function hubAvColor(a){ var i=HUB_AVS.indexOf(a); return HUB_AVC[i>=0?i:0]; }
+function hubSaveProfile(upd, cb){
+  var s=hubSess(); if(!s||!s.user){ hubToast('未登录'); if(cb) cb(false); return; }
+  hubEnsureToken().then(function(ok){
+    if(!ok){ hubToast(hubSess()?'网络异常，请稍后再试':'登录已过期，请重新登录'); if(cb) cb(false); return; }
+    var s2=hubSess(); if(!s2){ if(cb) cb(false); return; }
+    var h={ 'apikey':SB_KEY,'Authorization':'Bearer '+s2.access_token,'Content-Type':'application/json' };
+    var body={};
+    if(upd.username!==undefined) body.username=upd.username;
+    if(upd.avatar!==undefined) body.avatar=upd.avatar;
+    /* 先确保云端有 profile 行（老账号可能没有，直接 PATCH 打空枪） */
+    fetch(SB_URL+'/rest/v1/profiles?select=user_id&user_id=eq.'+s2.user.id,{headers:h})
+      .then(function(r){ return r.json(); })
+      .then(function(rows){
+        var has=rows&&rows.length;
+        if(has) return fetch(SB_URL+'/rest/v1/profiles?user_id=eq.'+s2.user.id,{method:'PATCH',headers:h,body:JSON.stringify(body)});
+        var p2=JSON.parse(JSON.stringify(body)); p2.user_id=s2.user.id;
+        var hh=Object.assign({},h,{'Prefer':'return=minimal'});
+        return fetch(SB_URL+'/rest/v1/profiles',{method:'POST',headers:hh,body:JSON.stringify(p2)});
+      })
+      .then(function(rr){
+        if(rr&&!rr.ok&&rr.status!==204) throw new Error('HTTP'+rr.status);
+        var p=hubProfile()||{};
+        if(upd.username!==undefined) p.username=upd.username;
+        if(upd.avatar!==undefined) p.avatar=upd.avatar;
+        p.user_id=s2.user.id;
+        try{ localStorage.setItem('acad_profile',JSON.stringify(p)); }catch(e){}
+        hubToast('✅ 已保存');
+        acctBar();
+        if(cb) cb(true);
+      })
+      .catch(function(){ hubToast('保存失败（昵称可能已被占用）'); if(cb) cb(false); });
+  });
+}
+function hubAcctPanel(){
+  var s=hubSess(); var p=hubProfile();
+  var email=(s&&s.user&&s.user.email)||'';
+  if(!s||!s.user){ openAuth(); return; }
+  var wrap=document.createElement('div');
+  wrap.id='hubAcctWrap';
+  wrap.style.cssText='position:fixed;inset:0;background:rgba(10,10,14,.55);z-index:700;display:flex;align-items:center;justify-content:center;padding:20px;-webkit-backdrop-filter:blur(18px) saturate(1.3);backdrop-filter:blur(18px) saturate(1.3)';
+  wrap.onclick=function(e){ if(e.target===wrap) wrap.remove(); };
+  var card=document.createElement('div');
+  card.style.cssText='background:var(--card);border-radius:26px;padding:24px;max-width:560px;width:100%;max-height:88vh;overflow:auto;box-shadow:var(--sh-float);transform:translateY(14px) scale(.98);opacity:0;transition:transform .34s cubic-bezier(.24,1.4,.4,1),opacity .24s';
+  requestAnimationFrame(function(){ card.style.transform='none'; card.style.opacity='1'; });
+  var cur=(p&&p.avatar)||'🐹', uname=(p&&p.username)||(email.split('@')[0])||'同学';
+  var inpCss='flex:1;min-width:0;border:1.5px solid var(--sep);border-radius:12px;padding:11px 13px;font:15px inherit;font-family:inherit;background:var(--bg);color:var(--ink);outline:none';
+  card.innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px"><b style="font-size:18px">账号管理</b><button id="hubAcctX" style="border:none;background:var(--fill-soft);width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:14px;color:var(--muted)">✕</button></div>'
+    +'<div style="display:flex;align-items:center;gap:18px"><div id="hubAvBig" style="width:76px;height:76px;border-radius:50%;background:'+hubAvColor(cur)+';display:flex;align-items:center;justify-content:center;font-size:38px;flex:none">'+hubEsc(cur)+'</div>'
+    +'<div style="flex:1;min-width:0"><b style="font-size:20px">'+hubEsc(uname)+'</b>'
+    +'<div style="font-size:12.5px;color:var(--muted);margin-top:3px;overflow:hidden;text-overflow:ellipsis">'+hubEsc(email)+'</div>'
+    +'<div style="font-size:12px;color:var(--muted);margin-top:2px">四院同一账号 · 云同步已开启</div></div></div>'
+    +'<div style="margin-top:18px"><b style="font-size:14px">换头像</b><div id="hubAvRow" style="display:flex;gap:8px;overflow-x:auto;margin-top:8px;padding-bottom:6px"></div></div>'
+    +'<div style="margin-top:16px"><b style="font-size:14px">昵称</b><div style="display:flex;gap:8px;margin-top:8px">'
+    +'<input id="hubName" value="'+hubEsc(uname)+'" maxlength="16" style="'+inpCss+'" placeholder="昵称（2~16 位中文/字母/数字）">'
+    +'<button class="hubbtn" id="hubNameSave" style="flex:none;border:none;border-radius:12px;background:var(--accent);color:#fff;padding:0 20px;font:600 14px inherit;font-family:inherit;cursor:pointer">保存</button></div></div>'
+    +'<div style="margin-top:16px"><b style="font-size:14px">修改密码</b><div style="display:flex;gap:8px;margin-top:8px">'
+    +'<input type="password" id="hubPw1" placeholder="新密码（至少 6 位）" style="'+inpCss+'">'
+    +'<input type="password" id="hubPw2" placeholder="再输一次" style="'+inpCss+'">'
+    +'<button class="hubbtn" id="hubPwSave" style="flex:none;border:none;border-radius:12px;background:var(--fill-soft);color:var(--ink2);padding:0 18px;font:600 13px inherit;font-family:inherit;cursor:pointer">改密</button></div></div>'
+    +'<button class="hubbtn" id="hubLogoutBtn" style="width:100%;height:46px;border:none;border-radius:14px;background:var(--red-soft);color:var(--red);font:600 14.5px inherit;font-family:inherit;cursor:pointer;margin-top:20px">退出登录</button>';
+  wrap.appendChild(card);
+  document.body.appendChild(wrap);
+  var row=document.getElementById('hubAvRow');
+  HUB_AVS.forEach(function(a){
+    var b2=document.createElement('button');
+    b2.textContent=a;
+    b2.className='hubbtn';
+    b2.style.cssText='width:44px;height:44px;border-radius:50%;font-size:22px;flex:none;cursor:pointer;background:'+(a===cur?'var(--accent-soft)':'var(--fill-soft)')+';border:2px solid '+(a===cur?'var(--accent)':'transparent')+';display:flex;align-items:center;justify-content:center';
+    b2.onclick=function(){
+      cur=a;
+      Array.prototype.forEach.call(row.children,function(el2,k2){ el2.style.borderColor=(HUB_AVS[k2]===cur?'var(--accent)':'transparent'); el2.style.background=(HUB_AVS[k2]===cur?'var(--accent-soft)':'var(--fill-soft)'); });
+      var big=document.getElementById('hubAvBig');
+      if(big){ big.textContent=a; big.style.background=hubAvColor(a); }
+      hubSaveProfile({avatar:a});
+    };
+    row.appendChild(b2);
+  });
+  document.getElementById('hubAcctX').onclick=function(){ wrap.remove(); };
+  document.getElementById('hubNameSave').onclick=function(){
+    var nm=(document.getElementById('hubName').value||'').trim();
+    if(!/^[\u4e00-\u9fa5A-Za-z0-9_]{2,16}$/.test(nm)){ hubToast('昵称需 2~16 位：中文/字母/数字/下划线'); return; }
+    hubSaveProfile({username:nm});
+  };
+  document.getElementById('hubPwSave').onclick=function(){
+    var n1=(document.getElementById('hubPw1').value||''), n2=(document.getElementById('hubPw2').value||'');
+    if(n1.length<6){ hubToast('新密码至少 6 位'); return; }
+    if(n1!==n2){ hubToast('两次输入不一致'); return; }
+    hubEnsureToken().then(function(ok){
+      if(!ok){ hubToast('登录已过期，请重新登录'); return; }
+      var ss=hubSess(); if(!ss){ hubToast('未登录'); return; }
+      fetch(SB_URL+'/auth/v1/user', { method:'PUT', headers:{ 'apikey':SB_KEY,'Authorization':'Bearer '+ss.access_token,'Content-Type':'application/json' }, body: JSON.stringify({ password:n1 }) })
+        .then(function(r){ return r.json(); })
+        .then(function(j){ if(j&&j.id){ hubToast('✅ 密码已更新'); document.getElementById('hubPw1').value=''; document.getElementById('hubPw2').value=''; } else { hubToast('修改失败：'+(j.msg||j.message||j.error_description||'未知')); } })
+        .catch(function(){ hubToast('修改失败，请检查网络'); });
+    });
+  };
+  document.getElementById('hubLogoutBtn').onclick=function(){ wrap.remove(); hubLogout(); };
+}
 function hubEnsureProfile(nm, av){
   var s = hubSess(); if(!s || !s.user) return;
   var h2 = { 'apikey':SB_KEY, 'Authorization':'Bearer '+s.access_token, 'Content-Type':'application/json' };
