@@ -949,7 +949,7 @@ function hubAvColor(a){ var i=HUB_AVS.indexOf(a); return HUB_AVC[i>=0?i:0]; }
 function hubSaveProfile(upd, cb){
   var s=hubSess(); if(!s||!s.user){ hubToast('未登录'); if(cb) cb(false); return; }
   hubEnsureToken().then(function(ok){
-    if(!ok){ hubToast(hubSess()?'网络异常，请稍后再试':'登录已过期，请重新登录'); if(cb) cb(false); return; }
+    if(!ok){ hubToast(hubSess()?'云端暂时连不上：检查网络后重试，或刷新页面':'登录已过期，请重新登录'); if(cb) cb(false); return; }
     var s2=hubSess(); if(!s2){ if(cb) cb(false); return; }
     var h={ 'apikey':SB_KEY,'Authorization':'Bearer '+s2.access_token,'Content-Type':'application/json' };
     var body={};
@@ -988,24 +988,24 @@ function hubAcctPanel(){
   wrap.style.cssText='position:fixed;inset:0;background:rgba(10,10,14,.55);z-index:700;display:flex;align-items:center;justify-content:center;padding:20px;-webkit-backdrop-filter:blur(18px) saturate(1.3);backdrop-filter:blur(18px) saturate(1.3)';
   wrap.onclick=function(e){ if(e.target===wrap) wrap.remove(); };
   var card=document.createElement('div');
-  card.style.cssText='background:var(--card);border-radius:26px;padding:24px;max-width:560px;width:100%;max-height:88vh;overflow:auto;box-shadow:var(--sh-float);transform:translateY(14px) scale(.98);opacity:0;transition:transform .34s cubic-bezier(.24,1.4,.4,1),opacity .24s';
+  card.style.cssText='background:var(--card);border-radius:28px;padding:28px;max-width:640px;width:100%;max-height:90vh;overflow:auto;box-shadow:var(--sh-float);transform:translateY(14px) scale(.98);opacity:0;transition:transform .34s cubic-bezier(.24,1.4,.4,1),opacity .24s';
   requestAnimationFrame(function(){ card.style.transform='none'; card.style.opacity='1'; });
   var cur=(p&&p.avatar)||'🐹', uname=(p&&p.username)||(email.split('@')[0])||'同学';
-  var inpCss='flex:1;min-width:0;border:1.5px solid var(--sep);border-radius:12px;padding:11px 13px;font:15px inherit;font-family:inherit;background:var(--bg);color:var(--ink);outline:none';
-  card.innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px"><b style="font-size:18px">账号管理</b><button id="hubAcctX" style="border:none;background:var(--fill-soft);width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:14px;color:var(--muted)">✕</button></div>'
-    +'<div style="display:flex;align-items:center;gap:18px"><div id="hubAvBig" style="width:76px;height:76px;border-radius:50%;background:'+hubAvColor(cur)+';display:flex;align-items:center;justify-content:center;font-size:38px;flex:none">'+hubEsc(cur)+'</div>'
-    +'<div style="flex:1;min-width:0"><b style="font-size:20px">'+hubEsc(uname)+'</b>'
-    +'<div style="font-size:12.5px;color:var(--muted);margin-top:3px;overflow:hidden;text-overflow:ellipsis">'+hubEsc(email)+'</div>'
-    +'<div style="font-size:12px;color:var(--muted);margin-top:2px">四院同一账号 · 云同步已开启</div></div></div>'
-    +'<div style="margin-top:18px"><b style="font-size:14px">换头像</b><div id="hubAvRow" style="display:flex;gap:8px;overflow-x:auto;margin-top:8px;padding-bottom:6px"></div></div>'
-    +'<div style="margin-top:16px"><b style="font-size:14px">昵称</b><div style="display:flex;gap:8px;margin-top:8px">'
+  var inpCss='flex:1;min-width:0;border:1.5px solid var(--sep);border-radius:14px;padding:13px 15px;font:16px inherit;font-family:inherit;background:var(--bg);color:var(--ink);outline:none';
+  card.innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px"><b style="font-size:21px">账号管理</b><button id="hubAcctX" style="border:none;background:var(--fill-soft);width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:15px;color:var(--muted)">✕</button></div>'
+    +'<div style="display:flex;align-items:center;gap:22px"><div id="hubAvBig" style="width:96px;height:96px;border-radius:50%;background:'+hubAvColor(cur)+';display:flex;align-items:center;justify-content:center;font-size:48px;flex:none;box-shadow:0 4px 14px rgba(0,0,0,.12)">'+hubEsc(cur)+'</div>'
+    +'<div style="flex:1;min-width:0"><b style="font-size:23px">'+hubEsc(uname)+'</b>'
+    +'<div style="font-size:13.5px;color:var(--muted);margin-top:4px;overflow:hidden;text-overflow:ellipsis">'+hubEsc(email)+'</div>'
+    +'<div style="font-size:13px;color:var(--muted);margin-top:3px">四院同一账号 · 云同步已开启</div></div></div>'
+    +'<div style="margin-top:24px"><b style="font-size:16px">换头像</b><div id="hubAvRow" style="display:flex;gap:10px;overflow-x:auto;margin-top:10px;padding-bottom:8px"></div></div>'
+    +'<div style="margin-top:22px"><b style="font-size:16px">昵称</b><div style="display:flex;gap:10px;margin-top:10px">'
     +'<input id="hubName" value="'+hubEsc(uname)+'" maxlength="16" style="'+inpCss+'" placeholder="昵称（2~16 位中文/字母/数字）">'
-    +'<button class="hubbtn" id="hubNameSave" style="flex:none;border:none;border-radius:12px;background:var(--accent);color:#fff;padding:0 20px;font:600 14px inherit;font-family:inherit;cursor:pointer">保存</button></div></div>'
-    +'<div style="margin-top:16px"><b style="font-size:14px">修改密码</b><div style="display:flex;gap:8px;margin-top:8px">'
+    +'<button class="hubbtn" id="hubNameSave" style="flex:none;border:none;border-radius:14px;background:var(--accent);color:#fff;padding:0 26px;height:48px;font:600 15px inherit;font-family:inherit;cursor:pointer">保存</button></div></div>'
+    +'<div style="margin-top:22px"><b style="font-size:16px">修改密码</b><div style="display:flex;gap:10px;margin-top:10px">'
     +'<input type="password" id="hubPw1" placeholder="新密码（至少 6 位）" style="'+inpCss+'">'
     +'<input type="password" id="hubPw2" placeholder="再输一次" style="'+inpCss+'">'
-    +'<button class="hubbtn" id="hubPwSave" style="flex:none;border:none;border-radius:12px;background:var(--fill-soft);color:var(--ink2);padding:0 18px;font:600 13px inherit;font-family:inherit;cursor:pointer">改密</button></div></div>'
-    +'<button class="hubbtn" id="hubLogoutBtn" style="width:100%;height:46px;border:none;border-radius:14px;background:var(--red-soft);color:var(--red);font:600 14.5px inherit;font-family:inherit;cursor:pointer;margin-top:20px">退出登录</button>';
+    +'<button class="hubbtn" id="hubPwSave" style="flex:none;border:none;border-radius:14px;background:var(--fill-soft);color:var(--ink2);padding:0 22px;height:48px;font:600 14px inherit;font-family:inherit;cursor:pointer">改密</button></div></div>'
+    +'<button class="hubbtn" id="hubLogoutBtn" style="width:100%;height:54px;border:none;border-radius:16px;background:var(--red-soft);color:var(--red);font:600 15.5px inherit;font-family:inherit;cursor:pointer;margin-top:26px">退出登录</button>';
   wrap.appendChild(card);
   document.body.appendChild(wrap);
   var row=document.getElementById('hubAvRow');
@@ -1013,7 +1013,7 @@ function hubAcctPanel(){
     var b2=document.createElement('button');
     b2.textContent=a;
     b2.className='hubbtn';
-    b2.style.cssText='width:44px;height:44px;border-radius:50%;font-size:22px;flex:none;cursor:pointer;background:'+(a===cur?'var(--accent-soft)':'var(--fill-soft)')+';border:2px solid '+(a===cur?'var(--accent)':'transparent')+';display:flex;align-items:center;justify-content:center';
+    b2.style.cssText='width:52px;height:52px;border-radius:50%;font-size:26px;flex:none;cursor:pointer;background:'+(a===cur?'var(--accent-soft)':'var(--fill-soft)')+';border:2px solid '+(a===cur?'var(--accent)':'transparent')+';display:flex;align-items:center;justify-content:center';
     b2.onclick=function(){
       cur=a;
       Array.prototype.forEach.call(row.children,function(el2,k2){ el2.style.borderColor=(HUB_AVS[k2]===cur?'var(--accent)':'transparent'); el2.style.background=(HUB_AVS[k2]===cur?'var(--accent-soft)':'var(--fill-soft)'); });
