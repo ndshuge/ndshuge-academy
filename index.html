@@ -824,7 +824,6 @@ function paintAcctLine(){
   var nm=(s&&p&&p.username)?p.username:(gst?'游客模式':'未登录');
   var sub=(s&&s.user&&s.user.email)?s.user.email:((s&&p&&p.username)?'云同步已开启 · 进度多端互通':(gst?'学习数据仅保存在这台设备':'登录后四院进度云端同步、多端互通'));
   var act=s?'账号管理':(gst?'登录 / 注册':'登录 / 注册');
-  var ic=s&&p&&p.avatar?'':'☁️ ';
   el.innerHTML='<div id="acctLineCard" style="display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--sep);border-radius:var(--r-l,18px);padding:12px 14px;box-shadow:var(--sh-card);cursor:pointer;-webkit-backdrop-filter:saturate(1.2) blur(8px);backdrop-filter:saturate(1.2) blur(8px)">'
     +'<span style="width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#0A84FF,#5E5CE6);display:flex;align-items:center;justify-content:center;font-size:21px;color:#fff;flex:none">'+av+'</span>'
     +'<span style="flex:1;min-width:0"><b style="font-size:15px;display:block;color:var(--ink)">'+hubEsc(nm)+'</b>'
