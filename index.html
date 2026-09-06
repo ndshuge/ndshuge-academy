@@ -622,7 +622,7 @@ body{background:radial-gradient(1200px 600px at 20% -10%,var(--bg-glow,var(--car
 
     <div id="acctLine" style="margin-bottom:14px"></div>
 
-    <div class="hero-card lift" style="cursor:default">
+    <div class="hero-card lift" id="hubHero" style="cursor:default">
       <span class="hk">TODAY · 今天</span>
       <b class="next" style="padding-right:0" id="hubLine">加载中…</b>
       <div class="foot" style="gap:6px" id="hubPills">
@@ -668,18 +668,30 @@ function acStreak(id){
     return n;
   }catch(e){ return 0; }
 }
+function acToday(id){
+  try{
+    var g = JSON.parse(localStorage.getItem('daily_goal') || '{}');
+    var t = tk(new Date());
+    return !!(g[t] && g[t][id] && (g[t][id].l || g[t][id].e));
+  }catch(e){ return false; }
+}
 function paintHub(){
 document.getElementById('acGrid').innerHTML = ACADEMIES.map(function(a){
   var ch = cnt(PRE[a.id], 'ch'), ex = cnt(PRE[a.id], 'examDone'), tt = TOT[a.id];
   var stTxt = ch > 0 ? ('已学 ' + Math.min(ch, tt) + '/' + tt + ' 章') : (ex > 0 ? ('小卷 ' + ex + ' 份') : '开卷中');
-  var sd = acStreak(a.id);
+  var sd = acStreak(a.id), gd = acToday(a.id);
+  var cardStyle = gd
+    ? 'style="position:relative;border-color:var(--green);box-shadow:0 0 0 1.5px var(--green-soft),0 3px 14px rgba(52,199,89,.16);background:linear-gradient(180deg,rgba(52,199,89,.07),var(--card) 48%)"'
+    : 'style="position:relative"';
   var pill = sd > 0
     ? '<span class="pill green" style="font-size:11.5px">🔥 今日已打卡 · 连签 ' + sd + ' 天</span>'
     : '<span class="pill" style="font-size:11.5px;background:rgba(120,120,128,.1);color:var(--muted)">今日待打卡</span>';
-  return '<a class="card ac-card lift" href="' + a.file + '"><div class="ac-head">'
+  var gdDot = gd ? '<span style="position:absolute;top:12px;right:12px;width:10px;height:10px;border-radius:50%;background:var(--green);box-shadow:0 0 0 3px var(--green-soft)"></span>' : '';
+  return '<a class="card ac-card lift" href="' + a.file + '" ' + cardStyle + '><div class="ac-head">'
     + '<span style="width:54px;height:54px;border-radius:16px;background:' + a.bg + ';display:flex;align-items:center;justify-content:center;color:#fff;font-size:26px;flex:none;box-shadow:0 4px 12px rgba(0,0,0,.14)">' + a.icon + '</span>'
     + '<span style="flex:1;min-width:0"><span class="ac-name">' + a.name + '</span>'
     + '<span class="cap" style="display:block;font-size:12.5px;margin-top:2px">' + a.desc + '</span></span></div>'
+    + gdDot
     + '<span class="cap" style="line-height:1.65">' + a.sub + '</span>'
     + '<span class="ac-stat">' + pill + '<span class="pill blue" style="font-size:12px">' + stTxt + '</span><span class="pill" style="font-size:12px;margin-left:auto">进入学习 →</span></span></a>';
 }).join('');
@@ -690,9 +702,22 @@ try{
   var d = new Date(), streak = 0;
   if(!set[tk(d)]) d.setDate(d.getDate() - 1);
   while(set[tk(d)]){ streak++; d.setDate(d.getDate() - 1); }
-  var line = streak > 0 ? '🔥 今日连签 ' + streak + ' 天 — 保持住，别让小火苗断咯。' : '今天还没打卡：挑一座学院，学完一章点亮今天。';
-  var hp = '';
-  hp += '<span class="pill gold">🔥 连签 ' + streak + ' 天</span>';
+  var allToday = ACADEMIES.every(function(x){ return acToday(x.id); });
+  var hero = document.getElementById('hubHero');
+  var line, hp = '';
+  if(allToday){
+    line = '🎉 今日全勤：四座学院全部点亮，收工愉快！';
+    hp += '<span class="pill gold">🏅 今日全勤</span>';
+    if(hero){
+      hero.style.border = '1.5px solid var(--gold)';
+      hero.style.boxShadow = '0 0 0 2.5px var(--gold-soft), 0 6px 26px rgba(255,149,0,.25)';
+      hero.style.background = 'linear-gradient(160deg,rgba(255,149,0,.12),rgba(255,214,10,.05)), var(--card)';
+    }
+  } else {
+    line = streak > 0 ? '🔥 今日连签 ' + streak + ' 天 — 保持住，别让小火苗断咯。' : '今天还没打卡：挑一座学院，学完一章点亮今天。';
+    hp += '<span class="pill gold">🔥 连签 ' + streak + ' 天</span>';
+    if(hero){ hero.style.border = ''; hero.style.boxShadow = ''; hero.style.background = ''; }
+  }
   var tch = 0, tt2 = 0;
   Object.keys(TOT).forEach(function(k){ tch += Math.min(cnt(PRE[k], 'ch'), TOT[k]); tt2 += TOT[k]; });
   hp += '<span class="pill blue">四院合计已学 ' + tch + '/' + tt2 + ' 章</span>';
