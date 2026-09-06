@@ -640,7 +640,7 @@ var ACADEMIES = [
   {id:'c',        file:'c.html?v=5',         icon:'⚙',  bg:'linear-gradient(135deg,#FF453A,#D70015)',  name:'C 语言学院',   desc:'指针与内存',             sub:'50 章 · 讲义代码 + 判题'}
 ];
 var PRE = { chip:'chip_', calculus:'pjc_', python:'pyc_', c:'cc_' };
-var TOT = { chip:36, calculus:30, python:14, c:50 };
+var TOT = { chip:36, calculus:30, python:30, c:50 };
 function cnt(prefix, key){
   try{ var v = JSON.parse(localStorage.getItem(prefix + key));
     return v ? (Array.isArray(v) ? v.length : (typeof v === 'number' ? v : Object.keys(v).length)) : 0; }
