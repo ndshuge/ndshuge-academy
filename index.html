@@ -694,12 +694,49 @@ try{
 paintHub();
 
 /* 云端同步：拉取四院云端进度（progress.data.{chip,calculus,python,c}），与本地取并集合并后重绘 */
+/* 令牌自动续期（与学院端同语义）：仅服务器明确拒绝才清会话；网络/限流保留 */
+var _hubRefP = null;
+function hubTokenFresh(){
+  var s = hubSess(); if(!s || !s.access_token) return false;
+  try{
+    var payload = JSON.parse(atob(s.access_token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
+    if(Date.now() < (payload.exp * 1000) - 60000) return true;
+  }catch(e){}
+  return false;
+}
+function hubEnsureToken(){
+  if(hubTokenFresh()) return Promise.resolve(true);
+  var s0 = hubSess();
+  if(!s0 || !s0.refresh_token) return Promise.resolve(false);
+  if(_hubRefP) return _hubRefP;
+  _hubRefP = fetch(SB_URL + '/auth/v1/token?grant_type=refresh_token', { method:'POST', headers:{ 'Content-Type':'application/json', 'apikey':SB_KEY }, body: JSON.stringify({ refresh_token: s0.refresh_token }) })
+    .then(function(r){ return r.json(); })
+    .then(function(j){
+      if(j && j.access_token){
+        localStorage.setItem('acad_sb_session', JSON.stringify({ access_token:j.access_token, refresh_token:j.refresh_token || s0.refresh_token, user:j.user || s0.user }));
+        return true;
+      }
+      if(j && (j.error === 'invalid_grant' || j.error_description === 'invalid_grant')){
+        try{ localStorage.removeItem('acad_sb_session'); localStorage.removeItem('acad_profile'); }catch(e){}
+        return false;
+      }
+      return false;
+    })
+    .catch(function(){ return false; })
+    .then(function(v){ _hubRefP = null; return v; });
+  return _hubRefP;
+}
 function hubSync(silent){
-  var s = hubSess(); if(!s || !s.user){ if(!silent) hubToast('未登录：点右上角「登录」后可同步云端进度'); return Promise.resolve(false); }
-  if(!silent) hubToast('正在同步并合并四院进度…');
-  var h = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + s.access_token, 'Content-Type': 'application/json' };
-  return fetch(SB_URL + '/rest/v1/progress?select=data&user_id=eq.' + s.user.id, { headers: h })
-    .then(function(r){ if(r.status === 401){ if(!silent) hubToast('登录已过期：请先退出，再重新登录一次'); return null; } return r.json(); })
+  var s0 = hubSess(); if(!s0 || !s0.user){ if(!silent) hubToast('未登录：点右上角「登录」后可同步云端进度'); return Promise.resolve(false); }
+  return hubEnsureToken().then(function(ok){
+    var still = hubSess();
+    if(!ok && !still){ if(!silent) hubToast('登录已过期：请重新登录（右上角）'); acctBar(); paintHub(); return false; }
+    if(!ok){ if(!silent) hubToast('同步失败：网络或服务异常，请稍后再试'); return false; }
+    var s = hubSess(); if(!s){ return false; }
+    if(!silent) hubToast('正在同步并合并四院进度…');
+    var h = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + s.access_token, 'Content-Type': 'application/json' };
+    return fetch(SB_URL + '/rest/v1/progress?select=data&user_id=eq.' + s.user.id, { headers: h })
+    .then(function(r){ if(r.status === 401){ if(!silent) hubToast('登录已过期：请重新登录（右上角）'); acctBar(); paintHub(); return null; } return r.json(); })
     .then(function(rows){
       if(rows === null) return false;
       var data = (rows && rows.length && rows[0] && rows[0].data && typeof rows[0].data === 'object') ? rows[0].data : null;
@@ -732,6 +769,7 @@ function hubSync(silent){
     })
     .catch(function(){ if(!silent) hubToast('同步失败，请检查网络'); return false; })
     .then(function(ok){ paintHub(); return ok; });
+  });
 }
 
 if('serviceWorker' in navigator){
