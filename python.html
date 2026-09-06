@@ -874,7 +874,7 @@ var BADGES=[
   {n:'函数工坊主',d:'完成第 8 章 · 函数',c:function(s){ return s.doneC>=8; }},
   {n:'类建筑师',d:'完成第 9 章 · 类',c:function(s){ return s.doneC>=9; }},
   {n:'异常猎手',d:'完成第 10 章 · 文件与异常',c:function(s){ return s.doneC>=10; }},
-  {n:'项目造物主',d:'完成三大项目（12–14 章）',c:function(s){ return s.doneC>=14; }},
+  {n:'项目造物主',d:'完成三大实战项目',c:function(s){ return s.doneC>=14; }},
   {n:'卷子初满',d:'任意一章小卷已做（答完即结算）',c:function(s){ return s.examFull>=1; }},
   {n:'卷子全满',d:'全部小卷已做',c:function(s){ return s.examTotal>0&&s.examFull>=s.examTotal; }},
   {n:'错题清零',d:'错题全部订正',c:function(s){ return s.wrongPool===0&&s.fixedPool>0; }},
@@ -1186,13 +1186,13 @@ renderers.home=function(){
   } else {
     h+='<div class="hero-card"><div class="deco">'+GEO+'</div>'
       +'<span class="hk">ALL CLEAR · 全书通关</span>'
-      +'<b class="next">14 章全部点亮。去荣誉墙领你的毕业称号。</b>'
+      +'<b class="next">30 章全部点亮。去荣誉墙领你的毕业称号。</b>'
       +'<div class="foot"><span class="pill green">'+IC('check')+' 章节全通</span>'
       +'<button class="btn-go" data-go="honor">荣誉墙'+IC('arrow-r')+'</button></div></div>';
   }
   h+='<button class="big-entry lift" data-go="plan"><span class="be-ico" style="background:linear-gradient(135deg,#0A84FF,#5E5CE6)">'+IC('bookopen')+'</span>'
     +'<span class="be-body"><b>章节课堂</b>'
-    +'<span class="cap">Python 入门 14 章 · 讲义 + 随堂题，答完即点亮</span>'
+    +'<span class="cap">Python 入门 30 章 · 讲义 + 随堂题，答完即点亮</span>'
     +'<span class="be-meta"><span class="pill blue">已学 '+s.doneC+' / '+s.totalC+' 章</span></span></span>'
     +'<span class="be-arrow">'+IC('chev-r')+'</span></button>';
 
@@ -1207,7 +1207,7 @@ var TUTOR_QUOTES=[
   '「今天偷懒少写一个测试，明天花一小时追 bug。」'
 ]
 
-/* ============ 学习 Tab · 章节课堂（14 章书架） ============ */
+/* ============ 学习 Tab · 章节课堂（30 章书架） ============ */
 renderers.plan=function(){
   var s=calcStats();
   var h='<div class="kick">ROADMAP</div><div class="h1">章节课堂</div>'
@@ -1806,7 +1806,7 @@ renderers.about=function(){
   return '<div class="kick">ABOUT</div><div class="h1">关于学院</div>'
     +'<div class="sub">Python 学院 · framework v2 · 对齐样张 + HIG 动效</div>'
     +'<div class="card" style="border-radius:var(--r-l)"><div class="lesson-body">'
-    +'<p>Python 入门 14 章 · 语法、数据结构与三个实战项目。讲义 + 随堂题（含代码判题），答完点亮章节。</p>'
+    +'<p>Python 入门 30 章 · 语法、数据结构与三个实战项目。讲义 + 随堂题（含代码判题），答完点亮章节。</p>'
     +'<p>界面与动效统一走 <b>Apple 设计语言（framework v2）</b>：双舞台转场、Interactive Pop 跟手返回、Sheet 环境光、滚动视觉降噪、Dock 款悬停；内容为本院真实全书数据，进度按院存于本机（键隔离），打卡四院共通。</p>'
     +'<p>导读人：拉里·佩奇。称号与徽章在荣誉墙可见。</p>'
     +'<div style="margin-top:10px;padding:11px 14px;border-radius:12px;background:var(--fill-soft);font-size:13.5px;color:var(--ink2)">云端账号（多端同步 / 排行榜 / 留言）正在接入：登录弹窗已就位，账号批次上线后自动生效。</div>'
@@ -2734,19 +2734,29 @@ function sbProfile(){
 }
 function sbUser(){ var s = sbSession(); if(!s || !s.user) return null; var p = sbProfile(); return { id: s.user.id, nick: (p && (p.username || p.nick)) || '同学', avatar: (p && p.avatar) || '🐹' }; }
 
+var _sbRefP = null;
 async function sbEnsureToken(){
   var s = sbSession(); if(!s) return false;
+  var oldTok = s.access_token;
   try{
-    var payload = JSON.parse(atob(s.access_token.split('.')[1]));
+    var payload = JSON.parse(atob(s.access_token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
     if(Date.now() < (payload.exp * 1000) - 60000) return true;
   }catch(e){ return false; }
-  if(!s.refresh_token) return false;
-  try{
-    var r = await fetch(SB_URL + '/auth/v1/token?grant_type=refresh_token', { method: 'POST', headers: { 'Content-Type': 'application/json', 'apikey': SB_KEY }, body: JSON.stringify({ refresh_token: s.refresh_token }) });
-    var j = await r.json();
-    if(j.access_token){ sbSaveSession({ access_token: j.access_token, refresh_token: j.refresh_token || s.refresh_token, user: j.user || s.user }); return true; }
-  }catch(e){}
-  sbDropSession(); return false;
+  if(!s.refresh_token){ sbDropSession(); return false; }
+  if(_sbRefP) return _sbRefP;
+  _sbRefP = (async function(){
+    var s2 = sbSession();
+    /* 已被其他页面/调用刷新过：直接用新会话 */
+    if(s2 && s2.access_token && s2.access_token !== oldTok && s2.refresh_token) return true;
+    try{
+      var r = await fetch(SB_URL + '/auth/v1/token?grant_type=refresh_token', { method: 'POST', headers: { 'Content-Type': 'application/json', 'apikey': SB_KEY }, body: JSON.stringify({ refresh_token: (s2 && s2.refresh_token) || s.refresh_token }) });
+      var j = await r.json();
+      if(j.access_token){ sbSaveSession({ access_token: j.access_token, refresh_token: j.refresh_token || s.refresh_token, user: j.user || s.user }); return true; }
+      if(j && (j.error === 'invalid_grant' || r.status === 401)){ sbDropSession(); return false; }
+      return false;   /* 网络/限流等：保留会话，避免误报登录失效 */
+    }catch(e){ return false; }
+  })();
+  try{ return await _sbRefP; } finally { _sbRefP = null; }
 }
 
 /* ---------- 进度打包 / 合并（与旧引擎同语义：并集去重不互覆） ---------- */

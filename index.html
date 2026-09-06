@@ -699,8 +699,9 @@ function hubSync(silent){
   if(!silent) hubToast('正在同步并合并四院进度…');
   var h = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + s.access_token, 'Content-Type': 'application/json' };
   return fetch(SB_URL + '/rest/v1/progress?select=data&user_id=eq.' + s.user.id, { headers: h })
-    .then(function(r){ return r.json(); })
+    .then(function(r){ if(r.status === 401){ if(!silent) hubToast('登录已过期：请先退出，再重新登录一次'); return null; } return r.json(); })
     .then(function(rows){
+      if(rows === null) return false;
       var data = (rows && rows.length && rows[0] && rows[0].data && typeof rows[0].data === 'object') ? rows[0].data : null;
       if(!data){ if(!silent) hubToast('云端暂无进度记录'); return false; }
       var PRE2 = { chip:'chip_', calculus:'pjc_', python:'pyc_', c:'cc_' };

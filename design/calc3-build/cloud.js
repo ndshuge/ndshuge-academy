@@ -34,19 +34,29 @@ function sbProfile(){
 }
 function sbUser(){ var s = sbSession(); if(!s || !s.user) return null; var p = sbProfile(); return { id: s.user.id, nick: (p && (p.username || p.nick)) || '同学', avatar: (p && p.avatar) || '🐹' }; }
 
+var _sbRefP = null;
 async function sbEnsureToken(){
   var s = sbSession(); if(!s) return false;
+  var oldTok = s.access_token;
   try{
-    var payload = JSON.parse(atob(s.access_token.split('.')[1]));
+    var payload = JSON.parse(atob(s.access_token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
     if(Date.now() < (payload.exp * 1000) - 60000) return true;
   }catch(e){ return false; }
-  if(!s.refresh_token) return false;
-  try{
-    var r = await fetch(SB_URL + '/auth/v1/token?grant_type=refresh_token', { method: 'POST', headers: { 'Content-Type': 'application/json', 'apikey': SB_KEY }, body: JSON.stringify({ refresh_token: s.refresh_token }) });
-    var j = await r.json();
-    if(j.access_token){ sbSaveSession({ access_token: j.access_token, refresh_token: j.refresh_token || s.refresh_token, user: j.user || s.user }); return true; }
-  }catch(e){}
-  sbDropSession(); return false;
+  if(!s.refresh_token){ sbDropSession(); return false; }
+  if(_sbRefP) return _sbRefP;
+  _sbRefP = (async function(){
+    var s2 = sbSession();
+    /* 已被其他页面/调用刷新过：直接用新会话 */
+    if(s2 && s2.access_token && s2.access_token !== oldTok && s2.refresh_token) return true;
+    try{
+      var r = await fetch(SB_URL + '/auth/v1/token?grant_type=refresh_token', { method: 'POST', headers: { 'Content-Type': 'application/json', 'apikey': SB_KEY }, body: JSON.stringify({ refresh_token: (s2 && s2.refresh_token) || s.refresh_token }) });
+      var j = await r.json();
+      if(j.access_token){ sbSaveSession({ access_token: j.access_token, refresh_token: j.refresh_token || s.refresh_token, user: j.user || s.user }); return true; }
+      if(j && (j.error === 'invalid_grant' || r.status === 401)){ sbDropSession(); return false; }
+      return false;   /* 网络/限流等：保留会话，避免误报登录失效 */
+    }catch(e){ return false; }
+  })();
+  try{ return await _sbRefP; } finally { _sbRefP = null; }
 }
 
 /* ---------- 进度打包 / 合并（与旧引擎同语义：并集去重不互覆） ---------- */
