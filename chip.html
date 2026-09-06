@@ -12307,7 +12307,21 @@ document.addEventListener('DOMContentLoaded',function(){
   initStat();
   mountStaticIcons();
   history.replaceState({view:'home'},'');
-  renderView('home',false);
+  /* 登录态：先静默同步云端（≤1.2s），数据就绪再首次渲染，避免首屏后二次整页重绘闪白 */
+  if(typeof sbSession==='function' && sbSession()){
+    var _fired=false, _booted=false;
+    var _renderHome=function(){ if(_booted) return; _booted=true; renderView('home',false); };
+    var _tm=setTimeout(_renderHome, 1200);   /* 超时兜底：先渲染本地 */
+    sbSyncFromCloud(true, true)
+      .then(function(){
+        if(_booted){ /* 超时已渲染本地：无动画刷新为最新 */
+          try{ if(window._cur==='home'||window._cur==='mine'||window._cur==='hall'){ doRenderView(window._cur, false); } }catch(_e){}
+        } else { clearTimeout(_tm); _renderHome(); }
+      })
+      .catch(function(){ _renderHome(); });
+  } else {
+    renderView('home',false);
+  }
 })();
 
 /* Dock 显隐覆盖：三大根页显示，二级页隐藏并收缩底部留白 */
@@ -12609,7 +12623,7 @@ function sbApplyLocal(m){
 function sbCloudData(d){ return (d && d.data && d.data[SB_APP]) ? d.data[SB_APP] : null; }
 
 /* ---------- 拉取并合并云端（打开学院 / 手动同步） ---------- */
-async function sbSyncFromCloud(silent){
+async function sbSyncFromCloud(silent, keepView){
   var s = sbSession(); if(!s || !s.user){ if(!silent) toast('未登录，去总院登录后可云同步'); return false; }
   if(!(await sbEnsureToken())){ if(!silent) toast('登录已失效，请去总院重新登录'); return false; }
   var h = sbAuthHeaders(); if(!h) return false;
@@ -12626,7 +12640,7 @@ async function sbSyncFromCloud(silent){
       toast('云端暂无记录，本次先上传');
     }
     await sbPush(true);
-    try{ if(window._cur === 'mine' || window._cur === 'home' || window._cur === 'hall'){ doRenderView(window._cur, true); } }catch(e){}
+    try{ if(!keepView && (window._cur === 'mine' || window._cur === 'home' || window._cur === 'hall')){ doRenderView(window._cur, true); } }catch(e){}
     return true;
   }catch(e){ if(!silent) toast('云端同步失败，请检查网络'); return false; }
 }
@@ -12983,10 +12997,7 @@ function refreshNow(){
 }
 function cloudInit(){
   if(!sbSession()) return;
-  try{
-    sbSyncFromCloud(true).then(function(){ sbPushRank(); }).catch(function(){});
-  }catch(e){}
-  /* 回前台静默同步 */
+  /* 首次静默同步由 boot 段负责（keepView + 就绪后一次渲染）；这里只补回前台监听 */
   document.addEventListener('visibilitychange', function(){
     if(document.visibilityState === 'visible' && sbSession()){ try{ sbSyncFromCloud(true); }catch(e){} }
   });
