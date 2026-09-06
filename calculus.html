@@ -4870,21 +4870,8 @@ document.addEventListener('DOMContentLoaded',function(){
   initStat();
   mountStaticIcons();
   history.replaceState({view:'home'},'');
-  /* 登录态：先静默同步云端（≤1.2s），数据就绪再首次渲染，避免首屏后二次整页重绘闪白 */
-  if(typeof sbSession==='function' && sbSession()){
-    var _fired=false, _booted=false;
-    var _renderHome=function(){ if(_booted) return; _booted=true; renderView('home',false); };
-    var _tm=setTimeout(_renderHome, 1200);   /* 超时兜底：先渲染本地 */
-    sbSyncFromCloud(true, true)
-      .then(function(){
-        if(_booted){ /* 超时已渲染本地：无动画刷新为最新 */
-          try{ if(window._cur==='home'||window._cur==='mine'||window._cur==='hall'){ doRenderView(window._cur, false); } }catch(_e){}
-        } else { clearTimeout(_tm); _renderHome(); }
-      })
-      .catch(function(){ _renderHome(); });
-  } else {
-    renderView('home',false);
-  }
+  /* 首屏即时渲染本地数据（秒出不白屏）；云端合并由 cloudInit 静默完成后无动画刷新 */
+  renderView('home',false);
 })();
 
 /* Dock 显隐覆盖：三大根页显示，二级页隐藏并收缩底部留白 */
@@ -5209,7 +5196,17 @@ async function sbSyncFromCloud(silent, keepView){
       toast('云端暂无记录，本次先上传');
     }
     await sbPush(true);
-    try{ if(!keepView && (window._cur === 'mine' || window._cur === 'home' || window._cur === 'hall')){ doRenderView(window._cur, true); } }catch(e){}
+    try{
+      if(window._cur === 'mine' || window._cur === 'home' || window._cur === 'hall'){
+        if(!keepView){ doRenderView(window._cur, true); }
+        else {
+          /* 静默更新：内容并入后无动画替换，避免二次整页重绘闪白 */
+          var _rv2 = renderers[window._cur] ? renderers[window._cur]() : '';
+          var _vv2 = document.getElementById('view');
+          if(_vv2 && _rv2 && _vv2.innerHTML !== _rv2){ _vv2.innerHTML = _rv2; }
+        }
+      }
+    }catch(e){}
     return true;
   }catch(e){ if(!silent) toast('云端同步失败，请检查网络'); return false; }
 }
@@ -5566,7 +5563,10 @@ function refreshNow(){
 }
 function cloudInit(){
   if(!sbSession()) return;
-  /* 首次静默同步由 boot 段负责（keepView + 就绪后一次渲染）；这里只补回前台监听 */
+  try{
+    sbSyncFromCloud(true, true).then(function(){ sbPushRank(); }).catch(function(){});
+  }catch(e){}
+  /* 回前台静默同步 */
   document.addEventListener('visibilitychange', function(){
     if(document.visibilityState === 'visible' && sbSession()){ try{ sbSyncFromCloud(true); }catch(e){} }
   });
