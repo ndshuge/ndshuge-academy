@@ -799,6 +799,17 @@ function hubSync(silent){
           Object.keys(b).forEach(function(x){ if(!(x in o)) any = true; o[x] = b[x]; });
           if(any){ try{ localStorage.setItem(key, JSON.stringify(o)); changed = true; }catch(e){} }
         });
+        /* 每日打卡并入 daily_goal（按日期×院，云端有此院记录则补上） */
+        if(cd.dg && typeof cd.dg === 'object'){
+          try{
+            var g3 = JSON.parse(localStorage.getItem('daily_goal') || '{}'), chg3 = false;
+            Object.keys(cd.dg).forEach(function(d){
+              if(!g3[d]) g3[d] = {};
+              if(!g3[d][app]){ g3[d][app] = { l: Date.now() }; chg3 = true; }
+            });
+            if(chg3){ localStorage.setItem('daily_goal', JSON.stringify(g3)); changed = true; }
+          }catch(e3){}
+        }
       });
       if(!silent) hubToast(changed ? '✅ 已从云端合并进度（取并集，不覆盖本地）' : '云端与本地的进度一致');
       return true;

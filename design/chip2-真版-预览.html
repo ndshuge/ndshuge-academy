@@ -12564,11 +12564,20 @@ async function sbEnsureToken(){
 }
 
 /* ---------- 进度打包 / 合并（与旧引擎同语义：并集去重不互覆） ---------- */
+function sbPackDg(){
+  var out = {};
+  try{
+    var g = JSON.parse(localStorage.getItem('daily_goal') || '{}');
+    Object.keys(g).forEach(function(d){ if(g[d] && g[d][SB_APP]) out[d] = 1; });
+  }catch(e){}
+  return out;
+}
 function sbPack(){
   return {
     ch: load('ch', []), hall: load('hall', []), wrong: load('wrong', []),
     fixed: load('fixed', []), log: load('log', []), quizStat: load('quizStat', {}),
-    tstat: load('tstat', {}), quizPick: load('quizPick', {}), settle: load('settle', {})
+    tstat: load('tstat', {}), quizPick: load('quizPick', {}), settle: load('settle', {}),
+    dg: sbPackDg()
   };
 }
 var SB_MERGE_ARR = ['ch','hall','wrong','fixed','log'];
@@ -12589,6 +12598,13 @@ function sbMerge(local, cloud){
     Object.keys(a).forEach(function(x){ o[x] = a[x]; }); Object.keys(b).forEach(function(x){ o[x] = b[x]; });
     out[k] = o;
   });
+  /* 每日打卡（daily_goal 中本 app 的日期集合）取并集 */
+  var dgo = {};
+  var dga = (typeof local['dg'] === 'object' && local['dg']) ? local['dg'] : {};
+  var dgb = (typeof cloud['dg'] === 'object' && cloud['dg']) ? cloud['dg'] : {};
+  Object.keys(dga).forEach(function(d){ dgo[d] = 1; });
+  Object.keys(dgb).forEach(function(d){ dgo[d] = 1; });
+  out['dg'] = dgo;
   return out;
 }
 function sbApplyLocal(m){
@@ -12601,6 +12617,16 @@ function sbApplyLocal(m){
     if(m.quizPick){ quizPick = m.quizPick; store('quizPick', quizPick); }
     if(m.settle){ settleStore = m.settle; store('settle', settleStore); }
     if(m.tstat){ todayStat = m.tstat; store('tstat', todayStat); }
+    if(m.dg && typeof m.dg === 'object'){
+      try{
+        var g2 = JSON.parse(localStorage.getItem('daily_goal') || '{}'), chg = false;
+        Object.keys(m.dg).forEach(function(d){
+          if(!g2[d]) g2[d] = {};
+          if(!g2[d][SB_APP]){ g2[d][SB_APP] = { l: Date.now() }; chg = true; }
+        });
+        if(chg) localStorage.setItem('daily_goal', JSON.stringify(g2));
+      }catch(e2){}
+    }
   }catch(e){}
 }
 function sbCloudData(d){ return (d && d.data && d.data[SB_APP]) ? d.data[SB_APP] : null; }
