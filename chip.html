@@ -11630,8 +11630,9 @@ renderers.lab=function(){
 };
 renderers.manage=function(){
   var s=calcStats();
+  var ACN=(document.title||'').split('·')[0].trim()||'本学院';
   return '<div class="kick">DATA</div><div class="h1">数据管理</div>'
-    +'<div class="sub">导出 / 导入备份 · 清除记录仅限本学院（本地 + 云端，其他学院与账号不受影响）</div>'
+    +'<div class="sub">导出 / 导入备份 · 清除记录仅限「'+ACN+'」（本地 + 云端，其他学院与账号不受影响）</div>'
     +'<div class="card" style="border-radius:var(--r-l)">'
     +'<b style="font-size:16px">📦 备份与恢复</b>'
     +'<div class="cap" style="margin:6px 0 12px;line-height:1.7">导出生成一串备份码，换设备 / 清空前粘贴即可恢复；云端登录时进度会自动同步，备份码用作额外保险。</div>'
@@ -11639,9 +11640,9 @@ renderers.manage=function(){
     +'<div class="mini-row" style="margin-top:10px"><button class="mini-btn lift" id="bkExport">'+IC('doc')+' 导出备份</button>'
     +'<button class="mini-btn lift" id="bkImport">'+IC('download','').replace('</span>','<path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg></span>')+' 导入恢复</button></div>'
     +'<div style="height:1px;background:var(--sep);margin:16px 0 14px"></div>'
-    +'<b style="color:var(--red);font-size:16px">🗑 清除本学院记录</b>'
-    +'<div class="cap" style="margin:6px 0 12px;line-height:1.7">将<b>永久删除<b>本学院</b>的本地与云端全部记录（章节进度 / 徽章 / 错题 / 足迹 / 打卡 / 云端档案），其他学院不受影响。清除会退出登录，需重新登录。不可撤销，为防误触需输入「清除记录」确认，建议先导出备份。</div>'
-    +'<button class="btn-go" id="wipeOpen" style="background:var(--red);box-shadow:0 6px 18px var(--red-soft)">清除本学院记录（本地 + 云端）</button>'
+    +'<b style="color:var(--red);font-size:16px">🗑 清除「'+ACN+'」记录</b>'
+    +'<div class="cap" style="margin:6px 0 12px;line-height:1.7">将永久删除<b>「'+ACN+'」的全部记录</b>（章节进度 / 徽章 / 错题 / 足迹 / 打卡 / 云端档案），其他学院与账号不受影响。清除会退出登录，需重新登录。不可撤销，为防误触需输入「清除记录」确认，建议先导出备份。</div>'
+    +'<button class="btn-go" id="wipeOpen" style="background:var(--red);box-shadow:0 6px 18px var(--red-soft)">清除「'+ACN+'」记录（本地 + 云端）</button>'
     +'<div class="cap" style="margin-top:10px;line-height:1.6;color:var(--muted)">当前：本地游客 · 已学 '+s.doneC+'/'+s.totalC+' 章 · 总进度 '+s.pct+'%</div>'
     +'</div>';
 };
@@ -12352,8 +12353,9 @@ function showWipeDialog(){
   wrap.onclick=function(e){ if(e.target===wrap) closeWipeDialog(); };
   var box=document.createElement('div');
   box.style.cssText='background:var(--card);border-radius:24px;padding:24px;max-width:430px;width:100%;box-shadow:var(--sh-float)';
-  box.innerHTML='<b style="color:var(--red);font-size:17px">⚠ 清除本学院记录</b>'
-    +'<div style="color:var(--ink2);font-size:13.5px;line-height:1.8;margin:10px 0">将永久删除<b>本学院</b>的本地与云端全部记录（其他学院与账号数据不受影响）。清除会退出登录，之后重新登录即可。<br>输入 <b style="color:var(--red)">清除记录</b> 确认：</div>'
+  var ACN=(document.title||'').split('·')[0].trim()||'本学院';
+  box.innerHTML='<b style="color:var(--red);font-size:17px">⚠ 正在清除「'+ACN+'」记录</b>'
+    +'<div style="color:var(--ink2);font-size:13.5px;line-height:1.8;margin:10px 0">将永久删除<b>「'+ACN+'」的全部记录</b>（其他学院与账号数据不受影响）。清除会退出登录，之后重新登录即可。<br>输入 <b style="color:var(--red)">清除记录</b> 确认：</div>'
     +'<input id="wipeWord" placeholder="输入「清除记录」" style="width:100%;box-sizing:border-box;border:1.5px solid var(--sep);border-radius:12px;padding:12px 14px;font:14.5px inherit;font-family:inherit;background:var(--bg);color:var(--ink);outline:none">'
     +'<div style="display:flex;gap:10px;margin-top:14px">'
     +'<button id="wipeDo" style="flex:1;height:44px;border:none;border-radius:12px;background:var(--red);color:#fff;font:600 14px inherit;font-family:inherit;cursor:pointer">确认清除</button>'
