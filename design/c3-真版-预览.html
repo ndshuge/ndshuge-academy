@@ -4989,7 +4989,12 @@ async function sbEnsureToken(){
       var r = await fetch(SB_URL + '/auth/v1/token?grant_type=refresh_token', { method: 'POST', headers: { 'Content-Type': 'application/json', 'apikey': SB_KEY }, body: JSON.stringify({ refresh_token: (s2 && s2.refresh_token) || s.refresh_token }) });
       var j = await r.json();
       if(j.access_token){ sbSaveSession({ access_token: j.access_token, refresh_token: j.refresh_token || s.refresh_token, user: j.user || s.user }); return true; }
-      if(j && (j.error === 'invalid_grant' || r.status === 401)){ sbDropSession(); return false; }
+      if(j && (j.error === 'invalid_grant' || r.status === 401)){
+        /* 其他页面可能已轮换成功：用最新会话，不误删登录态 */
+        var s3 = sbSession();
+        if(s3 && s3.refresh_token && s3.refresh_token !== ((s2 && s2.refresh_token) || s.refresh_token)) return true;
+        sbDropSession(); return false;
+      }
       return false;   /* 网络/限流等：保留会话，避免误报登录失效 */
     }catch(e){ return false; }
   })();
