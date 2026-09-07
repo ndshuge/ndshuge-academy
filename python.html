@@ -785,7 +785,36 @@ var parseMath=function(s){ try{ return _calcPM(s); }catch(err){ return esc(s); }
 30:{dialogue:{q:'回头看第一个 print 和现在的项目，会写代码和会编程的差别在哪？一个项目要给别人用，还差哪些非代码的事？',keys:['工程','调试','文档','用户'],model:'会写代码是语法对、能跑；会编程是知道为什么这么设计、出错能定位、别人能读懂能维护。毕业项目的价值不在功能炫，在完整走了一遍工程闭环：需求拆解、数据结构设计、实现、测试、文档、给真用户用。README、友好的错误提示、异常不崩，这些非代码的事才是能用和好用的分水岭。下一步去读开源代码：你踩过的每个坑，前人都有更漂亮的解法。'}}
   };
   var F={
-    7:[{si:0,formula:'if 条件为 True 执行缩进块，else 兜底；冒号和缩进是语法，不是装饰'},{si:1,formula:'elif 从上往下查，命中一个就跳过剩下（短路）；先写窄条件、后写宽条件'},{si:2,formula:'== != > < >= <=；and 全真才真、or 一真即真；18 <= age < 65 链式比较'},{si:3,formula:'0、空串、[]、None 都是 False；用 if not x 判空最 Pythonic'}]
+    1:[{si:0,formula:'解释型语言：写一行、解释一行、跑一行，天然适合边写边试'},{si:1,formula:'print() 把内容送到屏幕；字符串要用引号包住，单双都行别混用'},{si:2,formula:'# 注释写给三个月后的自己——解释为什么，不解释是什么'},{si:3,formula:'报错是线索不是惩罚：读类型（Syntax/NameError）、读行号、改一个试一次'}],
+    2:[{si:0,formula:'变量 = 名字 + 值；= 是赋值不是等于'},{si:1,formula:'小写 + 下划线（snake_case）；不能数字开头、不能用关键字'},{si:2,formula:'int / float / str 三种基本类型；字符串和数字不能直接相加'},{si:3,formula:'int("5") 转整数；input() 永远返回字符串，要算数必须先转换'}],
+    3:[{si:0,formula:'字符串方法 = 值.方法()；返回新字符串，原串不变，要接住返回值'},{si:1,formula:'strip() 清两侧空白；读进来的字符串先清理再处理'},{si:2,formula:'find 找位置（找不到返 -1）、replace 替换、in 判在不在'},{si:3,formula:'split 拆、join 拼——数据清洗的黄金组合'}],
+    4:[{si:0,formula:'f"{变量}"：花括号里先求值再变字符串，比 + 拼接干净百倍'},{si:1,formula:'f"{x:.2f}" 两位小数、f"{x:>6}" 对齐、f"{pct:.1%}" 百分比'},{si:2,formula:'/ 真除、// 整除、% 取余、** 幂；括号 > 幂 > 乘除 > 加减'},{si:3,formula:'// 取商、% 取余 = 拆单位万能模板（总秒数 → 时分秒）'}],
+    5:[{si:0,formula:'列表 [元素] 有序可混存；索引从 0 开始，lst[-1] 是最后一个'},{si:1,formula:'append 尾加、insert 插、remove 按值删、pop 弹出、del 按下标删'},{si:2,formula:'sort() 原地排、sorted() 返回新列表；min / max / sum 直接算'},{si:3,formula:'for x in lst 逐个拿；遍历时别改列表长度（会漏项）'}],
+    6:[{si:0,formula:'切片 lst[a:b] 左闭右开；[::2] 跳步取、[::-1] 反转'},{si:1,formula:'b = a 只是别名；b = a[:] 才是真复制（内层嵌套仍共享）'},{si:2,formula:'[表达式 for x in 列表 if 条件]：循环 + 判断 + 收集压成一行'},{si:3,formula:'* 解包：first, *rest = lst 取首尾；[*a, *b] 合并列表'}],
+    7:[{si:0,formula:'if 条件为 True 执行缩进块，else 兜底；冒号和缩进是语法，不是装饰'},{si:1,formula:'elif 从上往下查，命中一个就跳过剩下（短路）；先写窄条件、后写宽条件'},{si:2,formula:'== != > < >= <=；and 全真才真、or 一真即真；18 <= age < 65 链式比较'},{si:3,formula:'0、空串、[]、None 都是 False；用 if not x 判空最 Pythonic'}],
+    8:[{si:0,formula:'字典 {键: 值} 按键取值；键要不可变类型（字符串/数字）'},{si:1,formula:'del 删键、in 判键；删不存在的键会 KeyError，先判断或 pop'},{si:2,formula:'for k, v in d.items() 是字典遍历标配'},{si:3,formula:'d.get("k", 默认) 找不到给默认不报错；嵌套字典先确认外层键在'}],
+    9:[{si:0,formula:'while 条件: 循环体；条件必须会变 False，否则就是死循环'},{si:1,formula:'input() 显示提示等回车，返回的一律是字符串'},{si:2,formula:'累加器：total += x、count += 1，循环结束算平均'},{si:3,formula:'while True + break 是 CLI 菜单工具的标准骨架'}],
+    10:[{si:0,formula:'break 立刻跳出当前循环——够了就停'},{si:1,formula:'continue 跳过本轮进下一轮——这个不算，下一个'},{si:2,formula:'range(a, b, s) 从 a 到 b-1 每步 s；倒着写 range(5, 0, -1)'},{si:3,formula:'嵌套循环：外层管行、内层管列（乘法表是经典）'}],
+    11:[{si:0,formula:'def 把逻辑装进名字；先定义后调用'},{si:1,formula:'形参是占位、实参是真值；位置参数按顺序对应'},{si:2,formula:'return 结束函数并返回值；没写 return 的函数返回 None'},{si:3,formula:'好函数是黑盒：调用者知道输入什么、得到什么就够了'}],
+    12:[{si:0,formula:'默认参数给调用方兜底；写在必选参数后面'},{si:1,formula:'关键字参数 形参=值：顺序可乱、意图更清楚'},{si:2,formula:'*args 把多余位置参数收进元组，接住不定个数'},{si:3,formula:'参数排列：必选 → 默认 → *args'}],
+    13:[{si:0,formula:'import math 后用 math.sqrt(16)——带模块名调用不迷路'},{si:1,formula:'from math import sqrt 指名道姓直接用，小心命名冲突'},{si:2,formula:'random / math / datetime / os：装 Python 就带的百宝箱'},{si:3,formula:'防冲突用 import 模块名；图省事用 from；团队偏爱前者'}],
+    14:[{si:0,formula:'函数内赋值的变量是局部变量，函数结束即消失'},{si:1,formula:'读全局变量可以，改全局要 global 声明'},{si:2,formula:'不声明就赋值 = 造了个局部变量（遮蔽全局，UnboundLocalError 之源）'},{si:3,formula:'内层函数记住外层变量 = 闭包；先认识现象，细节后补'}],
+    15:[{si:0,formula:'class 是蓝图：描述这类东西有什么数据、能做什么'},{si:1,formula:'__init__ 创建实例时自动调用，常用来设初始属性'},{si:2,formula:'方法的第一个参数永远是 self（实例自己）'},{si:3,formula:'同一类可造多个实例，属性各自独立、互不干扰'}],
+    16:[{si:0,formula:'类里 def 是实例方法：第一个参数 self，对象.方法() 调用'},{si:1,formula:'方法用 self.属性 读写，可以改对象状态'},{si:2,formula:'方法可以 return 计算结果，不一定要 print'},{si:3,formula:'好方法名是动词：deposit 存款、withdraw 取款、balance 查余额'}],
+    17:[{si:0,formula:'class 子类(父类)：子类自动拥有父类一切，还能加自己的'},{si:1,formula:'子类 __init__ 里先 super().__init__() 初始化父类部分'},{si:2,formula:'子类定义同名方法 = 覆盖父类版本（重写）'},{si:3,formula:'多态：不同子类同一方法各自表现，调用方不用关心具体类型'}],
+    18:[{si:0,formula:'__str__ 让 print(对象) 说人话，而不是打印内存地址'},{si:1,formula:'__eq__ 定义「两个对象什么时候相等」'},{si:2,formula:'类体直接赋值 = 类属性（所有实例共享）；self.xxx = 实例属性（各自独立）'},{si:3,formula:'类 = 命名良好的数据容器 + 行为'}],
+    19:[{si:0,formula:'open() 打开、read() 全读 / readlines() 逐行、用完 close()'},{si:1,formula:'"w" 覆盖写、"a" 追加写——模式选错会丢数据'},{si:2,formula:'with open(...) as f: 代码块结束自动关门，忘 close 也不漏'},{si:3,formula:'for line in f 逐行处理大文件，不把整个文件读进内存'}],
+    20:[{si:0,formula:'json.dumps() 对象 → 字符串；中文要加 ensure_ascii=False'},{si:1,formula:'json.loads() 字符串 → 对象，还原成字典/列表'},{si:2,formula:'json.dump / json.load 直接读写文件——存档最小闭环'},{si:3,formula:'启动时 load、结束时 dump = 最简单的存档系统'}],
+    21:[{si:0,formula:'try 兜住可能出错的代码，except 接住，程序不崩'},{si:1,formula:'精确捕获：ValueError 和 FileNotFoundError 的处理方式不同'},{si:2,formula:'else：没出错才执行；finally：无论对错都执行（如关文件）'},{si:3,formula:'用异常处理预期外输入，比到处 if 判断更干净'}],
+    22:[{si:0,formula:'assert 条件：为 False 就抛错——把「我以为」变成「机器验证」'},{si:1,formula:'把输入输出预期写进 assert，一组断言就是一个小测试套件'},{si:2,formula:'测边界：空、零、负数、最大值——bug 常在边界'},{si:3,formula:'有测试就有底气重构：跑一遍就知道有没有破坏行为'}],
+    23:[{si:0,formula:'变量名说清楚是什么：total_price 好过 tp、x'},{si:1,formula:'函数一函数一事，超过十几行就该拆'},{si:2,formula:'代码写「怎么」，注释补「为什么」；别注释废话'},{si:3,formula:'魔法数字、长函数、重复代码是三大臭味，闻到就拆'}],
+    24:[{si:0,formula:'规则先行：1-100 随机数，回「大了/小了」，限 7 次（二分上界）'},{si:1,formula:'玩家可能输入非数字：用 try 包住输入防崩'},{si:2,formula:'按剩余次数计分：剩几次得几分，用得少分高'},{si:3,formula:'外层 while True 包整局，y/n 决定是否再来'}],
+    25:[{si:0,formula:'清洗先行：去标点、统一小写，统计才准'},{si:1,formula:'按空格 split 成单词列表'},{si:2,formula:'词是键、次数是值：遍历时字典累加'},{si:3,formula:'items() 取键值对、按值排序取 Top'}],
+    26:[{si:0,formula:'一条账 = 日期 + 金额 + 类别 + 备注（一个字典）'},{si:1,formula:'账本 = 字典的列表，每加一笔 append'},{si:2,formula:'遍历求和 = 总支出'},{si:3,formula:'load 读、dump 写：数据活过程序'}],
+    27:[{si:0,formula:'Student 类存 name / age / score，带 __str__ 方便显示'},{si:1,formula:'管理系统 = 学生对象列表 + 各种操作函数'},{si:2,formula:'遍历比对名字找下标，然后打印 / 修改 / 删除'},{si:3,formula:'平均分、最高分、及格率 = 一次遍历的事'}],
+    28:[{si:0,formula:'有序才有二分、才好展示 Top——排序是地基'},{si:1,formula:'sort() 就地排、sorted() 返回新的；key= 定制规则'},{si:2,formula:'二分每次取中间比、砍半找目标；bisect 模块现成'},{si:3,formula:'O(n) 线性涨 vs O(log n) 几乎不涨：数据一大算法差天壤'}],
+    29:[{si:0,formula:'状态机：当前房间 + 玩家输入 → 下一房间'},{si:1,formula:'读方向指令查表跳房间，未知方向给提示'},{si:2,formula:'has_key 布尔管条件：拿到钥匙才能开门'},{si:3,formula:'到达终点触发胜利、血量归零失败——胜负条件写清楚'}],
+    30:[{si:0,formula:'迷你图书馆：能添加 / 借出 / 归还 / 列出，数据存 JSON'},{si:1,formula:'Book 管单本状态、Library 管集合、菜单循环调方法'},{si:2,formula:'__init__ 时 load、每次改动 save'},{si:3,formula:'自查清单：函数 / 类 / 文件 / 异常 / 小项目不看书能写 = 毕业'}]
   };
   CHAPTERS.forEach(function(c){
     if(D[c.id]){
