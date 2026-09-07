@@ -19,7 +19,7 @@ input[type=text],input[type=email],input[type=password],input[type=number],input
   color:#fff;border-radius:18px;padding:13px 22px;
   box-shadow:0 10px 28px rgba(88,204,2,.45),0 2px 6px rgba(0,0,0,.12);
   border:1px solid rgba(255,255,255,.25);
-  animation:duoPop .6s cubic-bezier(.34,1.8,.44,1), okPulse 1.4s ease .5s;
+  animation:duoPop .52s cubic-bezier(.3,1.3,.4,1), okPulse 1.4s ease .5s;
   position:relative;overflow:visible;
 }
 .toast.ok .tk{
@@ -30,9 +30,9 @@ input[type=text],input[type=email],input[type=password],input[type=number],input
 }
 .toast.ok .tt{font-size:16px;font-weight:800;letter-spacing:.2px;text-shadow:0 1px 0 rgba(0,0,0,.1)}
 @keyframes duoPop{
-  0%{transform:translateY(90px) scale(.55);opacity:0}
-  55%{transform:translateY(-8px) scale(1.08);opacity:1}
-  75%{transform:translateY(3px) scale(.98)}
+  0%{transform:translateY(56px) scale(.82);opacity:0}
+  55%{transform:translateY(-5px) scale(1.03);opacity:1}
+  75%{transform:translateY(1px) scale(.995)}
   100%{transform:translateY(0) scale(1)}
 }
 @keyframes okPulse{
@@ -50,8 +50,10 @@ input[type=text],input[type=email],input[type=password],input[type=number],input
 }
 .toast.no{
   background:linear-gradient(135deg,#FF4D4D,#D70015);
-  color:#fff;border-radius:16px;
-  animation:noShake .5s cubic-bezier(.36,.07,.19,.97), noPulse 1.2s ease .5s;
+  color:#fff;border-radius:18px;padding:13px 22px;
+  box-shadow:0 10px 28px rgba(255,77,77,.4),0 2px 6px rgba(0,0,0,.12);
+  border:1px solid rgba(255,255,255,.25);
+  animation:duoPop .55s cubic-bezier(.34,1.6,.44,1), noPulse 1.2s ease .4s;
 }
 .toast.no .t-ic{color:#fff}
 @keyframes noShake{
@@ -115,7 +117,7 @@ input[type=text],input[type=email],input[type=password],input[type=number],input
 @keyframes optShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-2px)}55%{transform:translateX(2px)}80%{transform:translateX(-1px)}}
 /* framework 与 legacy 题选项共用 class：correct=绿弹、wrong=红抖 */
 .opt.correct,#legacy-chapter .opt.correct{animation:optPop .46s cubic-bezier(.22,.9,.3,1);box-shadow:0 2px 12px rgba(52,199,89,.16)}
-.opt.wrong,#legacy-chapter .opt.wrong{animation:optShake .34s cubic-bezier(.36,.07,.19,.97)}
+.opt.wrong,#legacy-chapter .opt.wrong{animation:optPop .46s cubic-bezier(.22,.9,.3,1);box-shadow:0 2px 12px rgba(255,59,48,.16)}
 /* 判题批改条滑入 */
 .why-note.why-ok,.why-note.why-no,#legacy-chapter .why-note.why-ok,#legacy-chapter .why-note.why-no{animation:uiRise .32s cubic-bezier(.22,.9,.3,1)}
 /* 结算战报出现 */
@@ -448,17 +450,18 @@ input[type=text],input[type=email],input[type=password],input[type=number],input
 #startSheet .ss-mask{position:absolute;inset:0;background:rgba(0,0,0,.42);opacity:0;transition:opacity .28s var(--ease)}
 #startSheet.show .ss-mask{opacity:1}
 #startSheet .ss-card{
-  position:absolute;left:0;right:0;bottom:-26px;margin:0 auto;max-width:560px;
+  position:absolute;left:0;right:0;bottom:0;margin:0 auto;max-width:560px;
+  max-height:88vh;overflow-y:auto;
   background:var(--card);border-radius:30px 30px 0 0;
-  box-shadow:var(--sh-float);padding:26px 22px calc(20px + env(safe-area-inset-bottom,0px));
+  box-shadow:var(--sh-float);padding:26px 22px calc(24px + env(safe-area-inset-bottom,0px));
   transform:translateY(120%);
-   transition:transform .38s cubic-bezier(.33,1,.68,1);
+   transition:transform .4s cubic-bezier(.33,1,.68,1);
   
   border-top:1px solid var(--sep);
   will-change:transform;
 }
-#startSheet.show .ss-card{animation:ssIn .62s cubic-bezier(.22,.8,.36,1) both}
-@keyframes ssIn{0%{transform:translateY(120%)}60%{transform:translateY(-20px)}78%{transform:translateY(5px)}90%{transform:translateY(-2px)}100%{transform:translateY(0)}}
+#startSheet.show .ss-card{animation:ssIn .5s cubic-bezier(.3,1.2,.4,1) both}
+@keyframes ssIn{0%{transform:translateY(120%)}62%{transform:translateY(-10px)}82%{transform:translateY(3px)}100%{transform:translateY(0)}}
 #startSheet .ss-mask{position:absolute;inset:0;background:rgba(0,0,0,.42);opacity:0;transition:opacity .32s var(--ease)}
 #startSheet.show .ss-mask{opacity:1}
 #startSheet .ss-grip{width:40px;height:4px;border-radius:2px;background:var(--fill);margin:0 auto 18px}
@@ -551,6 +554,12 @@ input[type=text],input[type=email],input[type=password],input[type=number],input
 .grow .gv{max-width:50%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:1}
 .tile .cap,.tile b{overflow-wrap:break-word}
 #view b,#view .cap,#view .sub{overflow-wrap:break-word}
+
+/* 答题反馈统一（2026-09-07）：答错与答对同款弹入（红系）；正确选项一律不打勾；错题图标 ✕ */
+#view .opt .mark{display:none}
+.why-no .why-ic svg,#legacy-chapter .why-no .why-ic svg{display:none}
+.why-no .why-ic::after,#legacy-chapter .why-no .why-ic::after{content:'✕';font-style:normal;font-weight:800;font-size:16px;line-height:1;color:var(--red)}
+#legacy-chapter .why-no.why-note .why-ic::after{color:var(--red)}
 
 /* 刷题/列表行排版统一：标题单行省略 + 右侧动作胶囊 */
 .ch-row .rt{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -3145,6 +3154,7 @@ var todayStat = load('tstat',{d:'',done:0,correct:0});
 var stat = load('stat',null);
 var wrongPool = load('wrong',null);
 var fixedPool = load('fixed',[]);
+var seenModel = load('seenM', {});   /* 看过参考思路的章：结算闸前置条件（2026-09-07） */
 if(wrongPool===null){ wrongPool=[]; Object.keys(quizStat).forEach(function(k){ if(keyOk(k)&&quizStat[k]===0) wrongPool.push(k); }); store('wrong',wrongPool); }
 wrongPool=wrongPool.filter(keyOk); fixedPool=fixedPool.filter(keyOk);
 function poolMove(key,correct){
@@ -3468,6 +3478,13 @@ function doBack(){
     }, 400);
   }catch(e){}
 }
+/* 浏览器手势返回（移动端右滑 / 桌面回退键）：按 history state 渲染内部页；退到底自然回门户（2026-09-07 需求13） */
+window.addEventListener('popstate', function(ev){
+  try{
+    var _v=(ev.state&&ev.state.view)?ev.state.view:null;
+    if(_v && _v!==window._cur && typeof doRenderView==='function'){ doRenderView(_v,true); }
+  }catch(e){}
+});
 var leaveAfter=null,timerRunning=false;
 /* ---------- 倒计时（30 分钟，可挂后台） ---------- */
 var TIMER=30*60,timerLeft=TIMER,timerIv=null;
@@ -3552,12 +3569,12 @@ var TUTOR_QUOTES=[
 renderers.plan=function(){
   var s=calcStats();
   var h='<div class="kick">ROADMAP</div><div class="h1">章节课堂</div>'
-    +'<div class="sub">三十章就是大一高数的主脉络。每章讲义 + 随堂 10 题，答完即结算点亮。已学 '+s.doneC+'/'+s.totalC+'。</div>';
+    +'<div class="sub">三十章就是大一高数的主脉络。每章讲义 + 随堂 10 题，看完参考思路点亮。已学 '+s.doneC+'/'+s.totalC+'。</div>';
   CHAPTERS.forEach(function(c){
     var done=chIsDone(c);
     var sm=chSummary(c);
     var cap;
-    if(done) cap='已学完'+(sm.allCorrect?' · 全对通关':' · 答完即结算');
+    if(done) cap='已学完'+(sm.allCorrect?' · 全对通关':' · 已点亮');
     else cap=sm.answered>0?('进行中 '+sm.answered+'/'+sm.total+' 题 · 继续 →'):(c.full?'讲义已授 · 待开卷':'待莱布尼茨开讲');
     h+='<button class="ch-row'+(done?' done':'')+'" data-go-ch="'+c.id+'">'
       +'<span class="ch-num">'+(done?IC('check'):c.id)+'</span>'
@@ -3596,6 +3613,11 @@ function settleCardHTML(c){
       +'</div></div>';
   }
   if(sm.allDone){
+    var _hasDia = !!(c.dialogue && c.dialogue.q && c.dialogue.model);
+    var _seen = _hasDia && seenModel && seenModel[c.id];
+    if(_hasDia && !_seen){
+      return '<div class="card" style="text-align:center;padding:18px"><div style="color:var(--muted);font-size:13px;line-height:1.9">随堂题已全部答完。<br>最后一步：完成上方「灵魂拷问」自检，点<b>「看参考思路」</b>认真看完，才能点「我看完了」结算点亮本章。</div></div>';
+    }
     return '<div class="settle-wrap"><button class="settle-btn" data-settle="'+c.id+'">'+IC('check')+' 我看完了！</button>'
       +'<div class="settle-hint">把上面的讲义和答案解析看完，点「我看完了！」结算点亮本章与打卡；战报永久留档。</div></div>';
   }
@@ -3605,8 +3627,8 @@ function chapterHTML(c,mode){
   var sm=chSummary(c), settled=chIsDone(c);
   var isLesson=mode!=='drill';
   var h='<div class="kick">LESSON '+('0'+c.id).slice(-2)+'</div><div class="h1">'+esc(c.title)+'</div>'
-    +'<div class="sub">随堂 '+sm.total+' 题'+(isLesson?' · 30 分钟参考计时 · 答完自动结算点亮打卡':' · 刷题模式：做完即存，可反复重做')+' · 已答 '+sm.answered+'/'+sm.total+'</div>';
-  if(settled) h+='<div class="pill green" style="margin-bottom:10px">'+IC('check')+' 本章已点亮 · 可随时回来重做</div>';
+    +'<div class="sub">随堂 '+sm.total+' 题'+(isLesson?' · 30 分钟参考计时 · 答完随堂做思考题，点「我看完了」点亮':' · 刷题模式：做完即存，可反复重做')+' · 已答 '+sm.answered+'/'+sm.total+'</div>';
+  if(settled) h+='<div class="pill green" style="margin-bottom:10px">'+IC('check')+' 本章已点亮 · 复习走「按章刷题」</div>';
   h+='<div id="legacy-chapter">';
   /* 开讲词（旧版 .motto 渐变深条） */
   h+='<div class="motto">'+esc(c.motto||'')+'<span class="who">—— '+esc(c.mottoWho||'')+'</span></div>';
@@ -3656,8 +3678,12 @@ function chapterHTML(c,mode){
       +(c.dialogue.model?'<button data-soulmodel="'+c.id+'">看参考思路</button>':'')
       +'</div><div class="why-note" id="soulNote"></div></div>';
   }
-  /* 结算战报：常驻最下方（已结算显示历史 / 做完可结算 / 未完引导） */
-  h+='<div id="settleCard">'+settleCardHTML(c)+'</div>';
+  /* 结算战报：常驻最下方（已结算显示历史 / 做完可结算 / 未完引导）；刷题模式不展示结算入口 */
+  if(mode==='drill'){
+    h+='<div id="settleCard"><div class="card" style="text-align:center;padding:16px"><div style="color:var(--muted);font-size:13px">按章刷题：答对自动移出错题，退出即存，不点亮章节。</div></div></div>';
+  } else {
+    h+='<div id="settleCard">'+settleCardHTML(c)+'</div>';
+  }
   h+='</div>';
   return h;
 }
@@ -3751,15 +3777,30 @@ renderers.wrong=function(){
   return h;
 };
 renderers.fixed=function(){
-  var h='<div class="kick">FIXED</div><div class="h1">已订正</div><div class="sub">'+fixedPool.length+' 道曾经错过、现已掌握的题</div>';
+  var h='<div class="kick">FIXED</div><div class="h1">已订正</div><div class="sub">'+fixedPool.length+' 道曾错过现已掌握的题 · 按章分组，可整章再练</div>';
   if(!fixedPool.length){
     h+='<div class="card" style="text-align:center;padding:26px"><span style="font-size:40px">📭</span><div class="cap" style="margin-top:8px">还没有从错题集毕业的题</div></div>';
     return h;
   }
-  fixedPool.slice().reverse().forEach(function(k){
-    var p=String(k).split('_'); var c=chById(+p[0]); if(!c) return;
-    h+='<div class="ch-row" style="cursor:default"><span class="ch-num" style="background:var(--green)">'+IC('check')+'</span>'
-      +'<span class="ch-body"><b>'+esc(poolKeyInfo(k).replace(/^第 .*章 · /,''))+'</b><span class="cap">✓ 已掌握 · 第 '+c.id+' 章</span></span></div>';
+  var groups={};
+  fixedPool.forEach(function(k){
+    var p=String(k).split('_'); var n=+p[0].replace(/^e/,''); var c=chById(n); if(!c) return;
+    var g=groups[c.id]||(groups[c.id]={c:c,items:[]}); g.items.push({k:k,isE:p[0][0]==='e'});
+  });
+  Object.keys(groups).map(Number).sort(function(a,b){return a-b;}).forEach(function(cid){
+    var g=groups[cid];
+    h+='<div class="card" style="margin-top:12px;padding:16px 18px">'
+      +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;flex-wrap:wrap">'
+      +'<span class="pill green">'+IC('check')+' 第 '+cid+' 章</span>'
+      +'<b style="flex:1;min-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(g.c.title)+'</b>'
+      +'<span class="cap">'+g.items.length+' 题</span>'
+      +'<button class="rta" data-fredo="'+cid+'" style="background:var(--accent);color:#fff;border:none;border-radius:980px;padding:6px 14px;font:inherit;font-size:12.5px;cursor:pointer">↻ 再练一遍</button></div>'
+      + g.items.slice().reverse().map(function(it){
+          var k=it.k;
+          return '<div class="ch-row" style="cursor:default"><span class="ch-num" style="background:var(--green)">'+IC('check')+'</span>'
+            +'<span class="ch-body"><b>'+esc(poolKeyInfo(k).replace(/^第 .*章 · /,''))+'</b><span class="cap">'+(it.isE?'小卷题':'随堂题')+' · 已掌握</span></span></div>';
+        }).join('')
+      +'</div>';
   });
   return h;
 };
@@ -4440,10 +4481,13 @@ function sessChap(){
 }
 function sessDone(){
   var c = sessChap(); if(!c) return true;
+  var _m=(_lastNav&&_lastNav.mode);
+  if(_m==='drill') return true;           /* 刷题模式：做完即存，退出保留，不走回滚 */
   if(window._cur === 'chapter'){
-    if(chIsDone(c)) return true;
+    if(chIsDone(c)) return true;          /* 已点亮：回看/已完成 */
     var sm = chSummary(c);
-    return sm.total > 0 && sm.answered >= sm.total;
+    if(sm.total>0 && sm.answered>=sm.total && !chIsDone(c)) return false; /* 答满未结算=未完成，退出需重做 */
+    return sm.answered===0 ? true : false; /* 做一半：拦 */
   }
   if(window._cur === 'exam'){ var st = examStatus(c); return st.total > 0 && st.full; }
   return true;
@@ -4500,7 +4544,10 @@ function updatePgSub(){
   if(window._cur==='chapter'){
     var c=chById(_lastNav.chapter||1); if(!c) return;
     var sm=chSummary(c);
-    el.textContent='随堂 '+sm.total+' 题 · 已答 '+sm.answered+'/'+sm.total+(sm.answered===sm.total?' · 可结算':'');
+    el.textContent='随堂 '+sm.total+' 题 · 已答 '+sm.answered+'/'+sm.total+(sm.answered===sm.total?' · 全部答完':'');
+    if(sm.total>0 && sm.answered>=sm.total && !chIsDone(c)){
+      try{ if(typeof refreshSettleCard==='function') refreshSettleCard(c); }catch(e){}
+    }
   } else if(window._cur==='exam'){
     var c2=chById(_lastNav.exam||1); if(!c2) return;
     var st=examStatus(c2);
@@ -4510,6 +4557,22 @@ function updatePgSub(){
 function noteOK(id,html){ var n=document.getElementById(id); if(n){ n.className='why-note why-ok'; n.innerHTML='<div class="why-body"><span class="why-ic">'+IC('check')+'</span><span>'+html+'</span></div>'; } }
 function noteNO(id,html){ var n=document.getElementById(id); if(n){ n.className='why-note why-no'; n.innerHTML='<div class="why-body"><span class="why-ic">'+IC('info')+'</span><span>'+html+'</span></div>'; } }
 scroller.addEventListener('click',function(e){
+  /* 已订正整章再练：重置该章 fixed 题状态，去按章刷题重做（2026-09-07） */
+  var frd=e.target.closest('[data-fredo]');
+  if(frd){
+    tap();
+    var fc=chById(+frd.getAttribute('data-fredo')); if(!fc) return;
+    var rem=[];
+    fixedPool.slice().forEach(function(k){
+      var p=String(k).split('_'); var n=+p[0].replace(/^e/,'');
+      if(n===fc.id){ rem.push(k); delete quizStat[k]; delete quizPick[k]; }
+    });
+    rem.forEach(function(k){ var i=fixedPool.indexOf(k); if(i>-1) fixedPool.splice(i,1); });
+    store('fixed',fixedPool); store('quizStat',quizStat); store('quizPick',quizPick);
+    toast('第 '+fc.id+' 章已订正题已重置 · 去「按章刷题」再练一遍');
+    if(typeof renderView==='function') renderView('fixed');
+    return;
+  }
   /* 结算按钮 */
   var setBtn=e.target.closest('[data-settle]');
   if(setBtn){ tap(); var c=chById(+setBtn.getAttribute('data-settle')); if(c){ var _ok=settleChapter(c,'lesson'); if(_ok){ try{ refreshSettleCard(c); }catch(e){} } } return; }
@@ -4566,7 +4629,6 @@ scroller.addEventListener('click',function(e){
       o.setAttribute('data-lock','1');
       if(ii===oi) o.classList.add(ok?'correct':'wrong');
       else if(ii===q.answer) o.classList.add('correct','muted');
-      if(ii===q.answer){ var m=o.querySelector('.mark'); if(m) m.style.display='inline-flex'; }
     });
     if(ok) noteOK('whyNote'+qi,'<b>答对了。</b>'+parseMath(q.explain||''));
     else noteNO('whyNote'+qi,'<b>答错了，正确答案：「'+parseMath(q.options[q.answer])+'」</b><br>'+parseMath(q.explain||'')+(q.type==='code'?'<br><button class="retry-btn" data-retry="'+qi+'">↻ 重新作答</button>':''));
@@ -4591,7 +4653,6 @@ scroller.addEventListener('click',function(e){
       o.setAttribute('data-lock','1');
       if(ii===eoi) o.classList.add(eok?'correct':'wrong');
       else if(ii===eq.answer) o.classList.add('correct','muted');
-      if(ii===eq.answer){ var m=o.querySelector('.mark'); if(m) m.style.display='inline-flex'; }
     });
     if(eok) noteOK('ewhyNote'+eqi,'<b>答对了。</b>'+parseMath(eq.explain||''));
     else noteNO('ewhyNote'+eqi,'<b>答错了，正确答案：「'+parseMath(eq.options[eq.answer])+'」</b><br>'+parseMath(eq.explain||'')+(eq.type==='code'?'<br><button class="retry-btn" data-etry="'+eqi+'">↻ 重新作答</button>':''));
@@ -4665,9 +4726,15 @@ scroller.addEventListener('click',function(e){
   if(ext){ tap(); var url=ext.getAttribute('data-ext'); if(url) window.open(url,'_blank','noopener'); return; }
   var shb=e.target.closest('[data-share]');
   if(shb){ tap(); shareAcademy(); return; }
-  /* 页面跳转：先弹「开始做题」（Duolingo 式），点开始才进题计时 */
+  /* 页面跳转：先弹「开始做题」（Duolingo 式），点开始才进题计时；已点亮章节直接回看讲义不弹层 */
   var gc=e.target.closest('[data-go-ch]');
-  if(gc){ tap(); showStart('lesson',+gc.getAttribute('data-go-ch')); return; }
+  if(gc){
+    tap();
+    var _gcId=+gc.getAttribute('data-go-ch');
+    var _gcC=chById(_gcId);
+    if(_gcC && chIsDone(_gcC)){ _lastNav.chapter=_gcId; _lastNav.mode='lesson'; go('chapter',_gcId); return; }
+    showStart('lesson',_gcId); return;
+  }
   var gd=e.target.closest('[data-go-drill]');
   if(gd){ tap(); showStart('drill',+gd.getAttribute('data-go-drill')); return; }
   var ge=e.target.closest('[data-go-exam]');
@@ -4783,8 +4850,8 @@ function showStart(kind,id){
     var sm=chSummary(c), isD=kind==='drill';
     kick='LESSON '+('0'+id).slice(-2);
     title=esc(c.title);
-    sub=chIsDone(c)?'本章已点亮 · 可回来重读重做':(c.full?(isD?'按章刷题 · 答对自动移出错题':'讲义 + 随堂题 · 答完自动结算点亮章节'):'待莱布尼茨开讲');
-    rows=ssRow('book',sm.total+' 道随堂题','答完即结算 · 不要求满分')
+    sub=chIsDone(c)?'本章已点亮 · 回看讲义，重刷走按章刷题':(c.full?(isD?'按章刷题 · 答对自动移出错题':'讲义 + 随堂题 · 看完参考思路点「我看完了」点亮'):'待莱布尼茨开讲');
+    rows=ssRow('book',sm.total+' 道随堂题','随堂题全答 + 思考题看完 → 点「我看完了」结算')
       +ssRow('bolt','30 分钟参考计时','切后台计时挂起，回来继续')
       +(sm.answered>0?ssRow(isD?'pen':'check','已答 '+sm.answered+'/'+sm.total,isD?'可反复重做':'继续上次进度'):'');
   }
@@ -4973,8 +5040,14 @@ scroller.addEventListener('click', function(ev){
     var c2=CHAPTERS[+sm.getAttribute('data-soulmodel')-1];
     var note2=document.getElementById('soulNote');
     if(note2&&c2&&c2.dialogue){
+      if(typeof seenModel!=='undefined'){ seenModel[c2.id]=1; store('seenM',seenModel); }
       note2.className='why-note why-ok';
       note2.innerHTML='<div class="why-body"><span class="why-ic">'+IC('info')+'</span><span><b>参考思路</b><br>'+esc(c2.dialogue.model||'')+'</span></div>';
+      var _sm2=chSummary(c2);
+      if(_sm2.allDone){
+        note2.insertAdjacentHTML('beforeend','<div class="settle-wrap" style="margin-top:14px;text-align:center"><button class="settle-btn" data-settle="'+c2.id+'">'+IC('check')+' 我看完了！</button><div class="settle-hint">看完了，点它结算点亮本章与打卡</div></div>');
+        try{ if(typeof refreshSettleCard==='function') refreshSettleCard(c2); }catch(_e){}
+      }
     }
   }
 });

@@ -19,7 +19,7 @@ input[type=text],input[type=email],input[type=password],input[type=number],input
   color:#fff;border-radius:18px;padding:13px 22px;
   box-shadow:0 10px 28px rgba(88,204,2,.45),0 2px 6px rgba(0,0,0,.12);
   border:1px solid rgba(255,255,255,.25);
-  animation:duoPop .6s cubic-bezier(.34,1.8,.44,1), okPulse 1.4s ease .5s;
+  animation:duoPop .52s cubic-bezier(.3,1.3,.4,1), okPulse 1.4s ease .5s;
   position:relative;overflow:visible;
 }
 .toast.ok .tk{
@@ -30,9 +30,9 @@ input[type=text],input[type=email],input[type=password],input[type=number],input
 }
 .toast.ok .tt{font-size:16px;font-weight:800;letter-spacing:.2px;text-shadow:0 1px 0 rgba(0,0,0,.1)}
 @keyframes duoPop{
-  0%{transform:translateY(90px) scale(.55);opacity:0}
-  55%{transform:translateY(-8px) scale(1.08);opacity:1}
-  75%{transform:translateY(3px) scale(.98)}
+  0%{transform:translateY(56px) scale(.82);opacity:0}
+  55%{transform:translateY(-5px) scale(1.03);opacity:1}
+  75%{transform:translateY(1px) scale(.995)}
   100%{transform:translateY(0) scale(1)}
 }
 @keyframes okPulse{
@@ -50,8 +50,10 @@ input[type=text],input[type=email],input[type=password],input[type=number],input
 }
 .toast.no{
   background:linear-gradient(135deg,#FF4D4D,#D70015);
-  color:#fff;border-radius:16px;
-  animation:noShake .5s cubic-bezier(.36,.07,.19,.97), noPulse 1.2s ease .5s;
+  color:#fff;border-radius:18px;padding:13px 22px;
+  box-shadow:0 10px 28px rgba(255,77,77,.4),0 2px 6px rgba(0,0,0,.12);
+  border:1px solid rgba(255,255,255,.25);
+  animation:duoPop .55s cubic-bezier(.34,1.6,.44,1), noPulse 1.2s ease .4s;
 }
 .toast.no .t-ic{color:#fff}
 @keyframes noShake{
@@ -74,8 +76,10 @@ input[type=text],input[type=email],input[type=password],input[type=number],input
 .cb-head .lb{color:var(--ink2);font-weight:500;letter-spacing:.2px}
 .cb-head .lb b{color:var(--ink)}
 /* CodeMirror 编辑器本体：深色 darcula，圆角内嵌 */
-.codebox .CodeMirror{height:auto;border-radius:0;font-family:ui-monospace,'Cascadia Code',Consolas,'JetBrains Mono',Menlo,monospace;
+.codebox .CodeMirror{height:auto;min-height:132px;border-radius:0;font-family:ui-monospace,'Cascadia Code',Consolas,'JetBrains Mono',Menlo,monospace;
   font-size:14px;line-height:1.7;background:#282A36}
+.codebox .CodeMirror-scroll,.codebox .CodeMirror-sizer{min-height:132px}
+.codebox .py-ta,.codebox textarea[data-py],.codebox textarea[data-epy]{min-height:132px}
 .codebox .CodeMirror-gutters{background:#24252e;border-right:1px solid rgba(255,255,255,.06)}
 .codebox .CodeMirror-linenumber{color:rgba(255,255,255,.28);padding:0 10px 0 6px}
 .codebox .CodeMirror-lines{padding:10px 0 12px}
@@ -171,7 +175,7 @@ input[type=text],input[type=email],input[type=password],input[type=number],input
 @keyframes optShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-2px)}55%{transform:translateX(2px)}80%{transform:translateX(-1px)}}
 /* framework 与 legacy 题选项共用 class：correct=绿弹、wrong=红抖 */
 .opt.correct,#legacy-chapter .opt.correct{animation:optPop .46s cubic-bezier(.22,.9,.3,1);box-shadow:0 2px 12px rgba(52,199,89,.16)}
-.opt.wrong,#legacy-chapter .opt.wrong{animation:optShake .34s cubic-bezier(.36,.07,.19,.97)}
+.opt.wrong,#legacy-chapter .opt.wrong{animation:optPop .46s cubic-bezier(.22,.9,.3,1);box-shadow:0 2px 12px rgba(255,59,48,.16)}
 /* 判题批改条滑入 */
 .why-note.why-ok,.why-note.why-no,#legacy-chapter .why-note.why-ok,#legacy-chapter .why-note.why-no{animation:uiRise .32s cubic-bezier(.22,.9,.3,1)}
 /* 结算战报出现 */
@@ -504,17 +508,18 @@ input[type=text],input[type=email],input[type=password],input[type=number],input
 #startSheet .ss-mask{position:absolute;inset:0;background:rgba(0,0,0,.42);opacity:0;transition:opacity .28s var(--ease)}
 #startSheet.show .ss-mask{opacity:1}
 #startSheet .ss-card{
-  position:absolute;left:0;right:0;bottom:-26px;margin:0 auto;max-width:560px;
+  position:absolute;left:0;right:0;bottom:0;margin:0 auto;max-width:560px;
+  max-height:88vh;overflow-y:auto;
   background:var(--card);border-radius:30px 30px 0 0;
-  box-shadow:var(--sh-float);padding:26px 22px calc(20px + env(safe-area-inset-bottom,0px));
+  box-shadow:var(--sh-float);padding:26px 22px calc(24px + env(safe-area-inset-bottom,0px));
   transform:translateY(120%);
-   transition:transform .38s cubic-bezier(.33,1,.68,1);
+   transition:transform .4s cubic-bezier(.33,1,.68,1);
   
   border-top:1px solid var(--sep);
   will-change:transform;
 }
-#startSheet.show .ss-card{animation:ssIn .62s cubic-bezier(.22,.8,.36,1) both}
-@keyframes ssIn{0%{transform:translateY(120%)}60%{transform:translateY(-20px)}78%{transform:translateY(5px)}90%{transform:translateY(-2px)}100%{transform:translateY(0)}}
+#startSheet.show .ss-card{animation:ssIn .5s cubic-bezier(.3,1.2,.4,1) both}
+@keyframes ssIn{0%{transform:translateY(120%)}62%{transform:translateY(-10px)}82%{transform:translateY(3px)}100%{transform:translateY(0)}}
 #startSheet .ss-mask{position:absolute;inset:0;background:rgba(0,0,0,.42);opacity:0;transition:opacity .32s var(--ease)}
 #startSheet.show .ss-mask{opacity:1}
 #startSheet .ss-grip{width:40px;height:4px;border-radius:2px;background:var(--fill);margin:0 auto 18px}
@@ -607,6 +612,12 @@ input[type=text],input[type=email],input[type=password],input[type=number],input
 .grow .gv{max-width:50%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:1}
 .tile .cap,.tile b{overflow-wrap:break-word}
 #view b,#view .cap,#view .sub{overflow-wrap:break-word}
+
+/* 答题反馈统一（2026-09-07）：答错与答对同款弹入（红系）；正确选项一律不打勾；错题图标 ✕ */
+#view .opt .mark{display:none}
+.why-no .why-ic svg,#legacy-chapter .why-no .why-ic svg{display:none}
+.why-no .why-ic::after,#legacy-chapter .why-no .why-ic::after{content:'✕';font-style:normal;font-weight:800;font-size:16px;line-height:1;color:var(--red)}
+#legacy-chapter .why-no.why-note .why-ic::after{color:var(--red)}
 
 /* 刷题/列表行排版统一：标题单行省略 + 右侧动作胶囊 */
 .ch-row .rt{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -738,6 +749,56 @@ var parseMath=function(s){ try{ return _calcPM(s); }catch(err){ return esc(s); }
    基线：chip2 定稿模板（引擎/云/守卫/settle 全套保留），仅换院参数。
    ============================================================ */
 /* 学院参数（换院时改这里 + store 前缀 + RANKS/BADGES） */
+/* Python 学院内容补丁（2026-09-07）：30 章灵魂拷问 dialogue + 讲义重点黄框 formula */
+(function(){
+  if(typeof CHAPTERS==='undefined'||!CHAPTERS) return;
+  var D={
+1:{dialogue:{q:'print 是把代码原样搬上屏幕，还是把指令执行后的结果搬上去？print 写错大小写时，报错信息在告诉你什么？',keys:['解释器','语法','报错','字符串'],model:'print() 是让解释器执行一条输出指令，括号里装的是字符串数据。Print 写成 print 会报 NameError——它在说「这个名字我根本不认识」。初学的关键不是背语法，是学会读报错：报错永远在指路，不是电脑在发脾气。'}},
+2:{dialogue:{q:'变量像盒子还是像贴在值上的名字？age = 18 后再写 age = 19，18 去了哪？为什么说变量没有类型、值才有？',keys:['赋值','引用','覆盖','动态类型'],model:'变量是贴在值上的名字，不是装值的盒子。age 先贴 18 再贴 19，18 没被改，只是没人再叫它了。Python 里任何名字都可以随时贴到任何类型的值上，所以变量本身没有类型。把变量当盒子，就想不通为什么两个变量指向同一个列表时会互相影响。'}},
+3:{dialogue:{q:'s = \'abc\' 执行 s.upper() 后，s 本身变了吗？字符串方法返回新串而不是改原串，这个不可变设计在防什么坑？',keys:['不可变','返回值','方法','原串不变'],model:'字符串不可变：upper() 不改原字符串，而是造一个新串返回。只写 s.upper() 不接住返回值等于白做——这是最常见的「方法没生效」错觉。不可变让字符串能被安全共享，代价是每次修改都新建。习惯 x = x.method() 的接住模式，配合 split/replace 这类同样返回新串的方法。'}},
+4:{dialogue:{q:'f\'{price:.2f}\' 里的 .2f 在做什么？如果 price 是字符串 \'3.5\'，f-string 会帮你算吗？类型错误到底错在哪一步？',keys:['格式化','类型转换','精度','f-string'],model:'f-string 先求值再格式化。.2f 是保留两位小数的格式说明，只对数字有意义；字符串 3.5 参与数值格式化或运算会 TypeError——不是 Python 不聪明，是它拒绝瞎猜。先转类型（int/float），再谈格式。写代码时想清楚每一步手里拿的是字符串还是数字，能防掉一半报错。'}},
+5:{dialogue:{q:'nums = [1,2,3]；a = nums；a.append(4) 之后 nums 是几？复制和引用差在哪一步？',keys:['引用','原地修改','append','别名'],model:'a = nums 没有复制列表，只是给同一个列表又贴了个名字。append 是原地修改，所以 a 变了 nums 也跟着变——这就是别名。想要独立副本要用 nums[:] 或 list(nums)。判断一个操作改不改变原对象，看它是动作型方法（append/sort 原地改）还是表达式（+、sorted 造新的）。'}},
+6:{dialogue:{q:'[x*2 for x in range(5) if x%2==0] 和 for 循环完全等价吗？什么时候推导式反而害了你？切片 l[::-1] 为什么能反转？',keys:['推导式','可读性','切片','过滤'],model:'推导式是先过滤（if 在右）再映射（表达式在左）的紧凑写法，和 for 等价但更声明式。规则：超过一层条件就别硬塞推导式，可读性优先。l[::-1] 是步长为 -1 的切片，从头往尾每隔 -1 取一个，自然反转。切片永远产出新列表，想清楚「这步是新建还是原地改」。'}},
+7:{dialogue:{q:'elif 和两个并列 if 的区别，只在少算一次吗？为什么先写窄条件后写宽条件？x = 0 时 if x 为什么走 else？',keys:['短路','互斥','真值','分支顺序'],model:'elif 是互斥分支：命中一个就不再往下查；两个 if 会各自独立判断，同一输入可能进两个分支。顺序就是优先级：窄条件在前、宽条件兜底在后。if x 看的是真值：0、空串、空列表、None 都是假，所以 if not x 是判空的地道写法。写分支先画清谁互斥、谁嵌套，比急着写代码重要。'}},
+8:{dialogue:{q:'d.get(\'k\', 默认) 和 d[\'k\'] 差在哪？什么时候必须用前者？字典的键为什么不能是列表？',keys:['键','可哈希','get','默认值'],model:'d[\'k\'] 键不存在直接 KeyError 崩掉；d.get(\'k\', v) 安全返回默认值——处理用户输入和外部数据时用 get 是防崩习惯。键必须可哈希，也就是不可变：列表可变，哈希值会变，字典就没法定位了，所以键只能用字符串、数字、元组。嵌套字典取值前，先想每一层可能缺哪个键。'}},
+9:{dialogue:{q:'while True 配 break，和 while 条件循环比，什么时候前者更诚实？input 返回的一直是字符串，会在哪一步坑你？',keys:['死循环','break','字符串转换','输入'],model:'条件循环把继续条件写在脸上；但有的循环要等循环体中间才知道该不该停，这时 while True + break 更诚实，别硬造条件。input 永远返回字符串：拿它比较、运算前忘了 int() 是最常见 bug。任何 while 写完都问一句：这个条件最终会变成 False 吗？不会，就是死循环。'}},
+10:{dialogue:{q:'break 和 continue 谁更激进？for...else 的 else 什么时候执行？为什么遍历列表时改列表是危险的？',keys:['break','continue','else','遍历修改'],model:'break 直接离开整个循环，continue 只跳过本次。for...else 的 else 在循环正常走完、没被 break 打断时执行——它是「找没找到」的哨兵。遍历时往列表里增删元素，索引会错位、元素会被跳过；正确做法是遍历副本，或先收集再统一改。控制流三问：什么时候停、什么时候跳、什么时候才算正常结束。'}},
+11:{dialogue:{q:'def greet(name): 里的 name 和调用处 greet(\'小明\') 的\'小明\'是什么关系？函数没写 return 返回什么？print 和 return 差在哪？',keys:['形参','实参','return','None'],model:'def 是给一段逻辑起名并参数化：name 是形参（占位符），小明是实参（真值），调用时实参绑定到形参。没写 return 的函数返回 None。print 只是往屏幕写字，return 才是把值交回调用处——两者经常被新手搞混。函数写得好不好，看它能否被念成一句人话：给个名字，返回问候语。'}},
+12:{dialogue:{q:'def f(a, b=[]): 的默认参数为什么是坑？*args 收进来的是什么类型？关键字参数调用好在哪？',keys:['默认参数','可变对象','args','关键字参数'],model:'默认参数在函数定义时求值一次、之后复用：b=[] 会让所有没传 b 的调用共享同一个列表，互相污染。正解是默认写 None、函数内部再新建。*args 把多余位置参数收成元组，**kwargs 收成字典。用 f(b=2, a=1) 这种关键字调用不怕顺序错，意图还自文档化。参数设计三问：哪些必填、哪些可省、哪些个数不定。'}},
+13:{dialogue:{q:'import math 和 from math import sqrt 差在哪？为什么说 import * 是坏味道？自己写的文件怎么被别人 import？',keys:['命名空间','导入','模块','污染'],model:'import math 把整个模块放进 math 命名空间，用 math.sqrt 不污染当前环境；from math import sqrt 只拿一个名字进来，图方便但可能撞名。import * 把模块所有公开名倒进当前空间，两个模块有同名函数就静默覆盖——所以是坏味道。自己写的 py 文件放同目录就能被 import，文件名就是模块名，别和标准库重名。'}},
+14:{dialogue:{q:'函数里给全局变量赋值为什么可能报 UnboundLocalError？global 和 nonlocal 各解决什么问题？闭包记住了什么？',keys:['作用域','LEGB','global','nonlocal','闭包'],model:'Python 找名字按 LEGB：局部、闭包外层、全局、内置。函数体内给 x 赋值，会让 Python 把 x 当局部变量，于是前面读 x 就报 UnboundLocalError。真想改全局变量要声明 global，改外层函数里的变量要 nonlocal。闭包是函数加它出生时的环境：内层函数能记住外层变量，即使外层已经返回。口诀：读名字往外找，写名字先声明。'}},
+15:{dialogue:{q:'class Dog 和 dog = Dog() 之后，dog 和 Dog 是什么关系？__init__ 里的 self 是谁？类体里直接写的属性是每个实例独有的吗？',keys:['类','实例','self','构造'],model:'类是图纸，实例是按图纸造出来的对象。Dog() 会调用 __init__ 来初始化新实例，self 就是那个刚出生的实例自己——方法里操作 self.xxx 就是在操作这个实例的属性。类体里直接定义的属性挂在类上，所有实例共享，改一个全变；__init__ 里用 self 赋值的才是每个实例私有的。设计先问：这是每只狗自己的，还是狗这个物种共有的？'}},
+16:{dialogue:{q:'实例方法、@classmethod、@staticmethod 各自什么时候用？方法里该不该偷偷改全局状态？',keys:['实例方法','类方法','静态方法','self','副作用'],model:'实例方法操作某个具体对象，参数第一个是 self；类方法 @classmethod 操作类本身，第一个参数是 cls，适合做替代构造器（Dog.from_string）；静态方法 @staticmethod 只是恰好放在类里的普通函数，不需要 self 或 cls，适合放单位换算这类工具。设计原则：方法只动它该动的——实例方法改自己，别碰全局，副作用越少越容易测、越容易复用。'}},
+17:{dialogue:{q:'子类想既保留父类行为又加点自己的，怎么写？super() 到底在调谁？菱形继承为什么可怕？',keys:['继承','重写','super','MRO'],model:'重写就是子类定义同名方法覆盖父类。想复用父类逻辑再扩展，用 super().方法()——它按 MRO（方法解析顺序）找下一个该调的实现，不是死板地调父类。菱形继承里两个父类有共同祖先，MRO 决定调用顺序，顺序一错行为就诡异。设计铁律：继承表达 is-a 关系，能用组合就别硬造继承树。'}},
+18:{dialogue:{q:'__str__ 和 __repr__ 谁给用户看、谁给程序员看？运算符背后藏着什么？property 把方法包装成属性，图什么？',keys:['魔法方法','__str__','__repr__','property','协议'],model:'双下划线方法是 Python 的协议钩子：__str__ 给 print 用（给人看），__repr__ 给调试用（还原对象），实现后者通常更省心。__eq__ 让 == 认识你的对象，__len__ 让 len() 认识它——运算符背后全是魔法方法。property 把 getter 包装成普通属性访问：外部代码不用改，内部能加校验。类设计到最后，是在跟 Python 的协议对话。'}},
+19:{dialogue:{q:'with open(...) as f 的 with 到底保证什么？读写中文为什么要指定 encoding？w 和 a 模式差在哪一行？',keys:['with','上下文管理','encoding','模式'],model:'with 是上下文管理器：进入时打开文件，离开时保证关闭——即使中途抛异常也不漏关句柄。不指定 encoding，Windows 默认按 GBK 读 UTF-8 文件就乱码，所以 open 时显式 encoding=utf-8。模式定生死：w 打开即清空重写，a 追加，r+ 读写——模式选错丢数据是最贵的错误。文件操作三件套：with、encoding、模式。'}},
+20:{dialogue:{q:'dumps 和 loads 是往哪两个方向转？JSON 的键为什么只能是字符串？持久化和内存的边界在哪？',keys:['序列化','反序列化','JSON','类型'],model:'dumps 把内存对象转成字符串（序列化），loads 把字符串还原成对象（反序列化）。JSON 是纯文本格式，键只能是字符串：Python 的 {1: \'a\'} 存成 JSON 键会变 \'1\'，读回来类型就丢了。持久化就是把数据变成能跨进程、跨重启、跨设备存取的文本。每次读写都是一次翻译，翻译规则不一致就会悄悄丢类型。'}},
+21:{dialogue:{q:'try 里该包多少代码？except Exception 和裸 except 差在哪？finally 和 else 什么时候跑？处理不了的异常该怎么办？',keys:['异常','捕获','finally','raise'],model:'try 只包可能出错、且你知道怎么应对的代码，别把整段逻辑扔进去。except Exception 能拿异常对象；裸 except 连 KeyboardInterrupt 都吞，出事了连原因都找不到。finally 无论是否异常都执行，用来清理；else 只在没异常时跑。捕获要精确：FileNotFoundError 和 ValueError 的处理方式完全不同。真处理不了就 raise 往上抛，别假装没事。'}},
+22:{dialogue:{q:'assert 和 print 调试差在哪？为什么测试要断言行为而不是打印给人看？一个函数要可测试得满足什么？',keys:['assert','断言','可测试','输入输出'],model:'assert 是代码里的契约：条件不成立立刻抛错，把「我以为」变成「机器验证」。print 调试靠人眼，改一次代码就要重看一次输出；测试把预期写死在断言里，回归时自动告诉你哪坏了。可测试函数的前提是纯：同样输入给同样输出，不依赖全局、不偷偷改外部——这反过来逼你把逻辑写干净。先写测试再写实现，是逼你先想清楚要什么。'}},
+23:{dialogue:{q:'变量叫 a、b、tmp 和叫 user_count、is_valid 差在哪？一个 80 行的函数和拆成三个 20 行的，维护成本差在哪？注释该解释什么？',keys:['命名','可读性','拆分','注释'],model:'名字是给下一个读代码的人看的接口：a 要猜，user_count 不用猜。长函数的问题不是行数，是它同时干了几件事——拆函数就是给每件事起名字。好注释解释 why（为什么这么写），烂注释复述 what（这行做了加一）。代码被读的时间远多于被写的时间，省读的成本就是省总成本，这不是洁癖是经济学。'}},
+24:{dialogue:{q:'用户输入的不是数字，你的程序崩在哪一行？重玩一次需要复位哪些状态？把游戏逻辑和输入输出分开好在哪？',keys:['异常','状态复位','循环','分层'],model:'猜数字最容易崩在 int(input()) 遇到非数字——用 try/except ValueError 让程序对烂输入有礼貌。重玩要复位的是全部会话状态：目标数、猜测次数、历史记录，一个都不能漏。把生成目标、判断大小、记录次数这些纯逻辑抽成函数，和 input/print 分开——逻辑可单独测试，界面想换就换。这是任何小项目迈向工程化的第一步。'}},
+25:{dialogue:{q:'统计词频的核心数据结构是什么？去标点、统一大小写这种清洗放在哪一步最合适？Counter 帮你省了什么？',keys:['字典','Counter','清洗','管道'],model:'词频的本质是词到次数的映射，字典是天然载体；collections.Counter 把计数封装成一句话，还送你 most_common。清洗（去标点、统一大小写）要在分词那一刻做，晚了脏数据就渗进统计。整个流程想成管道：读文本、清洗、分词、计数、排序输出——每一段只做一件事，出问题立刻知道去哪段查。'}},
+26:{dialogue:{q:'每次记账都整体重写文件，和只追加一条，哪个更安全？金额为什么不该用 float 存？读改写三步之间程序崩了会怎样？',keys:['浮点','精度','读改写','原子'],model:'记账本最隐蔽的坑是浮点：0.1+0.2 不等于 0.3，金额用 float 存会悄悄出错，应该存整数分或 Decimal。读改写不是原子操作：读到一半崩了，内存里的修改就全丢——小项目至少做到改完立刻整体写回，重要数据用先写临时文件再改名替换的原子写。动手前先把数据结构定清楚：一条账单记录有哪些字段，比急着写界面重要一百倍。'}},
+27:{dialogue:{q:'用 list 存学生和用 dict（学号到学生）存，查找差多少？删除学生时他名下的成绩怎么办？函数传整个对象和传 id 哪个好？',keys:['数据结构','查找','关联数据','解耦'],model:'按学号查学生，list 要逐个遍历，dict 直接命中——数据量一大差距就是天壤。删除学生要处理关联数据：成绩、选课还留着就是脏数据，这就是外键约束的思想。函数传 id 比传整个对象好：调用方不用造对象，函数自己取，耦合低、好测试。管理系统的本质是数据关系设计，界面只是壳。'}},
+28:{dialogue:{q:'二分查找要求数据先满足什么？排序稳定性什么时候重要？一次查询和千万次查询，排序的账怎么算？',keys:['二分','有序','复杂度','稳定性'],model:'二分查找的前提是有序，每次砍一半。排序稳定性指相等元素保持原相对顺序：先按成绩排再按姓名排，稳定排序能让同分的人内部按姓名有序。算法选择是笔账：只查一次，线性扫就够；查千万次，才值得先花 O(n log n) 排序换每次 O(log n)。别背复杂度公式，要会算我这个场景到底跑几次。'}},
+29:{dialogue:{q:'文本冒险的主循环骨架是什么？每个房间的出口表用什么结构存？死循环和游戏结束怎么区分？',keys:['主循环','状态机','出口表','running'],model:'文本冒险是状态机：房间是状态，命令是转移条件。骨架是 while running: 读命令、解析、更新状态、输出结果。房间出口用字典存方向到房间 id 的映射，天然支持往北走这种查表。running 标志加明确的退出条件（quit、达成结局）写在明处，死循环和正常结束就分得清。把解析命令和执行动作分开，加新命令就是加映射，不用改主循环。'}},
+30:{dialogue:{q:'回头看第一个 print 和现在的项目，会写代码和会编程的差别在哪？一个项目要给别人用，还差哪些非代码的事？',keys:['工程','调试','文档','用户'],model:'会写代码是语法对、能跑；会编程是知道为什么这么设计、出错能定位、别人能读懂能维护。毕业项目的价值不在功能炫，在完整走了一遍工程闭环：需求拆解、数据结构设计、实现、测试、文档、给真用户用。README、友好的错误提示、异常不崩，这些非代码的事才是能用和好用的分水岭。下一步去读开源代码：你踩过的每个坑，前人都有更漂亮的解法。'}}
+  };
+  var F={
+    7:[{si:0,formula:'if 条件为 True 执行缩进块，else 兜底；冒号和缩进是语法，不是装饰'},{si:1,formula:'elif 从上往下查，命中一个就跳过剩下（短路）；先写窄条件、后写宽条件'},{si:2,formula:'== != > < >= <=；and 全真才真、or 一真即真；18 <= age < 65 链式比较'},{si:3,formula:'0、空串、[]、None 都是 False；用 if not x 判空最 Pythonic'}]
+  };
+  CHAPTERS.forEach(function(c){
+    if(D[c.id]){
+      var d=D[c.id].dialogue;
+      if(!c.dialogue) c.dialogue={};
+      if(!c.dialogue.q) c.dialogue.q=d.q;
+      if(!c.dialogue.keys) c.dialogue.keys=d.keys;
+      if(!c.dialogue.model) c.dialogue.model=d.model;
+    }
+    var ff=F[c.id];
+    if(ff && c.sections){ ff.forEach(function(x){ var se=c.sections[x.si]; if(se && !se.formula) se.formula=x.formula; }); }
+  });
+})();
 var AC={id:'python',prefix:'pyc_',app:'python'};
 /* ---------- 工具 ---------- */
 function pick(a){ return a[Math.floor(Math.random()*a.length)]; }
@@ -806,6 +867,7 @@ var todayStat = load('tstat',{d:'',done:0,correct:0});
 var stat = load('stat',null);
 var wrongPool = load('wrong',null);
 var fixedPool = load('fixed',[]);
+var seenModel = load('seenM', {});   /* 看过参考思路的章：结算闸前置条件（2026-09-07） */
 if(wrongPool===null){ wrongPool=[]; Object.keys(quizStat).forEach(function(k){ if(keyOk(k)&&quizStat[k]===0) wrongPool.push(k); }); store('wrong',wrongPool); }
 wrongPool=wrongPool.filter(keyOk); fixedPool=fixedPool.filter(keyOk);
 function poolMove(key,correct){
@@ -1131,6 +1193,13 @@ function doBack(){
     }, 400);
   }catch(e){}
 }
+/* 浏览器手势返回（移动端右滑 / 桌面回退键）：按 history state 渲染内部页；退到底自然回门户（2026-09-07 需求13） */
+window.addEventListener('popstate', function(ev){
+  try{
+    var _v=(ev.state&&ev.state.view)?ev.state.view:null;
+    if(_v && _v!==window._cur && typeof doRenderView==='function'){ doRenderView(_v,true); }
+  }catch(e){}
+});
 var leaveAfter=null,timerRunning=false;
 /* ---------- 倒计时（30 分钟，可挂后台） ---------- */
 var TIMER=30*60,timerLeft=TIMER,timerIv=null;
@@ -1215,12 +1284,12 @@ var TUTOR_QUOTES=[
 renderers.plan=function(){
   var s=calcStats();
   var h='<div class="kick">ROADMAP</div><div class="h1">章节课堂</div>'
-    +'<div class="sub">十四周就是一本 Python 入门。每章讲义 + 随堂题，答完即结算点亮。已学 '+s.doneC+'/'+s.totalC+'。</div>';
+    +'<div class="sub">十四周就是一本 Python 入门。每章讲义 + 随堂题，看完参考思路点亮。已学 '+s.doneC+'/'+s.totalC+'。</div>';
   CHAPTERS.forEach(function(c){
     var done=chIsDone(c);
     var sm=chSummary(c);
     var cap;
-    if(done) cap='已学完'+(sm.allCorrect?' · 全对通关':' · 答完即结算');
+    if(done) cap='已学完'+(sm.allCorrect?' · 全对通关':' · 已点亮');
     else cap=sm.answered>0?('进行中 '+sm.answered+'/'+sm.total+' 题 · 继续 →'):(c.full?'讲义已授 · 待开卷':'待佩奇开讲');
     h+='<button class="ch-row'+(done?' done':'')+'" data-go-ch="'+c.id+'">'
       +'<span class="ch-num">'+(done?IC('check'):c.id)+'</span>'
@@ -1259,6 +1328,11 @@ function settleCardHTML(c){
       +'</div></div>';
   }
   if(sm.allDone){
+    var _hasDia = !!(c.dialogue && c.dialogue.q && c.dialogue.model);
+    var _seen = _hasDia && seenModel && seenModel[c.id];
+    if(_hasDia && !_seen){
+      return '<div class="card" style="text-align:center;padding:18px"><div style="color:var(--muted);font-size:13px;line-height:1.9">随堂题已全部答完。<br>最后一步：完成上方「灵魂拷问」自检，点<b>「看参考思路」</b>认真看完，才能点「我看完了」结算点亮本章。</div></div>';
+    }
     return '<div class="settle-wrap"><button class="settle-btn" data-settle="'+c.id+'">'+IC('check')+' 我看完了！</button>'
       +'<div class="settle-hint">把上面的讲义和答案解析看完，点「我看完了！」结算点亮本章与打卡；战报永久留档。</div></div>';
   }
@@ -1268,8 +1342,8 @@ function chapterHTML(c,mode){
   var sm=chSummary(c), settled=chIsDone(c);
   var isLesson=mode!=='drill';
   var h='<div class="kick">LESSON '+('0'+c.id).slice(-2)+'</div><div class="h1">'+esc(c.title)+'</div>'
-    +'<div class="sub">随堂 '+sm.total+' 题'+(isLesson?' · 30 分钟参考计时 · 答完自动结算点亮打卡':' · 刷题模式：做完即存，可反复重做')+' · 已答 '+sm.answered+'/'+sm.total+'</div>';
-  if(settled) h+='<div class="pill green" style="margin-bottom:10px">'+IC('check')+' 本章已点亮 · 可随时回来重做</div>';
+    +'<div class="sub">随堂 '+sm.total+' 题'+(isLesson?' · 30 分钟参考计时 · 答完随堂做思考题，点「我看完了」点亮':' · 刷题模式：做完即存，可反复重做')+' · 已答 '+sm.answered+'/'+sm.total+'</div>';
+  if(settled) h+='<div class="pill green" style="margin-bottom:10px">'+IC('check')+' 本章已点亮 · 复习走「按章刷题」</div>';
   h+='<div id="legacy-chapter">';
   /* 开讲词（旧版 .motto 渐变深条） */
   h+='<div class="motto">'+esc(c.motto||'')+'<span class="who">—— '+esc(c.mottoWho||'')+'</span></div>';
@@ -1319,8 +1393,12 @@ function chapterHTML(c,mode){
       +(c.dialogue.model?'<button data-soulmodel="'+c.id+'">看参考思路</button>':'')
       +'</div><div class="why-note" id="soulNote"></div></div>';
   }
-  /* 结算战报：常驻最下方（已结算显示历史 / 做完可结算 / 未完引导） */
-  h+='<div id="settleCard">'+settleCardHTML(c)+'</div>';
+  /* 结算战报：常驻最下方（已结算显示历史 / 做完可结算 / 未完引导）；刷题模式不展示结算入口 */
+  if(mode==='drill'){
+    h+='<div id="settleCard"><div class="card" style="text-align:center;padding:16px"><div style="color:var(--muted);font-size:13px">按章刷题：答对自动移出错题，退出即存，不点亮章节。</div></div></div>';
+  } else {
+    h+='<div id="settleCard">'+settleCardHTML(c)+'</div>';
+  }
   h+='</div>';
   return h;
 }
@@ -1430,15 +1508,30 @@ renderers.wrong=function(){
   return h;
 };
 renderers.fixed=function(){
-  var h='<div class="kick">FIXED</div><div class="h1">已订正</div><div class="sub">'+fixedPool.length+' 道曾经错过、现已掌握的题</div>';
+  var h='<div class="kick">FIXED</div><div class="h1">已订正</div><div class="sub">'+fixedPool.length+' 道曾错过现已掌握的题 · 按章分组，可整章再练</div>';
   if(!fixedPool.length){
     h+='<div class="card" style="text-align:center;padding:26px"><span style="font-size:40px">📭</span><div class="cap" style="margin-top:8px">还没有从错题集毕业的题</div></div>';
     return h;
   }
-  fixedPool.slice().reverse().forEach(function(k){
-    var p=String(k).split('_'); var c=chById(+p[0]); if(!c) return;
-    h+='<div class="ch-row" style="cursor:default"><span class="ch-num" style="background:var(--green)">'+IC('check')+'</span>'
-      +'<span class="ch-body"><b>'+esc(poolKeyInfo(k).replace(/^第 .*章 · /,''))+'</b><span class="cap">✓ 已掌握 · 第 '+c.id+' 章</span></span></div>';
+  var groups={};
+  fixedPool.forEach(function(k){
+    var p=String(k).split('_'); var n=+p[0].replace(/^e/,''); var c=chById(n); if(!c) return;
+    var g=groups[c.id]||(groups[c.id]={c:c,items:[]}); g.items.push({k:k,isE:p[0][0]==='e'});
+  });
+  Object.keys(groups).map(Number).sort(function(a,b){return a-b;}).forEach(function(cid){
+    var g=groups[cid];
+    h+='<div class="card" style="margin-top:12px;padding:16px 18px">'
+      +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;flex-wrap:wrap">'
+      +'<span class="pill green">'+IC('check')+' 第 '+cid+' 章</span>'
+      +'<b style="flex:1;min-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(g.c.title)+'</b>'
+      +'<span class="cap">'+g.items.length+' 题</span>'
+      +'<button class="rta" data-fredo="'+cid+'" style="background:var(--accent);color:#fff;border:none;border-radius:980px;padding:6px 14px;font:inherit;font-size:12.5px;cursor:pointer">↻ 再练一遍</button></div>'
+      + g.items.slice().reverse().map(function(it){
+          var k=it.k;
+          return '<div class="ch-row" style="cursor:default"><span class="ch-num" style="background:var(--green)">'+IC('check')+'</span>'
+            +'<span class="ch-body"><b>'+esc(poolKeyInfo(k).replace(/^第 .*章 · /,''))+'</b><span class="cap">'+(it.isE?'小卷题':'随堂题')+' · 已掌握</span></span></div>';
+        }).join('')
+      +'</div>';
   });
   return h;
 };
@@ -1864,10 +1957,13 @@ function sessChap(){
 }
 function sessDone(){
   var c = sessChap(); if(!c) return true;
+  var _m=(_lastNav&&_lastNav.mode);
+  if(_m==='drill') return true;           /* 刷题模式：做完即存，退出保留，不走回滚 */
   if(window._cur === 'chapter'){
-    if(chIsDone(c)) return true;
+    if(chIsDone(c)) return true;          /* 已点亮：回看/已完成 */
     var sm = chSummary(c);
-    return sm.total > 0 && sm.answered >= sm.total;
+    if(sm.total>0 && sm.answered>=sm.total && !chIsDone(c)) return false; /* 答满未结算=未完成，退出需重做 */
+    return sm.answered===0 ? true : false; /* 做一半：拦 */
   }
   if(window._cur === 'exam'){ var st = examStatus(c); return st.total > 0 && st.full; }
   return true;
@@ -1925,7 +2021,10 @@ function updatePgSub(){
   if(window._cur==='chapter'){
     var c=chById(_lastNav.chapter||1); if(!c) return;
     var sm=chSummary(c);
-    el.textContent='随堂 '+sm.total+' 题 · 已答 '+sm.answered+'/'+sm.total+(sm.answered===sm.total?' · 可结算':'');
+    el.textContent='随堂 '+sm.total+' 题 · 已答 '+sm.answered+'/'+sm.total+(sm.answered===sm.total?' · 全部答完':'');
+    if(sm.total>0 && sm.answered>=sm.total && !chIsDone(c)){
+      try{ if(typeof refreshSettleCard==='function') refreshSettleCard(c); }catch(e){}
+    }
   } else if(window._cur==='exam'){
     var c2=chById(_lastNav.exam||1); if(!c2) return;
     var st=examStatus(c2);
@@ -1935,6 +2034,22 @@ function updatePgSub(){
 function noteOK(id,html){ var n=document.getElementById(id); if(n){ n.className='why-note why-ok'; n.innerHTML='<div class="why-body"><span class="why-ic">'+IC('check')+'</span><span>'+html+'</span></div>'; } }
 function noteNO(id,html){ var n=document.getElementById(id); if(n){ n.className='why-note why-no'; n.innerHTML='<div class="why-body"><span class="why-ic">'+IC('info')+'</span><span>'+html+'</span></div>'; } }
 scroller.addEventListener('click',function(e){
+  /* 已订正整章再练：重置该章 fixed 题状态，去按章刷题重做（2026-09-07） */
+  var frd=e.target.closest('[data-fredo]');
+  if(frd){
+    tap();
+    var fc=chById(+frd.getAttribute('data-fredo')); if(!fc) return;
+    var rem=[];
+    fixedPool.slice().forEach(function(k){
+      var p=String(k).split('_'); var n=+p[0].replace(/^e/,'');
+      if(n===fc.id){ rem.push(k); delete quizStat[k]; delete quizPick[k]; }
+    });
+    rem.forEach(function(k){ var i=fixedPool.indexOf(k); if(i>-1) fixedPool.splice(i,1); });
+    store('fixed',fixedPool); store('quizStat',quizStat); store('quizPick',quizPick);
+    toast('第 '+fc.id+' 章已订正题已重置 · 去「按章刷题」再练一遍');
+    if(typeof renderView==='function') renderView('fixed');
+    return;
+  }
   /* 结算按钮 */
   var setBtn=e.target.closest('[data-settle]');
   if(setBtn){ tap(); var c=chById(+setBtn.getAttribute('data-settle')); if(c){ var _ok=settleChapter(c,'lesson'); if(_ok){ try{ refreshSettleCard(c); }catch(e){} } } return; }
@@ -1991,11 +2106,10 @@ scroller.addEventListener('click',function(e){
       o.setAttribute('data-lock','1');
       if(ii===oi) o.classList.add(ok?'correct':'wrong');
       else if(ii===q.answer) o.classList.add('correct','muted');
-      if(ii===q.answer){ var m=o.querySelector('.mark'); if(m) m.style.display='inline-flex'; }
     });
     if(ok) noteOK('whyNote'+qi,'<b>答对了。</b>'+esc(q.explain||''));
     else noteNO('whyNote'+qi,'<b>答错了，正确答案：「'+parseMath(q.options[q.answer])+'」</b><br>'+esc(q.explain||'')+(q.type==='code'?'<br><button class="retry-btn" data-retry="'+qi+'">↻ 重新作答</button>':''));
-    toast(ok?'✓ 答对':'看解析，再试一次', ok?'ok':'no');
+    toast(ok?'✓ 答对':'看解析', ok?'ok':'no');
     updatePgSub();
     var sm=chSummary(c);
     
@@ -2016,11 +2130,10 @@ scroller.addEventListener('click',function(e){
       o.setAttribute('data-lock','1');
       if(ii===eoi) o.classList.add(eok?'correct':'wrong');
       else if(ii===eq.answer) o.classList.add('correct','muted');
-      if(ii===eq.answer){ var m=o.querySelector('.mark'); if(m) m.style.display='inline-flex'; }
     });
     if(eok) noteOK('ewhyNote'+eqi,'<b>答对了。</b>'+esc(eq.explain||''));
     else noteNO('ewhyNote'+eqi,'<b>答错了，正确答案：「'+parseMath(eq.options[eq.answer])+'」</b><br>'+esc(eq.explain||'')+(eq.type==='code'?'<br><button class="retry-btn" data-etry="'+eqi+'">↻ 重新作答</button>':''));
-    toast(eok?'✓ 答对':'看解析，再试一次', eok?'ok':'no');
+    toast(eok?'✓ 答对':'看解析', eok?'ok':'no');
     updatePgSub();
     var est=examStatus(cv);
     if(est.full) setTimeout(function(){ settleVol(cv); },900);
@@ -2090,9 +2203,15 @@ scroller.addEventListener('click',function(e){
   if(ext){ tap(); var url=ext.getAttribute('data-ext'); if(url) window.open(url,'_blank','noopener'); return; }
   var shb=e.target.closest('[data-share]');
   if(shb){ tap(); shareAcademy(); return; }
-  /* 页面跳转：先弹「开始做题」（Duolingo 式），点开始才进题计时 */
+  /* 页面跳转：先弹「开始做题」（Duolingo 式），点开始才进题计时；已点亮章节直接回看讲义不弹层 */
   var gc=e.target.closest('[data-go-ch]');
-  if(gc){ tap(); showStart('lesson',+gc.getAttribute('data-go-ch')); return; }
+  if(gc){
+    tap();
+    var _gcId=+gc.getAttribute('data-go-ch');
+    var _gcC=chById(_gcId);
+    if(_gcC && chIsDone(_gcC)){ _lastNav.chapter=_gcId; _lastNav.mode='lesson'; go('chapter',_gcId); return; }
+    showStart('lesson',_gcId); return;
+  }
   var gd=e.target.closest('[data-go-drill]');
   if(gd){ tap(); showStart('drill',+gd.getAttribute('data-go-drill')); return; }
   var ge=e.target.closest('[data-go-exam]');
@@ -2208,8 +2327,8 @@ function showStart(kind,id){
     var sm=chSummary(c), isD=kind==='drill';
     kick='LESSON '+('0'+id).slice(-2);
     title=esc(c.title);
-    sub=chIsDone(c)?'本章已点亮 · 可回来重读重做':(c.full?(isD?'按章刷题 · 答对自动移出错题':'讲义 + 随堂题 · 答完自动结算点亮章节'):'待莱布尼茨开讲');
-    rows=ssRow('book',sm.total+' 道随堂题','答完即结算 · 不要求满分')
+    sub=chIsDone(c)?'本章已点亮 · 回看讲义，重刷走按章刷题':(c.full?(isD?'按章刷题 · 答对自动移出错题':'讲义 + 随堂题 · 看完参考思路点「我看完了」点亮'):'待莱布尼茨开讲');
+    rows=ssRow('book',sm.total+' 道随堂题','随堂题全答 + 思考题看完 → 点「我看完了」结算')
       +ssRow('bolt','30 分钟参考计时','切后台计时挂起，回来继续')
       +(sm.answered>0?ssRow(isD?'pen':'check','已答 '+sm.answered+'/'+sm.total,isD?'可反复重做':'继续上次进度'):'');
   }
@@ -2398,8 +2517,14 @@ scroller.addEventListener('click', function(ev){
     var c2=CHAPTERS[+sm.getAttribute('data-soulmodel')-1];
     var note2=document.getElementById('soulNote');
     if(note2&&c2&&c2.dialogue){
+      if(typeof seenModel!=='undefined'){ seenModel[c2.id]=1; store('seenM',seenModel); }
       note2.className='why-note why-ok';
       note2.innerHTML='<div class="why-body"><span class="why-ic">'+IC('info')+'</span><span><b>参考思路</b><br>'+esc(c2.dialogue.model||'')+'</span></div>';
+      var _sm2=chSummary(c2);
+      if(_sm2.allDone){
+        note2.insertAdjacentHTML('beforeend','<div class="settle-wrap" style="margin-top:14px;text-align:center"><button class="settle-btn" data-settle="'+c2.id+'">'+IC('check')+' 我看完了！</button><div class="settle-hint">看完了，点它结算点亮本章与打卡</div></div>');
+        try{ if(typeof refreshSettleCard==='function') refreshSettleCard(c2); }catch(_e){}
+      }
     }
   }
 });
@@ -2513,6 +2638,17 @@ function _bootPy(cb){
       try{
         _pyodide.setStdout({batched:function(t){ _pyBuf += t+'\n'; }});
         _pyodide.setStderr({batched:function(t){ _pyBuf += t+'\n'; }});
+        /* input() 桥：每次调用弹一次输入框（鼠哥 2026-09-07 需求5） */
+        if(typeof _pyodide.setStdin==='function'){
+          try{
+            _pyodide.setStdin({stdin:function(){
+              var _v=null;
+              try{ _v=window.prompt('代码里的 input() 需要你输入一行：'); }catch(_e){ _v=null; }
+              if(_v===null){ throw new Error('（输入已取消）'); }
+              return _v+'\n';
+            }});
+          }catch(_s){}
+        }
       }catch(e){}
       cb();
     }).catch(function(e){ _pyLoading=false; toast('Python 运行时初始化失败'); });

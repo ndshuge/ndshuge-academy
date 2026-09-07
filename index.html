@@ -675,10 +675,27 @@ function acToday(id){
     return !!(g[t] && g[t][id] && (g[t][id].l || g[t][id].e));
   }catch(e){ return false; }
 }
+function allStreakDays(){
+  try{
+    var g = JSON.parse(localStorage.getItem('daily_goal') || '{}');
+    var d = new Date();
+    var n = 0;
+    function kk(x){ var d2 = new Date(x); if(d2.getHours()<4) d2.setDate(d2.getDate()-1); return d2.getFullYear() + '-' + (d2.getMonth() + 1) + '-' + d2.getDate(); }
+    while(true){
+      var day = g[kk(d)];
+      if(!day) break;
+      var all = ACADEMIES.every(function(a){ return !!(day[a.id] && (day[a.id].l || day[a.id].e)); });
+      if(!all) break;
+      n++; d.setDate(d.getDate() - 1);
+    }
+    return n;
+  }catch(e){ return 0; }
+}
 function paintHub(){
 document.getElementById('acGrid').innerHTML = ACADEMIES.map(function(a){
   var ch = cnt(PRE[a.id], 'ch'), ex = cnt(PRE[a.id], 'examDone'), tt = TOT[a.id];
-  var stTxt = ch > 0 ? ('已学 ' + Math.min(ch, tt) + '/' + tt + ' 章') : (ex > 0 ? ('小卷 ' + ex + ' 份') : '开卷中');
+  var doneC = Math.min(ch, tt);
+  var fullAc = tt > 0 && ch >= tt;
   var sd = acStreak(a.id), gd = acToday(a.id);
   var cardStyle = gd
     ? 'style="position:relative;border-color:var(--green);box-shadow:0 0 0 1.5px var(--green-soft),0 3px 14px rgba(52,199,89,.16);background:linear-gradient(180deg,rgba(52,199,89,.07),var(--card) 48%)"'
@@ -693,7 +710,12 @@ document.getElementById('acGrid').innerHTML = ACADEMIES.map(function(a){
     + '<span class="cap" style="display:block;font-size:12.5px;margin-top:2px">' + a.desc + '</span></span></div>'
     + gdDot
     + '<span class="cap" style="line-height:1.65">' + a.sub + '</span>'
-    + '<span class="ac-stat">' + pill + '<span class="pill blue" style="font-size:12px">' + stTxt + '</span><span class="pill" style="font-size:12px;margin-left:auto">进入学习 →</span></span></a>';
+    + '<span class="ac-stat">' + pill
+    + (ch > 0
+       ? '<b style="font-size:16px;letter-spacing:-.2px;color:#111">' + doneC + '/' + tt + '</b><span class="cap" style="font-size:11px;margin-left:4px">章已学</span>'
+       : (ex > 0 ? '<b style="font-size:16px;color:#111">' + ex + '</b><span class="cap" style="font-size:11px;margin-left:4px">份小卷</span>' : '<span class="cap">开卷中</span>'))
+    + (fullAc ? '<span class="pill gold" style="font-size:11.5px;background:linear-gradient(135deg,#FFD900,#FFB300);color:#5c4500">✓ 已修完</span>' : '')
+    + '<span class="pill" style="font-size:12px;margin-left:auto;background:rgba(10,132,255,.12);color:#0A84FF">进入学习 →</span></span></a>';
 }).join('');
 
 try{
@@ -706,8 +728,9 @@ try{
   var hero = document.getElementById('hubHero');
   var line, hp = '';
   if(allToday){
-    line = '🎉 今日全勤：四座学院全部点亮，收工愉快！';
-    hp += '<span class="pill gold">🏅 今日全勤</span>';
+    var _allN = allStreakDays() || 1;
+    line = '🎉 今日全勤：四座学院全部点亮，收工愉快！全勤连击 ' + _allN + ' 天 🔥';
+    hp += '<span class="pill gold">🏅 今日全勤 · 连击 ' + _allN + ' 天</span>';
     if(hero){
       hero.style.border = '1.5px solid var(--gold)';
       hero.style.boxShadow = '0 0 0 2.5px var(--gold-soft), 0 6px 26px rgba(255,149,0,.25)';
