@@ -460,16 +460,17 @@ input[type=text],input[type=email],input[type=password],input[type=number],input
   border-top:1px solid var(--sep);
   will-change:transform;
 }
-#startSheet.show .ss-card{animation:ssIn .48s cubic-bezier(.25,.1,.25,1) both}
-@keyframes ssIn{from{transform:translateY(94%)}to{transform:translateY(0)}}
+#startSheet.show .ss-card{animation:ssIn .62s var(--ease-spring) both}
+/* 两段式回弹：spring 曲线自带平滑过冲（鼠哥 2026-09-08：要回弹但丝滑） */
+@keyframes ssIn{from{transform:translateY(106%)}to{transform:translateY(0)}}
 /* 卡片内容分层淡入（结算庆祝同款 stagger 语言，鼠哥 2026-09-08：不要回弹） */
 #startSheet.show .ss-kicker,#startSheet.show .ss-title,#startSheet.show .ss-sub,#startSheet.show .ss-rows,#startSheet.show .ss-start,#startSheet.show .ss-cancel{animation:ssFade .55s var(--ease) backwards}
-#startSheet.show .ss-kicker{animation-delay:.05s}
-#startSheet.show .ss-title{animation-delay:.1s}
-#startSheet.show .ss-sub{animation-delay:.17s}
-#startSheet.show .ss-rows{animation-delay:.24s}
-#startSheet.show .ss-start{animation-delay:.32s}
-#startSheet.show .ss-cancel{animation-delay:.38s}
+#startSheet.show .ss-kicker{animation-delay:.16s}
+#startSheet.show .ss-title{animation-delay:.22s}
+#startSheet.show .ss-sub{animation-delay:.29s}
+#startSheet.show .ss-rows{animation-delay:.36s}
+#startSheet.show .ss-start{animation-delay:.46s}
+#startSheet.show .ss-cancel{animation-delay:.52s}
 @keyframes ssFade{from{transform:translateY(10px);opacity:0}to{transform:none;opacity:1}}
 #startSheet .ss-mask{position:absolute;inset:0;background:rgba(0,0,0,.42);opacity:0;transition:opacity .32s var(--ease)}
 #startSheet.show .ss-mask{opacity:1}
@@ -5054,8 +5055,15 @@ scroller.addEventListener('click', function(ev){
       note2.innerHTML='<div class="why-body"><span class="why-ic">'+IC('info')+'</span><span><b>参考思路</b><br>'+esc(c2.dialogue.model||'')+'</span></div>';
       var _sm2=chSummary(c2);
       if(_sm2.allDone){
-        note2.insertAdjacentHTML('beforeend','<div class="settle-wrap" style="margin-top:14px;text-align:center"><button class="settle-btn" data-settle="'+c2.id+'">'+IC('check')+' 我看完了！</button><div class="settle-hint">看完了，点它结算点亮本章与打卡</div></div>');
+        /* 结算按钮唯一位置 = 讲义底部 settleCard；看完思路即刷新出现并滚动引导（2026-09-08 去重） */
         try{ if(typeof refreshSettleCard==='function') refreshSettleCard(c2); }catch(_e){}
+        setTimeout(function(){
+          try{
+            var _sb=document.querySelector('#settleCard .settle-btn');
+            if(_sb) _sb.scrollIntoView({behavior:'smooth',block:'center'});
+          }catch(_e2){}
+        }, 180);
+        toast('已看完参考思路 · 点下方「我看完了」结算本章');
       }
     }
   }
