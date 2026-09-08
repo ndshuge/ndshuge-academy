@@ -460,8 +460,17 @@ input[type=text],input[type=email],input[type=password],input[type=number],input
   border-top:1px solid var(--sep);
   will-change:transform;
 }
-#startSheet.show .ss-card{animation:ssIn .5s cubic-bezier(.3,1.2,.4,1) both}
-@keyframes ssIn{0%{transform:translateY(120%)}62%{transform:translateY(-10px)}82%{transform:translateY(3px)}100%{transform:translateY(0)}}
+#startSheet.show .ss-card{animation:ssIn .48s cubic-bezier(.25,.1,.25,1) both}
+@keyframes ssIn{from{transform:translateY(94%)}to{transform:translateY(0)}}
+/* 卡片内容分层淡入（结算庆祝同款 stagger 语言，鼠哥 2026-09-08：不要回弹） */
+#startSheet.show .ss-kicker,#startSheet.show .ss-title,#startSheet.show .ss-sub,#startSheet.show .ss-rows,#startSheet.show .ss-start,#startSheet.show .ss-cancel{animation:ssFade .55s var(--ease) backwards}
+#startSheet.show .ss-kicker{animation-delay:.05s}
+#startSheet.show .ss-title{animation-delay:.1s}
+#startSheet.show .ss-sub{animation-delay:.17s}
+#startSheet.show .ss-rows{animation-delay:.24s}
+#startSheet.show .ss-start{animation-delay:.32s}
+#startSheet.show .ss-cancel{animation-delay:.38s}
+@keyframes ssFade{from{transform:translateY(10px);opacity:0}to{transform:none;opacity:1}}
 #startSheet .ss-mask{position:absolute;inset:0;background:rgba(0,0,0,.42);opacity:0;transition:opacity .32s var(--ease)}
 #startSheet.show .ss-mask{opacity:1}
 #startSheet .ss-grip{width:40px;height:4px;border-radius:2px;background:var(--fill);margin:0 auto 18px}

@@ -217,6 +217,13 @@ img{max-width:100%;display:block}
 }
 .hero-card .btn-go .ic{width:15px;height:15px}
 @media (hover:none){ .hero-card .btn-go:active{filter:brightness(.9)} }
+@media (hover:hover){
+  .hero-card .btn-go{transition:transform .22s var(--ease),box-shadow .22s var(--ease),filter .18s}
+  .hero-card .btn-go:hover{transform:translateY(-2px);box-shadow:0 6px 18px var(--accent-soft),0 2px 6px rgba(0,0,0,.08)}
+  .hero-card .btn-go:active{transform:translateY(0);filter:brightness(.94)}
+  .hub-bar .btn:hover,.hub-bar .round-btn:hover{transform:translateY(-2px);filter:brightness(.95)}
+  .hub-bar .btn,.hub-bar .round-btn{transition:transform .22s var(--ease),filter .18s}
+}
 
 /* 横滑组（App Store 式内容卷） */
 .snap-row{
@@ -704,7 +711,7 @@ document.getElementById('acGrid').innerHTML = ACADEMIES.map(function(a){
     ? '<span class="pill green" style="font-size:11.5px">🔥 今日已打卡 · 连签 ' + sd + ' 天</span>'
     : '<span class="pill" style="font-size:11.5px;background:rgba(120,120,128,.1);color:var(--muted)">今日待打卡</span>';
   var gdDot = gd ? '<span style="position:absolute;top:12px;right:12px;width:10px;height:10px;border-radius:50%;background:var(--green);box-shadow:0 0 0 3px var(--green-soft)"></span>' : '';
-  return '<a class="card ac-card lift" href="' + a.file + '" ' + cardStyle + '><div class="ac-head">'
+  return '<a class="card ac-card lift" href="' + a.file + '" data-ico="' + a.icon + '" data-name="' + a.name + '" ' + cardStyle + '><div class="ac-head">'
     + '<span style="width:54px;height:54px;border-radius:16px;background:' + a.bg + ';display:flex;align-items:center;justify-content:center;color:#fff;font-size:26px;flex:none;box-shadow:0 4px 12px rgba(0,0,0,.14)">' + a.icon + '</span>'
     + '<span style="flex:1;min-width:0"><span class="ac-name">' + a.name + '</span>'
     + '<span class="cap" style="display:block;font-size:12.5px;margin-top:2px">' + a.desc + '</span></span></div>'
@@ -1147,6 +1154,42 @@ function openAuth(){ window._authTab=window._authTab||'log';
   if(!hubSess() && !localStorage.getItem('acad_guest')){ setTimeout(function(){ openAuth(); }, 700); }
   else if(hubSess()){ hubSync(true); }
   document.addEventListener('visibilitychange', function(){ if(document.visibilityState==='visible' && hubSess()){ hubSync(true); } });
+
+/* 门户 → 学院：预取提速 + 结算同款加载动画（2026-09-08，动画语言复用 celebrate） */
+(function(){
+  var _pf = {};
+  function prefetch(u){ if(!_pf[u]){ _pf[u] = 1; try{ fetch(u, { cache: 'force-cache' }).catch(function(){}); }catch(e){} } }
+  function showLoader(name, ico){
+    if(document.getElementById('hubLoading')) return;
+    var w = document.createElement('div');
+    w.id = 'hubLoading';
+    w.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px;text-align:center;padding:24px;background:rgba(0,0,0,.52);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);animation:hubFade .28s ease';
+    w.innerHTML = '<style>@keyframes hubSpin{to{transform:rotate(360deg)}}@keyframes hubFade{from{opacity:0}to{opacity:1}}@keyframes hubPop{from{transform:scale(.72);opacity:0}to{transform:scale(1);opacity:1}}@keyframes hubUp{from{transform:translateY(12px);opacity:0}to{transform:none;opacity:1}}</style>'
+      + '<div style="width:120px;height:120px;border-radius:50%;position:relative;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 8px rgba(255,255,255,.18),0 14px 40px rgba(0,0,0,.3)">'
+      + '<i style="position:absolute;inset:0;border-radius:50%;background:conic-gradient(#0A84FF 0 72%,#5E5CE6 72% 100%);animation:hubSpin .9s linear infinite"></i>'
+      + '<b style="position:relative;z-index:2;width:94px;height:94px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;font-size:44px;animation:hubPop .55s cubic-bezier(.34,1.56,.64,1)">' + ico + '</b></div>'
+      + '<h3 style="color:#fff;font-size:22px;font-weight:800;letter-spacing:-.3px;margin-top:18px;animation:hubUp .5s .14s ease backwards">正在进入 ' + name + '</h3>'
+      + '<p style="color:rgba(255,255,255,.85);font-size:13.5px;animation:hubUp .5s .28s ease backwards">课程已预取，马上就好…</p>';
+    document.body.appendChild(w);
+  }
+  function bindCards(){
+    var cards = document.querySelectorAll('.ac-card');
+    cards.forEach(function(c){
+      if(c.getAttribute('data-bound')) return;
+      c.setAttribute('data-bound', '1');
+      c.addEventListener('pointerover', function(){ var u = c.getAttribute('href'); if(u) prefetch(u); });
+      c.addEventListener('click', function(e){
+        e.preventDefault();
+        var u = c.getAttribute('href');
+        prefetch(u);
+        showLoader(c.getAttribute('data-name') || '学院', c.getAttribute('data-ico') || '🎓');
+        setTimeout(function(){ try{ location.href = u; }catch(e){} }, 600);
+      });
+    });
+  }
+  if(document.readyState === 'loading'){ document.addEventListener('DOMContentLoaded', bindCards); }
+  else { bindCards(); }
+})();
 })();
 </script>
 </body>
