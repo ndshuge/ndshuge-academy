@@ -627,7 +627,8 @@ input[type=text],input[type=email],input[type=password],input[type=number],input
 #view b,#view .cap,#view .sub{overflow-wrap:break-word}
 
 /* 答题反馈统一（2026-09-07）：答错与答对同款弹入（红系）；正确选项一律不打勾；错题图标 ✕ */
-#view .opt .mark{display:none}
+/* 选项框内永不显示对勾/叉号图标（鼠哥 2026-09-08：对错只用框色表达） */
+.opt .mark{display:none!important}
 .why-no .why-ic svg,#legacy-chapter .why-no .why-ic svg{display:none}
 .why-no .why-ic::after,#legacy-chapter .why-no .why-ic::after{content:'✕';font-style:normal;font-weight:800;font-size:16px;line-height:1;color:var(--red)}
 #legacy-chapter .why-no.why-note .why-ic::after{color:var(--red)}
