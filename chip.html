@@ -11012,34 +11012,30 @@ $('#confirmLeave').addEventListener('click',function(){
 function guardedBack(){ requestNav(function(){ doBack(); }); }
 /* 显式回上一级：从导航栈取上一页渲染并同步历史，不依赖浏览器历史回退 */
 function doBack(){
-  var errMsg='';
   var st=(typeof STACK!=='undefined'&&STACK)?STACK:null;
   var top=null;
   /* 从导航栈取真正的列表页（过滤掉做题页自身） */
   while(st&&st.length){ var t=st.pop(); if(t!=='chapter'&&t!=='exam'){ top=t; break; } }
   var root = (window._cur==='exam')?'vol':((window._lastNav&&window._lastNav.mode==='drill')?'hall':'plan');
   if(!top){ top=root; }
-  var ok=false;
-  try{ history.replaceState({view:top},''); }catch(e){}
-  try{ doRenderView(top,true); ok=(window._cur===top); }catch(err){ errMsg=String(err&&err.message||err); }
-  if(!ok && typeof go==='function'){ try{ go(top); ok=(window._cur===top); }catch(e2){ errMsg=String(e2&&e2.message||e2); } }
-  if(!ok && top!==root){ try{ doRenderView(root,true); ok=(window._cur===root); }catch(e3){ errMsg=String(e3&&e3.message||e3); } }
+  var prev=window._cur;
+  /* 对称返回（2026-09-08 修左滑打转）：pop 一层历史由 popstate 驱动渲染，不再 replaceState 留幽灵条目 */
+  var _did=false;
   try{
-    if(!ok){
-      try{ console.error('[doBack] fail top='+top+' cur='+window._cur+' :: '+errMsg); }catch(ce){}
-      toast('返回失败，正在回到首页…');
-      setTimeout(function(){ try{ window.location.reload(); }catch(e){} }, 500);
-    }
+    if(history.length>1){ history.back(); _did=true; }
   }catch(e){}
-  /* 兜底校验：400ms 后仍在做题页则强制回首页 */
-  try{
-    setTimeout(function(){
+  if(!_did){
+    try{ doRenderView(top,true); }catch(e2){}
+  }
+  /* 兜底：back 未驱动 popstate（个别环境/条目边界）则手动渲染目标页 */
+  setTimeout(function(){
+    try{
       var c=window._cur;
-      if(c==='chapter'||c==='exam'){ try{ console.error('[doBack] stuck, force reload cur='+c); }catch(ce2){} window.location.reload(); }
-    }, 400);
-  }catch(e){}
+      if(c===prev || c==='chapter'||c==='exam'){ if(typeof doRenderView==='function') doRenderView(top,true); }
+    }catch(e){}
+  }, 320);
 }
-/* 浏览器手势返回（移动端右滑 / 桌面回退键）：按 history state 渲染内部页；退到底自然回门户（2026-09-07 需求13） */
+/* 浏览器手势返回（移动端右滑 / 桌面回退键）：按 history state 渲染内部页；栈退尽自然回门户 */
 window.addEventListener('popstate', function(ev){
   try{
     var _v=(ev.state&&ev.state.view)?ev.state.view:null;
