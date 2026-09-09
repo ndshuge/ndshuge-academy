@@ -1198,23 +1198,39 @@ function openAuth(){ window._authTab=window._authTab||'log';
       + '<p style="color:rgba(255,255,255,.85);font-size:13.5px;animation:hubUp .5s .28s ease backwards">课程已预取，马上就好…</p>';
     document.body.appendChild(w);
   }
+  /* 事件委托版（2026-09-10）：卡片 paintHub 重渲染后仍有效，星标点击不再误进学院 */
   function bindCards(){
-    var cards = document.querySelectorAll('.ac-card');
-    cards.forEach(function(c){
-      if(c.getAttribute('data-bound')) return;
-      c.setAttribute('data-bound', '1');
-      c.addEventListener('pointerover', function(){ var u = c.getAttribute('href'); if(u) prefetch(u); });
-      c.addEventListener('click', function(e){
+    document.addEventListener('click', function(e){
+      var wb = e.target.closest('.wish-btn');
+      if(wb){
+        e.preventDefault(); e.stopPropagation();
+        toggleWish(wb.getAttribute('data-wish'));
+        paintHub();
+        return;
+      }
+      var card = e.target.closest('.ac-card');
+      if(!card) return;
+      if(card.classList.contains('ac-off')){
         e.preventDefault();
-        var u = c.getAttribute('href');
-        prefetch(u);
-        showLoader(c.getAttribute('data-name') || '学院', c.getAttribute('data-ico') || '🎓');
-        setTimeout(function(){ try{ location.href = u; }catch(e){} }, 600);
-      });
+        toggleWish(card.getAttribute('data-wish'));
+        paintHub();
+        return;
+      }
+      e.preventDefault();
+      var u = card.getAttribute('href');
+      prefetch(u);
+      showLoader(card.getAttribute('data-name') || '学院', card.getAttribute('data-ico') || '🎓');
+      setTimeout(function(){ try{ location.href = u; }catch(e){} }, 600);
+    });
+    document.addEventListener('pointerover', function(e){
+      var card = e.target.closest('.ac-card');
+      if(card && !card.classList.contains('ac-off')){
+        var u = card.getAttribute('href');
+        if(u) prefetch(u);
+      }
     });
   }
-  if(document.readyState === 'loading'){ document.addEventListener('DOMContentLoaded', bindCards); }
-  else { bindCards(); }
+  bindCards();
 })();
 })();
 </script>
