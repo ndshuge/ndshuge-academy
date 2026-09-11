@@ -532,6 +532,14 @@ body{background:radial-gradient(1200px 600px at 20% -10%,var(--bg-glow,var(--car
 .ac-head{display:flex;align-items:center;gap:13px}
 .ac-name{font-size:17px;font-weight:700}
 .ac-stat{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:2px}
+/* ===== 想学/不想学：星标按钮 + 不想学整卡全灰（2026-09-11） ===== */
+.wish-btn{position:absolute;top:12px;right:12px;width:36px;height:36px;margin:0;padding:0;border:none;background:transparent;border-radius:50%;font-size:18px;line-height:36px;text-align:center;cursor:pointer;transition:transform .18s cubic-bezier(.34,1.56,.64,1),opacity .18s;-webkit-tap-highlight-color:transparent}
+.wish-btn:hover{transform:scale(1.16)}
+.wish-btn:active{transform:scale(.86)}
+.wish-btn.off{opacity:.5;filter:grayscale(1)}
+.ac-card.ac-off{opacity:.45;filter:grayscale(.92);transition:opacity .25s,filter .25s}
+.ac-card.ac-off .ac-name,.ac-card.ac-off .cap{color:var(--muted)}
+.ac-card.ac-off:hover{transform:none}
 .foot-note{text-align:center;color:var(--muted);font-size:12px;line-height:1.9;margin-top:24px}
 /* ===== 账号栏 / 账号面板 Apple 动效（门户） ===== */
 #acctLineCard{transition:transform .26s cubic-bezier(.34,1.56,.64,1),box-shadow .22s,filter .15s}
@@ -733,7 +741,7 @@ function paintHub(){
     : '<span class="pill" style="font-size:11.5px;background:rgba(120,120,128,.1);color:var(--muted)">今日待打卡</span>';
   var gdDot = gd ? '<span style="position:absolute;top:-3px;right:-3px;width:10px;height:10px;border-radius:50%;background:var(--green);box-shadow:0 0 0 2px var(--card),0 0 0 4.5px var(--green-soft)"></span>' : '';
   var fire = '<button class="wish-btn' + (wd ? '' : ' off') + '" data-wish="' + a.id + '" aria-label="' + (wd ? '移到不想学（熄灭）' : '加入想学（亮星）') + '">⭐</button>';   /* 星=分组；火苗=打卡激励，见 pill */
-  var offNote = wd ? '' : '<span class="pill" style="font-size:11.5px;background:rgba(120,120,128,.1);color:var(--muted)">已收起 · 点火焰恢复想学</span>';
+  var offNote = wd ? '' : '<span class="pill" style="font-size:11.5px;background:rgba(120,120,128,.1);color:var(--muted)">已收起 · 点卡片或星标恢复想学</span>';
   return '<a class="card ac-card lift' + (wd ? '' : ' ac-off') + '" href="' + (wd ? a.file : 'javascript:void(0)') + '" data-ico="' + a.icon + '" data-name="' + a.name + '" data-wish="' + a.id + '" ' + cardStyle + '><div class="ac-head">'
     + '<span style="position:relative;width:54px;height:54px;border-radius:16px;background:' + a.bg + ';display:flex;align-items:center;justify-content:center;color:#fff;font-size:26px;flex:none;box-shadow:0 4px 12px rgba(0,0,0,.14)">' + a.icon + gdDot + '</span>'
     + '<span style="flex:1;min-width:0;padding-right:40px"><span class="ac-name">' + a.name + '</span>'
@@ -782,6 +790,20 @@ try{
 }catch(e){}
 }
 paintHub();
+/* 首次使用提示：星标分组怎么用（只弹一次，2026-09-11） */
+try{
+  if(!localStorage.getItem('acad_wish_hint')){
+    localStorage.setItem('acad_wish_hint','1');
+    var _wh = document.createElement('div');
+    _wh.style.cssText = 'position:fixed;left:50%;bottom:80px;transform:translateX(-50%);max-width:min(86vw,420px);background:rgba(28,28,30,.92);color:#fff;font-size:13px;line-height:1.6;padding:11px 16px;border-radius:15px;box-shadow:0 6px 24px rgba(0,0,0,.28);z-index:9999;opacity:0;transition:opacity .35s;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);text-align:center';
+    _wh.innerHTML = '⭐ 卡片右上角的星星：点一下把不学的学院收到列表底部（整卡变灰），随时再点恢复想学';
+    document.body.appendChild(_wh);
+    requestAnimationFrame(function(){ _wh.style.opacity = '1'; });
+    var _whKill = function(){ if(_wh.parentNode){ _wh.style.opacity = '0'; setTimeout(function(){ if(_wh.parentNode) _wh.remove(); }, 400); } };
+    _wh.addEventListener('click', _whKill);
+    setTimeout(_whKill, 6800);
+  }
+}catch(e){}
 
 /* 云端同步：拉取四院云端进度（progress.data.{chip,calculus,python,c}），与本地取并集合并后重绘 */
 /* 令牌自动续期（与学院端同语义）：仅服务器明确拒绝才清会话；网络/限流保留 */

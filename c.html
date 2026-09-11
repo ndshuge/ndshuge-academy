@@ -80,9 +80,14 @@ input[type=text],input[type=email],input[type=password],input[type=number],input
   font-size:14px;line-height:1.7;background:#282A36}
 .codebox .CodeMirror-scroll,.codebox .CodeMirror-sizer{min-height:132px}
 .codebox .py-ta,.codebox textarea[data-py],.codebox textarea[data-epy]{min-height:132px}
-/* 代码填空(fillbox)：初始小（2 行），输入后随内容自然长高（鼠哥 2026-09-08：填空空别太大） */
-.codebox.fillbox .CodeMirror,.codebox.fillbox .CodeMirror-scroll,.codebox.fillbox .CodeMirror-sizer{min-height:66px}
-.codebox.fillbox .py-ta,.codebox.fillbox textarea{min-height:66px}
+/* 代码填空(fillbox)：密度收紧（鼠哥 2026-09-11：章节讲义补全代码的框还是大）。现行渲染是 pre.fill-code+内联胶囊输入，无 CodeMirror/textarea，旧 min-height 规则已死，删；以下只在 fillbox 作用域收，编程题不受影响 */
+.codebox.fillbox{margin-top:10px}
+.codebox.fillbox .cb-head{padding:7px 12px}
+.codebox.fillbox .fill-code{padding:8px 12px;font-size:13px;line-height:1.5}
+.codebox.fillbox .fill-in{padding:0 5px;min-width:36px;border-radius:5px;vertical-align:middle}
+.codebox.fillbox .fill-tips{margin:5px 10px 0;gap:5px}
+.codebox.fillbox .code-actions{padding:6px 10px}
+.codebox.fillbox .code-actions .mini-btn{height:30px;padding:0 12px;border-radius:10px}
 .codebox .CodeMirror-gutters{background:#24252e;border-right:1px solid rgba(255,255,255,.06)}
 .codebox .CodeMirror-linenumber{color:rgba(255,255,255,.28);padding:0 10px 0 6px}
 .codebox .CodeMirror-lines{padding:10px 0 12px}
