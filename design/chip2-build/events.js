@@ -2,14 +2,43 @@
    事件委托 · 静态绑定 · 启动（样张结构保真）
    ============================================================ */
 /* toast 单例化：同一时刻只保留一条提示，新提示立即顶掉旧条（鼠哥 2026-09-04） */
-function toast(msg){
+function toast(msg, type){
   var box=document.getElementById('toastBox');
   if(!box) return;
   while(box.firstChild) box.removeChild(box.firstChild);
+  var isOk = type==='ok' || (msg && msg.indexOf('✓')===0 && typeof type==='undefined');
   var el=document.createElement('div');
-  el.className='toast'; el.innerHTML='<span class="ic t-ic">'+I['check']+'</span><span>'+msg+'</span>';
+  if(isOk){
+    el.className='toast ok';
+    el.innerHTML='<span class="tk">✓</span><span class="tt">'+msg.replace(/^✓\s*/,'')+'</span>';
+    /* 星星粒子（多邻国式欢庆） */
+    var P=['★','✦','✓','+1','⭐'];
+    var colors=['#FFD900','#FF9600','#FF4D4D','#58CC02','#2B8AFF'];
+    for(var i=0;i<8;i++){
+      var sp=document.createElement('span');
+      sp.className='spark';
+      sp.textContent=P[Math.floor(Math.random()*P.length)];
+      var a=Math.random()*Math.PI*2, dist=44+Math.random()*52;
+      var dx=Math.cos(a)*dist, dy=Math.sin(a)*dist-18;
+      sp.style.setProperty('--dx',dx.toFixed(0)+'px');
+      sp.style.setProperty('--dy',dy.toFixed(0)+'px');
+      sp.style.background='none';
+      sp.style.color=colors[Math.floor(Math.random()*colors.length)];
+      sp.style.animationDelay=(Math.random()*0.12)+'s';
+      el.appendChild(sp);
+    }
+  } else {
+    el.className = type==='no' ? 'toast no' : 'toast';
+    el.innerHTML='<span class="ic t-ic">'+(type==='no'?'✕':'✓')+'</span><span>'+msg+'</span>';
+  }
   box.appendChild(el);
-  setTimeout(function(){ el.classList.add('leaving'); setTimeout(function(){ if(el.parentNode) el.parentNode.removeChild(el); },300); },2200);
+  setTimeout(function(){ el.classList.add('leaving'); setTimeout(function(){ if(el.parentNode) el.parentNode.removeChild(el); },320); }, isOk?1900:2200);
+}
+function refreshSettleCard(c){
+  try{
+    var el=document.getElementById('settleCard');
+    if(el && typeof settleCardHTML==='function') el.innerHTML=settleCardHTML(c);
+  }catch(e){}
 }
 function updatePgSub(){
   var el=document.getElementById('pgSub'); if(!el) return;
@@ -28,7 +57,7 @@ function noteNO(id,html){ var n=document.getElementById(id); if(n){ n.className=
 scroller.addEventListener('click',function(e){
   /* 结算按钮 */
   var setBtn=e.target.closest('[data-settle]');
-  if(setBtn){ tap(); var c=chById(+setBtn.getAttribute('data-settle')); if(c) settleChapter(c,'lesson'); return; }
+  if(setBtn){ tap(); var c=chById(+setBtn.getAttribute('data-settle')); if(c){ var _ok=settleChapter(c,'lesson'); if(_ok){ try{ refreshSettleCard(c); }catch(e){} } } return; }
   /* 答错后再答一次（随堂） */
   var retry=e.target.closest('[data-retry]');
   if(retry){
@@ -85,11 +114,11 @@ scroller.addEventListener('click',function(e){
       if(ii===q.answer){ var m=o.querySelector('.mark'); if(m) m.style.display='inline-flex'; }
     });
     if(ok) noteOK('whyNote'+qi,'<b>答对了。</b>'+esc(q.explain||''));
-    else noteNO('whyNote'+qi,'<b>答错了，正确答案：「'+parseMath(q.options[q.answer])+'」</b><br>'+esc(q.explain||'')+'<br><button class="retry-btn" data-retry="'+qi+'">↻ 再答一次</button>');
-    toast(ok?'✓ 答对':'看解析，再试一次');
+    else noteNO('whyNote'+qi,'<b>答错了，正确答案：「'+parseMath(q.options[q.answer])+'」</b><br>'+esc(q.explain||'')+(q.type==='code'?'<br><button class="retry-btn" data-retry="'+qi+'">↻ 重新作答</button>':''));
+    toast(ok?'✓ 答对':'看解析，再试一次', ok?'ok':'no');
     updatePgSub();
     var sm=chSummary(c);
-    if(sm.allDone&&!chIsDone(c)) setTimeout(function(){ settleChapter(c,'lesson'); },900);
+    if(sm.allDone&&!chIsDone(c)) setTimeout(function(){ if(settleChapter(c,'lesson')){ try{ refreshSettleCard(c); }catch(e){} } },900);
     return;
   }
   /* 小卷题作答 */
@@ -110,8 +139,8 @@ scroller.addEventListener('click',function(e){
       if(ii===eq.answer){ var m=o.querySelector('.mark'); if(m) m.style.display='inline-flex'; }
     });
     if(eok) noteOK('ewhyNote'+eqi,'<b>答对了。</b>'+esc(eq.explain||''));
-    else noteNO('ewhyNote'+eqi,'<b>答错了，正确答案：「'+parseMath(eq.options[eq.answer])+'」</b><br>'+esc(eq.explain||'')+'<br><button class="retry-btn" data-etry="'+eqi+'">↻ 再答一次</button>');
-    toast(eok?'✓ 答对':'看解析，再试一次');
+    else noteNO('ewhyNote'+eqi,'<b>答错了，正确答案：「'+parseMath(eq.options[eq.answer])+'」</b><br>'+esc(eq.explain||'')+(eq.type==='code'?'<br><button class="retry-btn" data-etry="'+eqi+'">↻ 重新作答</button>':''));
+    toast(eok?'✓ 答对':'看解析，再试一次', eok?'ok':'no');
     updatePgSub();
     var est=examStatus(cv);
     if(est.full) setTimeout(function(){ settleVol(cv); },900);
@@ -131,10 +160,10 @@ scroller.addEventListener('click',function(e){
     if(fok) noteOK('whyNote'+fi,'<b>答对了。</b>'+esc(fq.explain||''));
     else noteNO('whyNote'+fi,'<b>答错了。</b>'+esc(fq.explain||''));
     inp.disabled=true; fgo.disabled=true;
-    toast(fok?'✓ 答对':'看解析');
+    toast(fok?'✓ 答对':'看解析', fok?'ok':'no');
     updatePgSub();
     var smF=chSummary(cF);
-    if(smF.allDone&&!chIsDone(cF)) setTimeout(function(){ settleChapter(cF,'lesson'); },900);
+    if(smF.allDone&&!chIsDone(cF)) setTimeout(function(){ if(settleChapter(cF,'lesson')){ try{ refreshSettleCard(cF); }catch(e){} } },900);
     return;
   }
   var efgo=e.target.closest('[data-efillgo]');
@@ -150,7 +179,7 @@ scroller.addEventListener('click',function(e){
     if(efok) noteOK('ewhyNote'+efi,'<b>答对了。</b>'+esc(efq.explain||''));
     else noteNO('ewhyNote'+efi,'<b>答错了。</b>'+esc(efq.explain||''));
     einp.disabled=true; efgo.disabled=true;
-    toast(efok?'✓ 答对':'看解析');
+    toast(efok?'✓ 答对':'看解析', efok?'ok':'no');
     updatePgSub();
     if(examStatus(cV2).full) setTimeout(function(){ settleVol(cV2); },900);
     return;
@@ -328,16 +357,20 @@ function beginStudy(){
   var ctx=startCtx; if(!ctx) return;
   closeStart();
   studyTimerEnter();
+  sessSnap();   /* 新会话快照：退出做题页时回滚，本次作答不留 */
   if(ctx.kind==='exam'){ _lastNav.exam=ctx.id; go('exam',ctx.id); startTimer(); }
   else { _lastNav.chapter=ctx.id; _lastNav.mode=(ctx.kind==='drill')?'drill':'lesson'; go('chapter',ctx.id); startTimer(); }
 }
 /* ---------- 顶栏 / Dock 绑定 ---------- */
-$('#btnBack').addEventListener('click',function(){ tap(); guardedBack(); });
-$('#btnPortal').addEventListener('click',function(){
+$('#btnBack').addEventListener('click',function(){
   tap();
-  toast('正在前往总学院…');
-  setTimeout(function(){ location.href='https://ndshuge.github.io/ndshuge-academy/'; },260);
+  var _c=window._cur;
+  if(_c==='home'||_c==='hall'||_c==='mine'){
+    toast('正在前往总学院…');
+    setTimeout(function(){ location.href='https://ndshuge.github.io/ndshuge-academy/'; },260);
+  } else { guardedBack(); }
 });
+
 document.querySelectorAll('.dock-btn').forEach(function(b){
   b.addEventListener('click',function(){
     tap();
@@ -347,7 +380,7 @@ document.querySelectorAll('.dock-btn').forEach(function(b){
   });
 });
 document.addEventListener('keydown',function(e){
-  if(e.key==='Escape'){ $('#celebrate').classList.remove('show'); dismissConfirm(); closeStart(); }
+  if(e.key==='Escape'){ $('#celebrate').classList.remove('show'); dismissConfirm(); closeStart(); if(typeof hideLeaveGuard==='function') hideLeaveGuard(); }
 });
 /* startSheet DOM 在 script 之后，绑定需等 DOM 就绪 */
 document.addEventListener('DOMContentLoaded',function(){
@@ -371,6 +404,20 @@ document.addEventListener('DOMContentLoaded',function(){
   history.replaceState({view:'home'},'');
   renderView('home',false);
 })();
+
+/* Dock 显隐覆盖：三大根页显示，二级页隐藏并收缩底部留白 */
+function paintDock(id){
+  var m=META[id]||{}; var curTab=m.tab||'learn';
+  var root=(id==='home'||id==='hall'||id==='mine');
+  try{
+    var dk=document.getElementById('dock');
+    if(dk) dk.style.display = root ? 'flex' : 'none';
+    var sc=document.getElementById('scroller');
+    if(sc) sc.style.paddingBottom = root ? '' : '72px';
+  }catch(e){}
+  var btns=document.querySelectorAll('.dock-btn');
+  for(var i=0;i<btns.length;i++){ btns[i].classList.toggle('on', btns[i].getAttribute('data-tab')===curTab); }
+}
 
 /* 实验室滑块委托 */
 scroller.addEventListener('input',function(ev){
@@ -402,7 +449,7 @@ function showWipeDialog(){
   var box=document.createElement('div');
   box.style.cssText='background:var(--card);border-radius:24px;padding:24px;max-width:430px;width:100%;box-shadow:var(--sh-float)';
   box.innerHTML='<b style="color:var(--red);font-size:17px">⚠ 清除所有记录</b>'
-    +'<div style="color:var(--ink2);font-size:13.5px;line-height:1.8;margin:10px 0">将永久清除全部学习数据：章节进度、徽章、名人堂、错题集、学习足迹。回到初始状态，不可撤销。<br>输入 <b style="color:var(--red)">清除记录</b> 确认：</div>'
+    +'<div style="color:var(--ink2);font-size:13.5px;line-height:1.8;margin:10px 0">将永久删除<b>本地与云端全部记录</b>：章节进度、徽章、错题、足迹、打卡、云端档案。回到初始状态，不可撤销。<br>输入 <b style="color:var(--red)">清除记录</b> 确认：</div>'
     +'<input id="wipeWord" placeholder="输入「清除记录」" style="width:100%;box-sizing:border-box;border:1.5px solid var(--sep);border-radius:12px;padding:12px 14px;font:14.5px inherit;font-family:inherit;background:var(--bg);color:var(--ink);outline:none">'
     +'<div style="display:flex;gap:10px;margin-top:14px">'
     +'<button id="wipeDo" style="flex:1;height:44px;border:none;border-radius:12px;background:var(--red);color:#fff;font:600 14px inherit;font-family:inherit;cursor:pointer">确认清除</button>'
@@ -413,13 +460,29 @@ function showWipeDialog(){
   document.getElementById('wipeDo').onclick=function(){
     var v=(inp&&inp.value||'').trim();
     if(v!=='清除记录'){ toast('输入不一致，未清除'); return; }
-    wipeAll();
-    toast('已清除，回到初始态');
-    setTimeout(function(){ location.reload(); },600);
+    /* 先清云端（若已接入登录），再清本地，最后登出回游客态 */
+    var doLocal=function(){
+      wipeAll();
+      try{ if(typeof sbLogout==='function') sbLogout(); }catch(_e){}
+      toast('本地与云端记录已清除，回到初始态');
+      setTimeout(function(){ location.reload(); },700);
+    };
+    try{
+      if(typeof sbClearCloud==='function'){ toast('正在清除云端…'); sbClearCloud(doLocal); return; }
+    }catch(_e){}
+    doLocal();
   };
   document.getElementById('wipeNo').onclick=function(){ closeWipeDialog(); };
 }
 function closeWipeDialog(){ var w=document.getElementById('wipeDlg'); if(w) w.remove(); }
+/* 账号管理入口（顶部账号卡）：云接入后由云模块注册 showAcctMgmt 接管 */
+scroller.addEventListener('click', function(ev){
+  var acc=ev.target.closest('[data-acct]');
+  if(!acc) return;
+  tap();
+  try{ if(typeof showAcctMgmt==='function'){ showAcctMgmt(); return; } }catch(e){}
+  toast('云端账号接入中 · 当前为本地模式，学习记录只存本机');
+});
 scroller.addEventListener('click', function(ev){
   if(ev.target.closest('#wipeOpen')){ showWipeDialog(); return; }
   var sg=ev.target.closest('[data-soulgo]');
@@ -454,7 +517,7 @@ scroller.addEventListener('click', function(ev){
   }
 });
 
-/* ===== 学习离开守卫弹层（框架玻璃质感；继续做题 / 离开不保存） ===== */
+/* ===== 学习离开守卫弹层（框架玻璃质感；唯一守卫：退出进度不保存） ===== */
 function showLeaveGuard(){
   if (document.getElementById('lgWrap')) return;
   var wrap = document.createElement('div');
@@ -465,18 +528,73 @@ function showLeaveGuard(){
   requestAnimationFrame(function(){ card.style.transform = 'translateY(0) scale(1)'; card.style.opacity = '1'; });
   card.innerHTML = '<div style="width:54px;height:54px;border-radius:50%;background:var(--gold-soft);display:flex;align-items:center;justify-content:center;font-size:26px">⏳</div>'
     + '<b style="display:block;font-size:18px;margin-top:12px">学习还没完成</b>'
-    + '<div style="color:var(--ink2);font-size:13.5px;line-height:1.8;margin:10px 0 4px">离开做题页后，<b>本次作答进度不会保存</b>。回来需要重新作答。<br>挂后台 / 锁屏不算离开，可放心切走再回来继续。</div>'
+    + '<div style="color:var(--ink2);font-size:13.5px;line-height:1.8;margin:10px 0 4px"><b>退出后本次作答进度不会保存</b>，回来需要重新作答。<br>挂后台 / 锁屏不算离开，可放心切走再回来继续。</div>'
     + '<div style="display:flex;gap:10px;margin-top:16px">'
     + '<button id="lgStay" style="flex:1;height:46px;border:none;border-radius:14px;background:var(--accent);color:#fff;font:600 14.5px inherit;font-family:inherit;cursor:pointer">继续做题</button>'
-    + '<button id="lgLeave" style="flex:1;height:46px;border:none;border-radius:14px;background:var(--red-soft);color:var(--red);font:600 14.5px inherit;font-family:inherit;cursor:pointer">离开不保存</button></div>';
+    + '<button id="lgLeave" style="flex:1;height:46px;border:none;border-radius:14px;background:var(--red-soft);color:var(--red);font:600 14.5px inherit;font-family:inherit;cursor:pointer">退出并离开</button></div>';
   wrap.appendChild(card);
   wrap.onclick = function(e){ if (e.target === wrap) hideLeaveGuard(); };
   document.body.appendChild(wrap);
-  document.getElementById('lgStay').onclick = hideLeaveGuard;
+  document.getElementById('lgStay').onclick = function(){
+    var n = _pendingNav; _pendingNav = null;
+    hideLeaveGuard();
+    /* _back：顶栏返回被拦，尚未发生任何导航，无需回退 */
+    if(n && n._back) return;
+    if(n){ if(n.isBack) history.forward(); else history.back(); }
+  };
   document.getElementById('lgLeave').onclick = function(){
     var n = _pendingNav; _pendingNav = null;
     hideLeaveGuard();
-    if (n) doRenderView(n.id, n.isBack);
+    if(typeof stopTimer === 'function'){ try{ stopTimer(); }catch(e){} }
+    /* 确认退出：回滚本次作答（真正不保存、从头再来） */
+    try{ if(typeof sessRoll === 'function') sessRoll(); }catch(e){}
+    if(!n) return;
+    if(n._back){
+      /* 顶栏返回：手动渲染上一页并同步历史，避免 base popstate 再次触发守卫 */
+      var st=(typeof STACK!=='undefined'&&STACK)?STACK:null;
+      var top=(st&&st.length)?st[st.length-1]:'home';
+      if(st&&st.length) st.pop();
+      if(typeof doRenderView==='function') doRenderView(top,true);
+      try{ history.replaceState({view:top},''); }catch(e){}
+    } else {
+      if(typeof doRenderView==='function') doRenderView(n.id, n.isBack);
+    }
   };
 }
 function hideLeaveGuard(){ var w = document.getElementById('lgWrap'); if (w) w.remove(); }
+
+/* ===== 学习会话快照 / 回滚（鼠哥定稿：退出做题页即清掉本次作答，真正从头再来） ===== */
+var _sessSnapData = null;
+function sessSnap(){
+  try{
+    _sessSnapData = {
+      qs: JSON.parse(JSON.stringify(quizStat || {})),
+      qp: JSON.parse(JSON.stringify(quizPick || {})),
+      wr: (wrongPool || []).slice(),
+      fx: (fixedPool || []).slice(),
+      hd: (hallDone || []).slice(),
+      st: stat ? JSON.parse(JSON.stringify(stat)) : null,
+      ts: todayStat ? JSON.parse(JSON.stringify(todayStat)) : null
+    };
+  }catch(e){ _sessSnapData = null; }
+}
+function sessRoll(){
+  if(!_sessSnapData) return;
+  try{
+    quizStat = _sessSnapData.qs;  store('quizStat', quizStat);
+    quizPick = _sessSnapData.qp;  store('quizPick', quizPick);
+    wrongPool = _sessSnapData.wr; store('wrong', wrongPool);
+    fixedPool = _sessSnapData.fx; store('fixed', fixedPool);
+    hallDone = _sessSnapData.hd;  store('hall', hallDone);
+    if(_sessSnapData.st){ stat = _sessSnapData.st; store('stat', stat); }
+    if(_sessSnapData.ts){ todayStat = _sessSnapData.ts; store('tstat', todayStat); }
+  }catch(e){}
+  _sessSnapData = null;
+}
+/* 关闭 / 刷新兜底：做题未完成直接走也清本次 */
+window.addEventListener('pagehide', function(){
+  var cw = window._cur;
+  if((cw === 'chapter' || cw === 'exam') && typeof sessDone === 'function' && !sessDone()){
+    try{ sessRoll(); }catch(e){}
+  }
+});

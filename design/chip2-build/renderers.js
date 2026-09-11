@@ -7,7 +7,7 @@ var META={
   hall:{n:'练习大厅',tab:'drill'},vol:{n:'小卷',tab:'drill'},exam:{n:'',tab:'drill'},
   wrong:{n:'错题集',tab:'drill'},fixed:{n:'已订正',tab:'drill'},
   mine:{n:'我的',tab:'mine'},rank:{n:'排行榜',tab:'mine'},calendar:{n:'打卡日历',tab:'mine'},
-  honor:{n:'荣誉墙',tab:'mine'},lab:{n:'实验室',tab:'mine'},about:{n:'关于学院',tab:'mine'},manage:{n:'管理',tab:'mine'},author:{n:'作者与幕后',tab:'mine'}
+  honor:{n:'荣誉墙',tab:'mine'},stats:{n:'进度总览',tab:'mine'},board:{n:'讨论区',tab:'mine'},feedback:{n:'反馈意见',tab:'mine'},lab:{n:'实验室',tab:'drill'},about:{n:'关于学院',tab:'mine'},manage:{n:'管理',tab:'mine'},author:{n:'作者与幕后',tab:'mine'}
 };
 var _lastNav={};
 function chById(id){ return CHAPTERS[id-1]; }
@@ -20,13 +20,20 @@ function doRenderView(id,isBack){
   var html=renderers[id]?renderers[id]():'<div class="cap">页面不存在</div>';
   var m=META[id]||{n:'芯片战争学院'};
   var nn=m.n;
-  if(id==='chapter'){ var cc=chById(_lastNav.chapter||1); nn=cc?('第 '+cc.id+' 章 · '+cc.title):'章节'; }
+  if(id==='chapter'){ var cc=chById(_lastNav.chapter||1); nn=cc?('第 '+cc.id+' 章'):'章节'; }
   if(id==='exam'){ var ec=chById(_lastNav.exam||1); nn=ec?('第 '+ec.id+' 章 · 小卷'):'小卷'; }
   var v=view;
   v.className='view '+((isBack)?'pushBack':'push');
   v.innerHTML=html;
   scroller.scrollTop=0;
   $('#brandName').textContent=nn;
+  try{
+    var _isRoot=(id==='home'||id==='hall'||id==='mine');
+    var _bt=document.getElementById('backTxt');
+    if(_bt) _bt.textContent=_isRoot?'总学院':'返回';
+    var _bi=document.getElementById('backIco');
+    if(_bi&&typeof I!=='undefined') _bi.innerHTML=_isRoot?(I['home']||''):(I['back']||'');
+  }catch(e){}
   var prev=STACK.length?STACK[STACK.length-1]:null;
   if(prev&&META[prev]){ $('#backTxt').textContent=META[prev].n; $('#btnBack').disabled=false; }
   else { $('#backTxt').textContent='返回'; $('#btnBack').disabled=true; }
@@ -48,18 +55,58 @@ function go(id,p,kind){
 function goBack(){ if(!STACK.length){ toast('已经在最前面了'); return; } history.back(); }
 /* 计时离开守卫 */
 function requestNav(action){
-  if(window._cur==='chapter'&&timerRunning||window._cur==='exam'&&timerRunning){
+  /* 退出守卫 = calc2 同款 confirmBox（底部升起）：计时学习中必弹（calc2 同条件）；计时停但未做完也弹 */
+  var cw=window._cur;
+  var unfin=false; try{ unfin=!sessDone(); }catch(e){ unfin=true; }
+  if((cw==='chapter'||cw==='exam') && (timerRunning || unfin)){
     leaveAfter=action;
-    $('#confirmMsg').textContent='学习计时还没结束。现在出去本次作答进度已保存，下次进入可继续。';
+    $('#confirmMsg').textContent='本章还没做完。退出后本次作答进度不会保存，回来需要重新作答。';
     $('#confirmBox').classList.add('show');
     return;
   }
   action();
 }
-function dismissConfirm(){ leaveAfter=null; $('#confirmBox').classList.remove('show'); }
-$('#confirmStay').addEventListener('click',dismissConfirm);
-$('#confirmLeave').addEventListener('click',function(){ dismissConfirm(); stopTimer(); if(leaveAfter){ var f=leaveAfter; leaveAfter=null; f(); } });
-function guardedBack(){ requestNav(function(){ goBack(); }); }
+function clearLeave(){ leaveAfter=null; }
+function dismissConfirm(){ $('#confirmBox').classList.remove('show'); }
+$('#confirmStay').addEventListener('click',function(){ clearLeave(); dismissConfirm(); });
+/* 离开：先取出动作再关弹窗（dismissConfirm 不再吞掉 leaveAfter），随后回滚本次作答并执行返回 */
+$('#confirmLeave').addEventListener('click',function(){
+  var act=leaveAfter; leaveAfter=null;
+  dismissConfirm();
+  if(typeof stopTimer==='function'){ try{ stopTimer(); }catch(e){} }
+  try{ if(typeof sessRoll==='function') sessRoll(); }catch(e){}
+  if(typeof act==='function'){ try{ act(); }catch(e2){ try{ console.error('[confirmLeave] act fail', e2); }catch(ce){} } }
+});
+function guardedBack(){ requestNav(function(){ doBack(); }); }
+/* 显式回上一级：从导航栈取上一页渲染并同步历史，不依赖浏览器历史回退 */
+function doBack(){
+  var errMsg='';
+  var st=(typeof STACK!=='undefined'&&STACK)?STACK:null;
+  var top=null;
+  /* 从导航栈取真正的列表页（过滤掉做题页自身） */
+  while(st&&st.length){ var t=st.pop(); if(t!=='chapter'&&t!=='exam'){ top=t; break; } }
+  var root = (window._cur==='exam')?'vol':((window._lastNav&&window._lastNav.mode==='drill')?'hall':'plan');
+  if(!top){ top=root; }
+  var ok=false;
+  try{ history.replaceState({view:top},''); }catch(e){}
+  try{ doRenderView(top,true); ok=(window._cur===top); }catch(err){ errMsg=String(err&&err.message||err); }
+  if(!ok && typeof go==='function'){ try{ go(top); ok=(window._cur===top); }catch(e2){ errMsg=String(e2&&e2.message||e2); } }
+  if(!ok && top!==root){ try{ doRenderView(root,true); ok=(window._cur===root); }catch(e3){ errMsg=String(e3&&e3.message||e3); } }
+  try{
+    if(!ok){
+      try{ console.error('[doBack] fail top='+top+' cur='+window._cur+' :: '+errMsg); }catch(ce){}
+      toast('返回失败，正在回到首页…');
+      setTimeout(function(){ try{ window.location.reload(); }catch(e){} }, 500);
+    }
+  }catch(e){}
+  /* 兜底校验：400ms 后仍在做题页则强制回首页 */
+  try{
+    setTimeout(function(){
+      var c=window._cur;
+      if(c==='chapter'||c==='exam'){ try{ console.error('[doBack] stuck, force reload cur='+c); }catch(ce2){} window.location.reload(); }
+    }, 400);
+  }catch(e){}
+}
 var leaveAfter=null,timerRunning=false;
 /* ---------- 倒计时（30 分钟，可挂后台） ---------- */
 var TIMER=30*60,timerLeft=TIMER,timerIv=null;
@@ -104,6 +151,11 @@ renderers.home=function(){
   var nc=nextChapter();
   var h='<div class="kick">CHIP WAR ACADEMY</div><div class="h1">芯片战争学院</div>'
     +'<div class="sub">米勒《芯片战争》36 章 · 答完随堂题即点亮章节 · 进度 '+s.doneC+'/'+s.totalC+' 章</div>';
+  h+='<div class="tutor-card"><img class="tutor-photo" alt="导读人克里斯·米勒" src="TUTOR_IMG_PLACEHOLDER">'
+    +'<div class="tutor-body"><div class="tutor-cap">导读人</div>'
+    +'<div class="tutor-name-big">CHRIS MILLER</div>'
+    +'<div class="tutor-quote">'+pick(TUTOR_QUOTES)+'</div>'
+    +'<div class="tutor-name">《芯片战争》作者 · 塔夫茨大学教授</div></div></div>';
   var GEO='<svg viewBox="0 0 96 96" aria-hidden="true"><g class="geo-line"><rect x="28" y="28" width="40" height="40" rx="6"/><rect x="40" y="40" width="16" height="16" rx="3"/><path d="M40 28V20M56 28V20M40 76v-8M56 76v-8M28 40h-8M28 56h-8M68 40h8M68 56h8"/></g><circle class="geo-dot" cx="48" cy="15" r="2.6"/><circle class="geo-dot" cx="81" cy="48" r="2.6"/><circle class="geo-dot" cx="48" cy="81" r="2.4" opacity=".35"/></svg>';
   if(nc){
     h+='<div class="hero-card"><div class="deco">'+GEO+'</div>'
@@ -123,10 +175,7 @@ renderers.home=function(){
     +'<span class="cap">米勒读本 36 章 · 讲义 + 随堂题，答完即点亮</span>'
     +'<span class="be-meta"><span class="pill blue">已学 '+s.doneC+' / '+s.totalC+' 章</span></span></span>'
     +'<span class="be-arrow">'+IC('chev-r')+'</span></button>';
-  h+='<div class="tutor-card"><img class="tutor-photo" alt="导读人" src="TUTOR_IMG_PLACEHOLDER">'
-    +'<div class="tutor-body"><div class="tutor-cap">导读人 · CHRIS MILLER</div>'
-    +'<div class="tutor-quote">'+pick(TUTOR_QUOTES)+'</div>'
-    +'<div class="tutor-name">《芯片战争》作者 · 塔夫茨大学教授</div></div></div>';
+
   return h;
 };
 var TUTOR_QUOTES=[
@@ -159,70 +208,130 @@ renderers.plan=function(){
 };
 
 /* ============ 学习 Tab · 章节学习（讲义 + 随堂题 + 计时 + 结算） ============ */
+function fmtDur(sec){
+  sec=Math.max(0, Math.round(sec||0));
+  var m=Math.floor(sec/60), s=sec%60;
+  return (m<10?'0':'')+m+':'+(s<10?'0':'')+s;
+}
+/* 讲义底部结算战报：已结算常驻显示（含历史记录）；做完未结算给按钮；未完给引导 */
+function settleCardHTML(c){
+  var sm=chSummary(c);
+  var rec=settleStore['settle_'+c.id];
+  if(rec){
+    var dt=new Date(rec.ts);
+    var ds=(dt.getMonth()+1)+'月'+dt.getDate()+'日 '+(dt.getHours()<10?'0':'')+dt.getHours()+':'+(dt.getMinutes()<10?'0':'')+dt.getMinutes();
+    var pct=(rec.pct!==undefined)?rec.pct:Math.round((rec.correct||0)/(rec.total||1)*100);
+    var tot=(rec.total!==undefined)?rec.total:sm.total;
+    var cor=(rec.correct!==undefined)?rec.correct:Math.round(tot*pct/100);
+    var durTxt=(rec.dur!==undefined)?fmtDur(rec.dur):'—';
+    var col=pct>=80?'var(--green)':(pct>=60?'var(--ochre)':'var(--red)');
+    return '<div class="card"><h3>📜 本节战报 · 已结算</h3>'
+      +'<div style="font-size:12px;color:var(--muted);margin:-4px 0 10px">'+ds+' · 本章已点亮 · 结果存档，永久留档</div>'
+      +'<div style="display:flex;flex-wrap:wrap;gap:24px;font-size:14.5px">'
+      +'<span>正确率 <b style="color:'+col+';font-size:20px">'+pct+'%</b>（'+cor+'/'+tot+'）</span>'
+      +'<span>用时 <b style="color:var(--blue)">'+durTxt+'</b></span>'
+      +'<span>里程碑 <b style="color:var(--blue)">已学 '+chDone.length+'/'+CHAPTERS.length+' 章</b></span>'
+      +(rec.allCorrect?'<span style="color:var(--green);font-weight:600">👑 全对通关</span>':'')
+      +'</div></div>';
+  }
+  if(sm.allDone){
+    return '<div class="settle-wrap"><button class="settle-btn" data-settle="'+c.id+'">'+IC('check')+' 结算本章</button>'
+      +'<div class="settle-hint">全部答完，点结算点亮本章与打卡；结算战报会永久留在这里。</div></div>';
+  }
+  return '<div class="card" style="text-align:center;padding:18px"><div style="color:var(--muted);font-size:13px">全部题目做完后，这里自动生成结算战报（正确率 · 用时）。</div></div>';
+}
 function chapterHTML(c,mode){
   var sm=chSummary(c), settled=chIsDone(c);
-  var isLesson=mode==='lesson';
+  var isLesson=mode!=='drill';
   var h='<div class="kick">LESSON '+('0'+c.id).slice(-2)+'</div><div class="h1">'+esc(c.title)+'</div>'
     +'<div class="sub">随堂 '+sm.total+' 题'+(isLesson?' · 30 分钟参考计时 · 答完自动结算点亮打卡':' · 刷题模式：做完即存，可反复重做')+' · 已答 '+sm.answered+'/'+sm.total+'</div>';
   if(settled) h+='<div class="pill green" style="margin-bottom:10px">'+IC('check')+' 本章已点亮 · 可随时回来重做</div>';
-  h+='<div class="card" style="border-radius:var(--r-l)"><div class="lesson-body">';
-  h+='<div class="quote-box">'+esc(c.motto||'')+(c.mottoWho?'<span class="who" style="display:block;font-size:13px;opacity:.8;margin-top:6px">—— '+esc(c.mottoWho)+'</span>':'')+'</div>';
-  (c.sections||[]).forEach(function(sec){
-    h+='<p><b style="color:var(--accent)">'+esc(sec.t)+'</b></p><p>'+esc(sec.p)+'</p>';
-    if(sec.formula) h+='<div style="background:var(--fill-soft);border-radius:10px;padding:9px 13px;font-size:15px;color:var(--ink2);font-weight:600">'+esc(sec.formula)+'</div>';
-  });
+  h+='<div id="legacy-chapter">';
+  /* 开讲词（旧版 .motto 渐变深条） */
+  h+='<div class="motto">'+esc(c.motto||'')+'<span class="who">—— '+esc(c.mottoWho||'')+'</span></div>';
+  /* 知识地图 */
+  if(c.map&&c.map.length){
+    h+='<div class="card"><h3>知识地图</h3><div class="map">'+c.map.map(function(m){return '<span>'+esc(m)+'</span>';}).join('')+'</div></div>';
+  }
+  /* 芯片史话 */
   if(c.story){
-    h+='<div style="background:var(--gold-soft);border-radius:12px;padding:13px 16px;margin-top:14px;font-size:15px;line-height:1.8">'
-      +'<b style="color:#C93400">芯片史话 · '+esc(c.story.tutor||'')+'</b><div style="color:var(--ink2)">'+esc(c.story.story||c.story.fact||'')+'</div></div>';
+    var nm=c.story.tutor||'';
+    var pv=c.story.img&&PORTRAITS[c.story.img]?'<img src="'+PORTRAITS[c.story.img]+'" alt="'+esc(nm)+'" style="width:64px;height:80px;border-radius:6px;border:1px solid var(--blue);object-fit:cover;flex-shrink:0">':'<span style="width:64px;height:80px;border-radius:6px;border:1px solid var(--blue);background:#F1E8D4;display:flex;align-items:center;justify-content:center;color:var(--blue2);font-family:Georgia,serif;font-size:22px;flex-shrink:0">'+esc(nm.charAt(0))+'</span>';
+    h+='<div class="card story-card"><h3>芯片史话 · 这一章的来处</h3>'
+      +'<div class="story-head">'+pv+'<div><div class="story-name">'+esc(nm)+'</div><div class="story-era">'+esc(c.story.era||'')+'</div></div></div>'
+      +'<div class="story-fact">'+parseMath(c.story.fact||'')+'</div>'
+      +(c.story.quote?'<div class="story-quote">'+esc(c.story.quote)+'</div>':'')
+      +(c.story.story?'<div class="story-anecdote"><b>轶事</b>　'+parseMath(c.story.story)+'</div>':'')
+      +'</div>';
   }
-  h+=storyHTML(c);
+  /* 讲义正文（旧版 .sec 分节，纸面直排） */
+  (c.sections||[]).forEach(function(sec,si){
+    h+='<div class="sec"><h4><em>§'+(si+1)+'</em>'+esc(sec.t)+'</h4>'
+      +'<p>'+parseMath(sec.p)+'</p>'
+      +(sec.formula?'<div class="formula">'+parseMath(sec.formula)+'</div>':'')
+      +'</div>';
+  });
+  /* 例题（米勒式内心独白） */
   if(c.example){
-    h+='<details style="margin-top:14px"><summary style="cursor:pointer;color:var(--accent);font-weight:700">例题 · 先试做，再对照米勒的思路</summary>'
-      +'<div style="margin-top:8px"><b>'+esc(c.example.q)+'</b>'
-      +'<div style="background:var(--fill-soft);border-radius:10px;padding:11px 14px;margin-top:8px;font-size:14.5px;line-height:1.8;color:var(--ink2)">'+esc(c.example.s)+'</div></div></details>';
+    h+='<div class="card"><h3>例题 · 米勒式内心独白</h3><div class="example"><div class="lbl">SOLVE WITH YOUR INNER MONOLOGUE</div>'
+      +'<p><b>'+parseMath(c.example.q)+'</b></p><p>'+parseMath(c.example.s)+'</p>'
+      +'<p style="font-size:13px;color:var(--ink2);margin-top:8px">米勒的原话：看求解过程教不会你思考。先挡住解答自己试做，再对照这段「内心独白」——注意看我是怎么想出来的，而不是只看我写了什么。</p>'
+      +'</div></div>';
   }
+  /* 易错陷阱 */
   if(c.traps&&c.traps.length){
-    h+='<details style="margin-top:12px"><summary style="cursor:pointer;color:var(--red);font-weight:700">易错陷阱</summary>'
-      +'<ul style="margin:8px 0 0 18px;font-size:14.5px;color:var(--ink2);line-height:1.8">'
-      +c.traps.map(function(t){ return '<li>'+esc(t)+'</li>'; }).join('')+'</ul></details>';
+    h+='<div class="card"><h3>易错陷阱</h3>'+c.traps.map(function(t,ti){return '<div class="trap"><b>陷阱'+(ti+1)+'</b>　'+parseMath(t)+'</div>';}).join('')+'</div>';
   }
-  h+='</div></div>';
-  h+=quizCardsHTML(c,mode);
-  if(sm.allDone&&!settled){
-    h+='<div style="margin-top:14px;text-align:center"><button class="btn-go" data-settle="'+c.id+'" style="margin:0">'+IC('check')+' 结算本章</button></div>';
+  /* 随堂练习（即时批改） */
+  h+='<div class="card"><h3>随堂练习（即时批改）</h3><div class="quizwrap">'+quizCardsHTML(c,mode)+'</div></div>';
+  /* 灵魂拷问（旧观感，保留 data-soulgo / soulNote 契约给事件层） */
+  if(c.dialogue&&c.dialogue.q){
+    var keys=(c.dialogue.keys||[]).slice(0,8);
+    h+='<div class="card dia"><h3>灵魂拷问（米勒的追问）</h3>'
+      +'<p style="margin-bottom:8px;color:var(--ink2)">'+parseMath(c.dialogue.q)+'</p>'
+      +(keys.length?'<p style="font-size:12.5px;color:var(--muted);margin-bottom:8px">说到这些词才算想透：'+keys.map(function(k){return '「'+esc(k)+'」';}).join(' ')+'</p>':'')
+      +'<textarea id="soulTa" placeholder="把你的想法写在这里……"></textarea>'
+      +'<div class="act"><button class="primary" data-soulgo="'+c.id+'">交给我自检</button>'
+      +(c.dialogue.model?'<button data-soulmodel="'+c.id+'">看参考思路</button>':'')
+      +'</div><div class="why-note" id="soulNote"></div></div>';
   }
-  h+=soulHTML(c);
+  /* 结算战报：常驻最下方（已结算显示历史 / 做完可结算 / 未完引导） */
+  h+='<div id="settleCard">'+settleCardHTML(c)+'</div>';
+  h+='</div>';
   return h;
 }
 function quizCardsHTML(c,mode){
+  var isLesson=mode!=='drill';
   var h='';
   (c.quiz||[]).forEach(function(q,qi){
     var k=c.id+'_'+qi;
-    var hist=(mode!=='drill')?(quizStat[k]):undefined;
-    h+='<div class="card" style="border-radius:var(--r-l);margin-top:14px">'
-      +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><span class="pill blue">随堂 '+(qi+1)+'</span>'
-      +'<span class="cap">'+(q.type==='fill'?'填空':'单选')+' · 答完锁存'+(hist!==undefined?(hist===1?' · 你答对过':' · 上次答错'):'')+'</span></div>'
-      +'<div class="q-stem">'+parseMath(q.q)+'</div><div id="qbox'+qi+'" data-k="'+k+'">';
-    var keys=q.type==='fill'?'':['A','B','C','D'].slice(0,(q.options||[]).length).join('|');
+    var hist=(isLesson)?(quizStat[k]):undefined;
+    var done=hist!==undefined;
+    var pv=quizPick[k];
+    h+='<div class="quiz'+(done?' done':'')+'" data-k="'+k+'">'
+      +'<div class="q"><span class="qn">Q'+(qi+1)+'</span>'+(done?'<span class="hall-done-tag">✓ 已做</span>':'')+parseMath(q.q)+'</div>';
     if(q.type==='fill'){
-      h+='<div style="display:flex;gap:8px;margin-top:10px"><input id="fin'+qi+'" class="fillin" data-fill="'+qi+'" placeholder="输入答案" style="flex:1;border:1.5px solid var(--sep);border-radius:12px;padding:12px 14px;font-size:16px;font-family:inherit;background:var(--card);color:var(--ink)">'
-        +'<button class="btn-go" data-fillgo="'+qi+'" style="flex:none">批改</button></div>';
+      h+='<div class="fillrow"><input id="fin'+qi+'" data-fill="'+qi+'" placeholder="输入答案"'+(done&&pv!==undefined?' value="'+esc(pv)+'" disabled':'')+'><button data-fillgo="'+qi+'"'+(done?' disabled':'')+'>批改</button></div>';
     } else {
+      h+='<div class="opts" id="qbox'+qi+'">';
       ['A','B','C','D'].slice(0,(q.options||[]).length).forEach(function(k2,i){
-        var prev=quizPick[k];
-        var cls='opt'+(hist===0&&prev===i?' wrong':'')+(hist===1&&i===q.answer?' correct':(hist===0&&i===q.answer?' correct muted':''));
-        h+='<button class="'+cls+'" data-q="'+qi+'" data-i="'+i+'"'+(hist!==undefined?' data-lock="1"':'')+'><span class="k">'+k2+'</span><span>'+parseMath(q.options[i])+'</span><span class="mark">'+IC('check')+'</span></button>';
+        var cls='opt';
+        if(done){
+          cls+=' lock';
+          if(hist===1){ if(i===q.answer) cls+=' correct'; }
+          else { if(i===pv&&i!==q.answer) cls+=' wrong'; if(i===q.answer) cls+=' correct muted'; }
+        }
+        h+='<div class="'+cls+'" data-q="'+qi+'" data-i="'+i+'" data-o="'+i+'"'+(done?' data-lock="1"':'')+'>'+k2+'. '+parseMath(q.options[i])+'<span class="mark" style="display:none"></span></div>';
       });
+      h+='</div>';
     }
-    h+='</div><div class="why-note'+(hist===1?' why-ok':(hist===0?' why-no':''))+'" id="whyNote'+qi+'">';
-    if(hist===1) h+='<div class="why-body"><span class="why-ic">'+IC('check')+'</span><span><b>答对了。</b>'+esc(q.explain||'')+'</span></div>';
-    else if(hist===0) h+='<div class="why-body"><span class="why-ic">'+IC('info')+'</span><span><b>上次答错了，正确答案：「'+parseMath(q.options[q.answer])+'」</b><br>'+esc(q.explain||'')+'</span></div>'
-      +'<button class="retry-btn" data-retry="'+qi+'">↻ 再答一次</button>';
+    h+='<div class="why-note'+(hist===1?' why-ok':(hist===0?' why-no':''))+'" id="whyNote'+qi+'">';
+    if(hist===1) h+='<div class="why-body"><span class="why-ic"></span><span><b>上次答对了。</b>'+esc(q.explain||'')+'</span></div>';
+    else if(hist===0) h+='<div class="why-body"><span class="why-ic"></span><span><b>上次答错，正确答案已标出：</b>'+esc(q.explain||'')+'</span></div>'+(q.type==='code'?'<button class="retry-btn" data-retry="'+qi+'">↻ 重新作答</button>':'');
     h+='</div></div>';
   });
   return h;
 }
-
 /* ============ 练习 Tab · 大厅（宫格 + 按章刷题） ============ */
 renderers.hall=function(){
   resyncWrong();
@@ -233,7 +342,7 @@ renderers.hall=function(){
   h+='<button class="tile lift" data-go="vol"><span class="t-ico" style="background:linear-gradient(135deg,#FF9F0A,#FF7A00)">'+IC('doc')+'</span><b>小卷</b><span class="cap">'+s.examFull+' / '+s.examTotal+' 份</span></button>';
   h+='<button class="tile lift" data-go="wrong"><span class="t-ico" style="background:linear-gradient(135deg,#FF453A,#D70015)">'+IC('bookx')+'</span><b>错题集</b><span class="cap">'+s.wrongPool+' 道待订正</span></button>';
   h+='<button class="tile lift" data-go="fixed"><span class="t-ico" style="background:linear-gradient(135deg,#34C759,#28A745)">'+IC('check')+'</span><b>已订正</b><span class="cap">'+s.fixedPool+' 道已掌握</span></button>';
-  h+='<button class="tile lift" data-go="honor"><span class="t-ico" style="background:linear-gradient(135deg,#AF52DE,#7D2AE0)">'+IC('trophy')+'</span><b>荣誉墙</b><span class="cap">'+curRank(s.pct).name+'</span></button>';
+  h+='<button class="tile lift" data-go="lab"><span class="t-ico" style="background:linear-gradient(135deg,#0A84FF,#5E5CE6)">'+IC('flask')+'</span><b>实验室</b><span class="cap">动手玩工艺</span></button>';
   h+='</div>';
   h+='<div class="sec-title">BY CHAPTER 按章刷题</div>';
   CHAPTERS.forEach(function(c){
@@ -331,7 +440,7 @@ function examHTML(c){
     h+='</div><div class="why-note'+(hist===1?' why-ok':(hist===0?' why-no':''))+'" id="ewhyNote'+qi+'">';
     if(hist===1) h+='<div class="why-body"><span class="why-ic">'+IC('check')+'</span><span><b>答对了。</b>'+esc(q.explain||'')+'</span></div>';
     else if(hist===0) h+='<div class="why-body"><span class="why-ic">'+IC('info')+'</span><span><b>上次答错，正确答案：「'+parseMath(q.options[q.answer])+'」</b><br>'+esc(q.explain||'')+'</span></div>'
-      +'<button class="retry-btn" data-etry="'+qi+'">↻ 再答一次</button>';
+      +(q.type==='code'?'<button class="retry-btn" data-etry="'+qi+'">↻ 重新作答</button>':'');
     h+='</div></div>';
   });
   return h;
@@ -342,30 +451,35 @@ renderers.mine=function(){
   var s=calcStats(), streak=calcStreak(), rk=curRank(s.pct);
   var h='<div class="kick">PROFILE</div><div class="h1">我的</div>'
     +'<div class="sub">账号、战果与设置（本版进度存本浏览器）</div>';
-  h+='<div class="card" style="display:flex;align-items:center;gap:14px;border-radius:var(--r-l)">'
-    +'<div style="width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,#0A84FF,#5E5CE6);display:flex;align-items:center;justify-content:center;color:#fff;flex:none;font-size:26px">🐹</div>'
-    +'<div style="min-width:0;flex:1"><b style="font-size:18px">芯片学徒</b><div style="font-size:13px;color:var(--ink2);margin-top:2px;line-height:1.5;min-width:0">'+rk.name+' · 已学 '+s.doneC+'/'+s.totalC+' 章 · 小卷 '+s.examFull+' 份</div>'
-    +'<div style="font-size:12px;color:var(--muted);margin-top:3px;line-height:1.6;min-width:0">连签 '+streak+' 天 · <span class="pill blue" style="font-size:11px;padding:2px 9px">总进度 '+s.pct+'%</span></div></div></div>';
+  var _usr=(typeof sbUser==='function')?sbUser():null;
+  var _acctName=_usr?( _usr.nick||_usr.username||_usr.email||'已登录' ):'本地模式 · 未登录';
+  var _acctSub=_usr?('云同步已开启 · 做完自动上传'):('学习记录仅存本机 · 点此登录云端');
+  h+='<button class="account-card" data-acct style="display:flex;align-items:center;gap:14px;width:100%;border-radius:var(--r-l);border:1px solid var(--sep);background:var(--card);padding:16px;text-align:left;font-family:inherit;cursor:pointer;color:var(--ink);box-shadow:var(--sh-card)">'
+    +'<span style="width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,#0A84FF,#5E5CE6);display:flex;align-items:center;justify-content:center;color:#fff;flex:none;font-size:24px">'+( _usr&&_usr.avatar?esc(_usr.avatar):'🐹')+'</span>'
+    +'<span style="min-width:0;flex:1"><b style="font-size:18px;display:block">'+esc(_acctName)+'</b>'
+    +'<span style="font-size:13px;color:var(--ink2);margin-top:2px;line-height:1.5;display:block;min-width:0">'+rk.name+' · 已学 '+s.doneC+'/'+s.totalC+' 章 · 小卷 '+s.examFull+' 份</span>'
+    +'<span style="font-size:12px;color:var(--muted);margin-top:3px;line-height:1.5;display:block;min-width:0">'+esc(_acctSub)+' · 连签 '+streak+' 天 · 总进度 '+s.pct+'%</span></span>'
+    +'<span class="garr" style="flex:none">'+IC('chev-r')+'</span></button>';
   h+='<div class="sec-title">ACHIEVE 成就</div><div class="tiles">';
   var MG=[
     {g:'calendar',ico:'calendar',bg:'linear-gradient(135deg,#34C759,#28A745)',t:'打卡日历',c:streak+' 天连签'},
-    {g:'rank',ico:'flag',bg:'linear-gradient(135deg,#FFD60A,#FF9500)',t:'排行榜',c:'云端接入中'},
+    {g:'rank',ico:'flag',bg:'linear-gradient(135deg,#FFD60A,#FF9500)',t:'排行榜',c:'真人榜'},
     {g:'honor',ico:'trophy',bg:'linear-gradient(135deg,#AF52DE,#7D2AE0)',t:'荣誉墙',c:rk.name+' · '+s.pct+'%'},
-    {g:'lab',ico:'flask',bg:'linear-gradient(135deg,#0A84FF,#5E5CE6)',t:'实验室',c:'动手玩工艺'}
+    {g:'stats',emo:'📊',bg:'linear-gradient(135deg,#5E5CE6,#5856D6)',t:'进度总览',c:'全部学习数据'}
   ];
   MG.forEach(function(x){
-    h+='<button class="tile lift" data-go="'+x.g+'"><span class="t-ico" style="background:'+x.bg+'">'+IC(x.ico)+'</span><b>'+x.t+'</b><span class="cap">'+x.c+'</span></button>';
+    h+='<button class="tile lift" data-go="'+x.g+'"><span class="t-ico" style="background:'+x.bg+'">'+(x.emo?x.emo:IC(x.ico))+'</span><b>'+x.t+'</b><span class="cap">'+x.c+'</span></button>';
   });
   h+='</div>';
   h+='<div class="sec-title">SYSTEM 设置</div><div class="group">';
+  var _u2=(typeof sbUser==='function')?sbUser():null;
   var SETS=[
+    {acct:1,ico:'person',bg:'linear-gradient(135deg,#0A84FF,#5E5CE6)',t:'账号管理',v:(_u2?('登录：'+esc(_u2.nick)):'未登录 · 去总院登录')},
     {ico:'moon',bg:'linear-gradient(135deg,#5856D6,#AF52DE)',t:'外观',v:themeLabel(),act:'theme'},
-    {ico:'phone',bg:'linear-gradient(135deg,#FF9F0A,#FF7A00)',t:'触感反馈',v:canVibrate?'开启':'设备不支持',act:''},
-    {ico:'info',bg:'linear-gradient(135deg,#8E8E93,#5A5A5E)',t:'关于学院',v:'样张真版 · '+APP_VER,act:'about'},
-    {ico:'person',bg:'linear-gradient(135deg,#0A84FF,#5E5CE6)',t:'作者与幕后',v:'鼠哥 × 拉里·佩奇',act:'author'}
+    {ico:'doc',bg:'linear-gradient(135deg,#0A84FF,#5E5CE6)',t:'数据管理',v:'导出 / 导入 / 清除（本地 + 云端）',act:'manage'}
   ];
   SETS.forEach(function(x){
-    var attr=x.act?' data-go="'+x.act+'"':'';
+    var attr=x.acct?' data-acct="1"':(x.act?' data-go="'+x.act+'"':'');
     h+='<button class="grow"'+(x.act==='theme'?' id="themeRow"':'')+attr+'>'
       +'<span class="gi" style="background:'+x.bg+'">'+IC(x.ico)+'</span><b>'+x.t+'</b>'
       +'<span class="gv"'+(x.act==='theme'?' id="themeVal"':'')+'>'+x.v+'</span>'
@@ -374,11 +488,13 @@ renderers.mine=function(){
   h+='</div>';
   h+='<div class="group">';
   var GROUPS=[
-    {ico:'chat',bg:'linear-gradient(135deg,#0A84FF,#5E5CE6)',t:'导出 / 导入进度',v:'备份与恢复',g:'manage'},
-    {ico:'trash',bg:'linear-gradient(135deg,#FF453A,#D70015)',t:'清除所有记录',v:'清到初始态',g:'manage'}
+    {ico:'info',bg:'linear-gradient(135deg,#8E8E93,#5A5A5E)',t:'关于学院',v:'样张真版 · '+APP_VER,g:'about'},
+    {ico:'person',bg:'linear-gradient(135deg,#0A84FF,#5E5CE6)',t:'作者与幕后',v:'鼠哥 × 拉里·佩奇',g:'author'},
+    {emo:'💬',bg:'linear-gradient(135deg,#0A84FF,#5E5CE6)',t:'讨论区',v:'大家说说话 · 交换进度',g:'board'},
+    {emo:'📮',bg:'linear-gradient(135deg,#AF52DE,#7D2AE0)',t:'反馈意见',v:'说点什么 · 建议直达',g:'feedback'}
   ];
   GROUPS.forEach(function(x){
-    h+='<button class="grow" data-go="'+x.g+'"><span class="gi" style="background:'+x.bg+'">'+IC(x.ico)+'</span>'
+    h+='<button class="grow" data-go="'+x.g+'"><span class="gi" style="background:'+x.bg+';font-size:17px">'+(x.emo?x.emo:IC(x.ico))+'</span>'
       +'<b>'+x.t+'</b><span class="gv">'+x.v+'</span><span class="garr">'+IC('chev-r')+'</span></button>';
   });
   h+='</div>';
@@ -403,6 +519,7 @@ function setTheme(t,announce){
   if(t==='auto') document.documentElement.removeAttribute('data-theme');
   else document.documentElement.setAttribute('data-theme',t);
   store('theme',t);
+  try{ localStorage.setItem('acad_theme', t); }catch(e){}  /* 共享键：总门户/跨院跟随 */
   var tv=document.getElementById('themeVal');
   if(tv) tv.textContent=themeLabel();
   if(announce) toast('外观：'+themeLabel());
@@ -445,34 +562,156 @@ renderers.rank=function(){
   return h;
 };
 
-/* ============ 荣誉墙 ============ */
+/* ============ 荣誉墙（整块移用自 chip.html.bak-ios：称号阶梯 + 徽章墙 + 名人堂 + 资料卡） ============ */
+var PORTRAITS={}; /* 旧版荣誉墙名人像空表（无画像数据时走首字母头像分支） */
 renderers.honor=function(){
   var s=calcStats(), rk=curRank(s.pct);
-  var h='<div class="kick">HONOR</div><div class="h1">荣誉墙</div>'
-    +'<div class="sub">称号按已学章节推进，徽章记录你的历史时刻</div>';
-  h+='<div class="card" style="border-radius:var(--r-l)"><div style="display:flex;align-items:center;gap:14px">'
-    +'<div style="width:56px;height:56px;border-radius:16px;background:linear-gradient(135deg,#FFD60A,#FF9500);display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:0 4px 14px rgba(255,149,0,.35)">'+IC('trophy')+'</div>'
-    +'<div><b style="font-size:20px">'+rk.name+'</b><div class="cap">当前称号 · 已学 '+s.doneC+' 章 · 总进度 '+s.pct+'%</div></div></div>'
-    +'<div class="rank-scale"><div class="rbar"><i style="width:'+s.pct+'%"></i></div>'
-    +'<div class="rrow"><span>等级进度 '+s.pct+' / 100</span><span>'+(rk.next?'下一阶：'+rk.next+'（'+rk.nextAt+'）':'已到顶')+'</span></div></div>'
-    +'<div class="rank-steps">';
-  RANKS.forEach(function(r){
-    h+='<span class="rank-step'+(r[0]===rk.name?' on':(s.pct>=r[0]?' got':''))+'">'+r[1]+'</span>';
-  });
-  h+='</div></div>';
+  var pct=s.pct;
+  var curIdx=0;
+  for(var i=0;i<RANKS.length;i++){ if(pct>=RANKS[i][0]) curIdx=i; }
+  var stairs=RANKS.map(function(r,i){
+    var cls=i<curIdx?'done':(i===curIdx?'cur':'');
+    var mark=i<curIdx?'✓':(i===curIdx?'👑':'');
+    return '<div class="rank-step '+cls+'"><div class="rv">'+mark+' '+r[0]+'%</div><div class="rn">'+r[1]+'</div></div>';
+  }).join('');
+  var icons=['📜','🔺','🌀','⚔️','🖋️','🧮','∑','🎓','📝','🏅','🧹','🚀','📆','👑'];
   var bd=badgeState(s);
-  h+='<div class="card" style="margin-top:12px"><b class="h2" style="font-size:17px">徽章 '+bd.filter(function(x){return x.got;}).length+'/'+bd.length+'</b>'
-    +'<div style="display:grid;grid-template-columns:repeat(4,1fr);margin-top:10px;gap:6px">';
-  bd.forEach(function(b){
-    h+='<div style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 0;text-align:center" title="'+esc(b.d)+'">'
-      +'<span style="width:46px;height:46px;border-radius:50%;background:'+(b.got?'linear-gradient(135deg,#0A84FF,#5E5CE6)':'var(--fill)')+';display:flex;align-items:center;justify-content:center;color:'+(b.got?'#fff':'var(--muted)')+';font-size:20px'+(b.got?'':'')+'">'+(b.got?IC('check'):'·')+'</span>'
-      +'<span class="cap" style="font-size:11px">'+b.n+'</span></div>';
-  });
-  h+='</div></div>';
-  h+=chipHallHTML();
+  var bcards=bd.map(function(b,i){
+    return '<div class="hw-card'+(b.got?' got':'')+'"><div class="hc"><div class="hic">'+(icons[i]||'⭐')+'</div><div class="hn">'+b.n+'</div></div><div class="hd">'+b.d+'</div><div class="hst">'+(b.got?'✦ 已解锁':'未解锁')+'</div></div>';
+  }).join('');
+  var palette=[['#537D96','#3F6179'],['#8a6d1f','#5c4714'],['#9D5F4D','#6e3f31'],['#3a6b47','#264a30'],['#6b5b8e','#463a5e'],['#a8733a','#6e4a1f']];
+  var hall=CHAPTERS.filter(function(c){ return c.story && c.story.tutor; }).map(function(c,i){
+    var p=palette[i%palette.length];
+    var nm=c.story.tutor.replace(/（.*/,'').trim();
+    var first=nm.charAt(0);
+    var quote=(c.story.quote||'').replace(/^「/,'').replace(/」.*$/,'').trim();
+    var lit=chIsDone(c);
+    var portrait=(c.story.img && PORTRAITS[c.story.img])
+      ? '<img src="'+PORTRAITS[c.story.img]+'" alt="'+esc(nm)+'" class="mh-img">'
+      : '<div class="mh-avatar" style="background:linear-gradient(135deg,'+p[0]+','+p[1]+')">'+first+'</div>';
+    return '<div class="mh-card'+(lit?' lit':'')+'" data-c="'+c.id+'"'+(lit?' title="点击查看 '+esc(nm)+' 的资料卡"':' title="学完本章点亮并解锁资料卡"')+'>'+portrait+'<div class="mh-info"><div class="mh-name">'+esc(nm)+(lit?' <span class="mh-lit">✦ 已学</span>':'')+'</div><div class="mh-era">'+esc(c.story.era||'')+' · 第 '+c.id+' 章</div><div class="mh-quote">'+esc(quote)+'</div>'+(lit?'<div class="mh-open">点击查看资料卡 →</div>':'<div class="mh-lock">🔒 学完本章解锁</div>')+'</div></div>';
+  }).join('');
+  var h='<div class="kick">HONOR</div><div class="h1">荣誉墙</div>'
+    +'<div class="sub">称号按已学章节推进，徽章记录你的历史时刻，学完一章点亮一位芯片人物</div>'
+    +'<div id="legacy-honor">'
+    +'<div class="card"><h3>👑 称号阶梯</h3><p class="hint">当前称号：<b style="color:#8a6d1f">'+RANKS[curIdx][1]+'</b> · 总进度 '+pct+'%'+(curIdx<RANKS.length-1 ? ' · 距「'+RANKS[curIdx+1][1]+'」还差 '+(RANKS[curIdx+1][0]-pct)+'%' : ' · 已达最高荣誉')+'</p><div class="rank-stairs">'+stairs+'</div></div>'
+    +'<div class="card"><h3>🏅 徽章墙</h3><div class="badge-grid">'+bcards+'</div></div>'
+    +'<div class="card"><h3>📜 芯片人物名人堂</h3><p class="hint">学完本章点亮对应芯片人物，点亮后可点击查看资料卡。学完的越多，名人堂越亮。</p><div class="hall-grid">'+hall+'</div></div>'
+    +'</div>';
+  setTimeout(function(){
+    var root=document.getElementById('legacy-honor');
+    if(!root) return;
+    root.querySelectorAll('.mh-card.lit').forEach(function(card){
+      card.addEventListener('click', function(){ showMathematician(CHAPTERS[+card.dataset.c-1]); });
+    });
+  },60);
   return h;
 };
+/* 名人资料卡弹层（移用自旧版） */
+function showMathematician(c){
+  if(!c || !c.story) return;
+  var nm=c.story.tutor.replace(/（.*/,'').trim();
+  var first=nm.charAt(0);
+  var palette=[['#537D96','#3F6179'],['#8a6d1f','#5c4714'],['#9D5F4D','#6e3f31'],['#3a6b47','#264a30'],['#6b5b8e','#463a5e'],['#a8733a','#6e4a1f']];
+  var p=palette[(c.id-1)%palette.length];
+  var portrait=(c.story.img && PORTRAITS[c.story.img])
+    ? '<img src="'+PORTRAITS[c.story.img]+'" style="width:110px;height:130px;border-radius:14px;object-fit:cover;border:2px solid #d4a92a;box-shadow:0 8px 24px rgba(0,0,0,.35)">'
+    : '<div style="width:110px;height:110px;border-radius:50%;background:linear-gradient(135deg,'+p[0]+','+p[1]+');display:flex;align-items:center;justify-content:center;font-size:50px;color:#fff;font-family:Georgia,serif;box-shadow:0 8px 24px rgba(0,0,0,.35)">'+first+'</div>';
+  var wrap=document.createElement('div');
+  wrap.className='mh-modal';
+  wrap.style.cssText='position:fixed;inset:0;background:rgba(30,26,20,.72);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(3px)';
+  wrap.addEventListener('click', function(e){ if(e.target===wrap) wrap.remove(); });
+  var box=document.createElement('div');
+  box.style.cssText='background:linear-gradient(160deg,#fbf6ea,#f3e7c9);border-radius:22px;padding:30px 34px;max-width:660px;width:100%;border:2px solid #d4a92a;box-shadow:0 24px 80px rgba(0,0,0,.45);max-height:90vh;overflow:auto';
+  box.innerHTML=
+    '<div style="text-align:center;margin-bottom:16px">'+portrait+'</div>'+
+    '<div style="text-align:center"><div style="font-size:25px;font-weight:600;letter-spacing:2px;color:#2d2a26">'+esc(nm)+'</div>'+
+    '<div style="font-size:13px;color:var(--muted);margin-top:5px">'+esc(c.story.era||'')+' · 第 '+c.id+' 章「'+esc(c.title)+'」</div></div>'+
+    '<div style="background:#fffdf6;border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-top:16px;font-size:14px;line-height:1.85;color:var(--ink2);border-left:3px solid #b8860b">'+parseMath(c.story.fact||'')+'</div>'+
+    (c.story.quote ? '<div style="font-style:italic;color:#8a6d1f;text-align:center;margin:16px 0 4px;font-size:15px">'+esc(c.story.quote)+'</div>' : '')+
+    (c.story.story ? '<div style="background:rgba(157,95,77,.07);border:1px solid rgba(157,95,77,.2);border-radius:12px;padding:13px 16px;margin-top:12px;font-size:13.5px;color:var(--ink2);line-height:1.75"><b style="color:var(--ochre)">📖 轶事</b>　'+parseMath(c.story.story)+'</div>' : '')+
+    '<div style="text-align:center;margin-top:20px"><button class="mh-close" style="border:none;background:linear-gradient(135deg,#b8860b,#d4a92a);color:#fff;border-radius:980px;padding:10px 34px;font-family:inherit;font-size:15px;cursor:pointer;letter-spacing:1px;box-shadow:0 4px 14px rgba(184,134,11,.35)">收下这张名片</button></div>';
+  box.querySelector('.mh-close').addEventListener('click', function(){ wrap.remove(); });
+  wrap.appendChild(box);
+  document.body.appendChild(wrap);
+}
 
+/* ============ 进度总览 ============ */
+renderers.stats=function(){
+  var s=calcStats(), streak=calcStreak(), rk=curRank(s.pct);
+  var tq=(stat&&stat.totalQ)?stat.totalQ:0, tc=(stat&&stat.totalCorrect)?stat.totalCorrect:0;
+  var bd=badgeState(s), gotN=bd.filter(function(b){return b.got;}).length;
+  var acc = tq ? Math.round(tc/tq*100) : 0;
+  var pct=s.pct;
+  /* 当前档与下一档（进度条刻度） */
+  var curAt=0, nextAt=rk.nextAt, curName=rk.name, nextName=rk.next;
+  for(var i=0;i<RANKS.length;i++){ if(pct>=RANKS[i][0]){ curAt=RANKS[i][0]; curName=RANKS[i][1]; } }
+  var span=(nextAt!==null&&nextAt!==undefined)?(nextAt-curAt):1;
+  var innerPct=Math.max(0,Math.min(1,(pct-curAt)/span));
+  /* 荣誉调色板（随档位轮换） */
+  var PALS=[
+    ['linear-gradient(135deg,#0A84FF,#5E5CE6)','#0A84FF'],
+    ['linear-gradient(135deg,#FF9F0A,#FF7A00)','#FF9F0A'],
+    ['linear-gradient(135deg,#FF453A,#D70015)','#FF453A'],
+    ['linear-gradient(135deg,#34C759,#28A745)','#34C759'],
+    ['linear-gradient(135deg,#AF52DE,#7D2AE0)','#AF52DE'],
+    ['linear-gradient(135deg,#FFD60A,#FF9500)','#FF9500']
+  ];
+  var idx=0; for(var pi=0;pi<RANKS.length;pi++){ if(pct>=RANKS[pi][0]) idx=pi; }
+  var pal=PALS[(idx+1)%PALS.length];
+  var C=pal[1], Cg=pal[0];
+  /* 进度环（SVG） */
+  var R=54, CIRC=2*Math.PI*R;
+  var ring='<div style="position:relative;width:132px;height:132px;flex:none">'
+    +'<svg width="132" height="132" viewBox="0 0 132 132" style="transform:rotate(-90deg)">'
+    +'<circle cx="66" cy="66" r="'+R+'" fill="none" stroke="var(--fill)" stroke-width="10"/>'
+    +'<circle cx="66" cy="66" r="'+R+'" fill="none" stroke="'+C+'" stroke-width="10" stroke-linecap="round" '
+    +'stroke-dasharray="'+CIRC+'" stroke-dashoffset="'+CIRC*(1-pct/100)+'" style="transition:stroke-dashoffset 1s cubic-bezier(.22,.9,.3,1)"/>'
+    +'</svg>'
+    +'<div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">'
+    +'<b style="font-size:26px;color:var(--ink);line-height:1">'+pct+'<span style="font-size:14px">%</span></b>'
+    +'<span class="cap" style="margin-top:2px">总进度</span></div></div>';
+  var h='<div class="kick">OVERVIEW</div><div class="h1">进度总览</div>'
+    +'<div class="sub">'+rk.name+' · 距「'+(rk.next||'满级')+'」还差 '+(rk.nextAt!==null&&rk.nextAt!==undefined?rk.nextAt-pct:'0')+'%</div>';
+  /* 称号横幅 */
+  h+='<div style="border-radius:24px;padding:20px;color:#fff;background:'+Cg+';box-shadow:0 12px 32px rgba(0,0,0,.18);display:flex;align-items:center;gap:16px;position:relative;overflow:hidden">'
+    +'<div style="position:absolute;right:-30px;top:-30px;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,.12)"></div>'
+    +'<div style="position:absolute;right:30px;bottom:-50px;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,.08)"></div>'
+    +'<div style="width:60px;height:60px;border-radius:20px;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;font-size:30px;flex:none;backdrop-filter:blur(4px)">'
+    +(idx===0?'🌱':idx>=RANKS.length-2?'👑':'🏆')+'</div>'
+    +'<div style="flex:1;min-width:0;position:relative;z-index:1">'
+    +'<div style="font-size:11px;font-weight:800;letter-spacing:1.6px;opacity:.85">CURRENT RANK</div>'
+    +'<b style="font-size:21px;display:block;margin-top:2px">'+curName+'</b>'
+    +'<div style="height:6px;background:rgba(255,255,255,.25);border-radius:3px;margin-top:9px;overflow:hidden">'
+    +'<i style="display:block;height:100%;width:'+Math.round(innerPct*100)+'%;background:#fff;border-radius:3px;transition:width .8s"></i></div>'
+    +'<div style="font-size:11.5px;opacity:.9;margin-top:5px;display:flex;justify-content:space-between"><span>'+curAt+'%</span><span>'+(rk.next||'满级')+' · '+(nextAt!==null&&nextAt!==undefined?nextAt+'%':'MAX')+'</span></div>'
+    +'</div></div>';
+  /* 中央行：进度环 + 今日/连签 */
+  h+='<div style="display:flex;align-items:center;gap:18px;margin-top:14px">'
+    +ring
+    +'<div style="flex:1;display:grid;grid-template-columns:1fr;gap:8px">'
+    +'<div style="display:flex;align-items:center;gap:10px;background:var(--card);border-radius:16px;padding:10px 14px;box-shadow:var(--sh-card)"><span style="font-size:22px">🔥</span><div><b style="font-size:15px;display:block">'+streak+' 天</b><span class="cap">连续打卡</span></div></div>'
+    +'<div style="display:flex;align-items:center;gap:10px;background:var(--card);border-radius:16px;padding:10px 14px;box-shadow:var(--sh-card)"><span style="font-size:22px">🎯</span><div><b style="font-size:15px;display:block">'+acc+'%</b><span class="cap">答题正确率</span></div></div>'
+    +'</div></div>';
+  /* 数据六宫格 */
+  var D=[
+    {ico:'📖',v:s.doneC+'/'+s.totalC,l:'已学章节'},
+    {ico:'📝',v:s.examFull+'/'+s.examTotal,l:'小卷已做'},
+    {ico:'🧮',v:tq,l:'累计答题'+(tc?'':'')},
+    {ico:'✍️',v:tc,l:'累计答对'},
+    {ico:'🎖️',v:gotN+'/'+bd.length,l:'徽章解锁'},
+    {ico:'🧹',v:s.wrongPool,l:'待订正错题'}
+  ];
+  h+='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px">';
+  D.forEach(function(d){
+    h+='<div style="background:var(--card);border-radius:18px;padding:12px 6px;text-align:center;box-shadow:var(--sh-card);border:1px solid var(--sep)">'
+      +'<div style="font-size:20px;line-height:1">'+d.ico+'</div>'
+      +'<b style="font-size:17px;display:block;margin-top:5px">'+d.v+'</b>'
+      +'<span class="cap" style="display:block;margin-top:2px">'+d.l+'</span></div>';
+  });
+  h+='</div>';
+  return h;
+};
 /* ============ 实验室 / 管理 / 关于 ============ */
 renderers.lab=function(){
   return '<div class="kick">THE CHIP LAB</div><div class="h1">芯片实验室</div>'
@@ -482,17 +721,20 @@ renderers.lab=function(){
 };
 renderers.manage=function(){
   var s=calcStats();
-  return '<div class="kick">ACCOUNT</div><div class="h1">管理</div>'
-    +'<div class="sub">进度备份与恢复 · 数据安全 · 本机游客态（云端账号下一批接入）</div>'
-    +'<div class="card" style="border-radius:var(--r-l)"><b>📦 进度备份</b>'
-    +'<div class="cap" style="margin:6px 0 12px;line-height:1.7">导出生成一串备份码，换设备粘贴即可恢复；清除前先导出，有备无患。</div>'
-    +'<textarea id="bkText" style="width:100%;min-height:104px;border:1.5px solid var(--sep);border-radius:14px;padding:12px 14px;font-family:ui-monospace,Consolas,monospace;font-size:12px;line-height:1.6;background:var(--bg);color:var(--ink);resize:vertical" placeholder="点「导出备份」生成备份码；或粘贴备份码后点「导入恢复」…"></textarea>'
-    +'<div class="mini-row" style="margin-top:10px"><button class="mini-btn lift" id="bkExport">导出备份</button>'
-    +'<button class="mini-btn lift" id="bkImport">导入恢复</button></div>'
-    +'<div class="cap" style="margin-top:8px;line-height:1.6;color:var(--muted)">当前：本地游客 · 已学 '+s.doneC+'/'+s.totalC+' 章 · 总进度 '+s.pct+'%</div></div>'
-    +'<div class="card" style="margin-top:12px;border:1px solid rgba(255,59,48,.25)"><b style="color:var(--red)">🗑 清除所有记录</b>'
-    +'<div class="cap" style="margin:6px 0 12px;line-height:1.7">将清空全部学习数据（章节进度 / 徽章 / 错题 / 足迹 / 打卡），回到初始状态。为防误触，<b>需要输入「清除记录」四个字确认</b>。建议先导出备份。</div>'
-    +'<button class="btn-go" id="wipeOpen" style="background:var(--red);box-shadow:0 6px 18px var(--red-soft)">清除所有记录</button></div>';
+  return '<div class="kick">DATA</div><div class="h1">数据管理</div>'
+    +'<div class="sub">导出 / 导入备份 · 清除所有记录（本地与云端一并删除）</div>'
+    +'<div class="card" style="border-radius:var(--r-l)">'
+    +'<b style="font-size:16px">📦 备份与恢复</b>'
+    +'<div class="cap" style="margin:6px 0 12px;line-height:1.7">导出生成一串备份码，换设备 / 清空前粘贴即可恢复；云端登录时进度会自动同步，备份码用作额外保险。</div>'
+    +'<textarea id="bkText" style="width:100%;min-height:100px;border:1.5px solid var(--sep);border-radius:14px;padding:12px 14px;font-family:ui-monospace,Consolas,monospace;font-size:12px;line-height:1.6;background:var(--bg);color:var(--ink);resize:vertical" placeholder="点「导出备份」生成备份码；或粘贴备份码后点「导入恢复」…"></textarea>'
+    +'<div class="mini-row" style="margin-top:10px"><button class="mini-btn lift" id="bkExport">'+IC('doc')+' 导出备份</button>'
+    +'<button class="mini-btn lift" id="bkImport">'+IC('download','').replace('</span>','<path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg></span>')+' 导入恢复</button></div>'
+    +'<div style="height:1px;background:var(--sep);margin:16px 0 14px"></div>'
+    +'<b style="color:var(--red);font-size:16px">🗑 清除所有记录</b>'
+    +'<div class="cap" style="margin:6px 0 12px;line-height:1.7">将<b>永久删除本地与云端全部记录</b>（章节进度 / 徽章 / 错题 / 足迹 / 打卡 / 云端档案），回到初始状态，不可撤销。为防误触，需输入「清除记录」确认。建议先导出备份。</div>'
+    +'<button class="btn-go" id="wipeOpen" style="background:var(--red);box-shadow:0 6px 18px var(--red-soft)">清除所有记录（本地 + 云端）</button>'
+    +'<div class="cap" style="margin-top:10px;line-height:1.6;color:var(--muted)">当前：本地游客 · 已学 '+s.doneC+'/'+s.totalC+' 章 · 总进度 '+s.pct+'%</div>'
+    +'</div>';
 };
 ;
 renderers.about=function(){
@@ -518,8 +760,8 @@ renderers.author=function(){
     +'<div class="card" style="border-radius:var(--r-l)">'
     +'<div style="display:flex;gap:14px;align-items:center;margin-bottom:12px">'
     +'<div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#0A84FF,#5E5CE6);display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0">🐭</div>'
-    +'<div><b style="font-size:17px">鼠哥 · 学院发起人</b><div class="cap">西安交通大学 · 准大一新生</div></div></div>'
-    +'<div style="font-size:14px;color:var(--ink2);line-height:1.9">打乒乓、敲架子鼓（十级）。开学前想做的事：<b>把同学们聚到一个地方，把大学第一年的硬课一起啃下来</b>。</div>'
+    +'<div><b style="font-size:17px">鼠哥 · 学院发起人</b><div class="cap">西安交通大学 · 大一新生</div></div></div>'
+    +'<div style="font-size:14px;color:var(--ink2);line-height:1.9">打乒乓、敲架子鼓（十级）。这个暑假第一次接触 AI agent，一发不可收拾——<b>想让同学都用到自己能动手的硬课学院</b>，于是有了这里。</div>'
     +'<div style="font-size:14px;color:var(--ink2);line-height:1.9;margin-top:8px"><b style="color:var(--ink)">为什么会有这一座座学院？</b><br>'
     +'高数光看 PDF 学不动，想要一个「做题马上批改、错题自己长记性」的地方 → 微积分学院诞生。<br>'
     +'同学说也想学编程 → Python 学院：浏览器里直接写代码、即时判题。<br>'
@@ -743,10 +985,6 @@ function sessDone(){
   return true;
 }
 function renderView(id, isBack){
-  if(id !== window._cur && (window._cur === 'chapter' || window._cur === 'exam') && !sessDone()){
-    _pendingNav = { id: id, isBack: !!isBack };
-    showLeaveGuard();
-    return;
-  }
+  /* 退出确认统一走 requestNav → confirmBox（calc2 同款）；页面渲染直通 */
   doRenderView(id, isBack);
 }

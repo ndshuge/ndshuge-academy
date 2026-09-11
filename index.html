@@ -626,14 +626,14 @@ body{background:radial-gradient(1200px 600px at 20% -10%,var(--bg-glow,var(--car
       <b style="font-size:16px">🐭 鼠哥学院</b><span>FOUR ACADEMIES · ONE FAMILY</span>
     </div>
     <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
-      <button id="hubSyncBtn" style="display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 14px;border-radius:17px;border:none;background:var(--fill-soft);color:var(--accent);font:600 13px inherit;font-family:inherit;cursor:pointer;transition:transform .24s cubic-bezier(.34,1.56,.64,1),filter .18s" title="从云端拉取四院进度并合并（取并集，不覆盖本地）"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg><span style="font-size:13px">同步</span></button>
+      <button id="hubSyncBtn" style="display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 14px;border-radius:17px;border:none;background:var(--fill-soft);color:var(--accent);font:600 13px inherit;font-family:inherit;cursor:pointer;transition:transform .24s cubic-bezier(.34,1.56,.64,1),filter .18s" title="从云端拉取五院进度并合并（取并集，不覆盖本地）"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg><span style="font-size:13px">同步</span></button>
       <button id="hubReloadBtn" style="display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 14px;border-radius:17px;border:none;background:var(--fill-soft);color:var(--accent);font:600 13px inherit;font-family:inherit;cursor:pointer;transition:transform .24s cubic-bezier(.34,1.56,.64,1),filter .18s" title="强制刷新到最新版本（清缓存）"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg><span style="font-size:13px">刷新</span></button>
     </div>
   </div>
   <div id="hubscroller"><div class="view" id="view">
     <div class="kick">MOUSE ACADEMY</div>
-    <div class="h1">四门硬课，一起啃</div>
-    <div class="sub" style="margin-bottom:14px">账号互通 · 打卡四院共通 · 进度各自独立。挑一座学院，点开今天的第一章。</div>
+    <div class="h1">五门硬课，一起啃</div>
+    <div class="sub" style="margin-bottom:14px">账号互通 · 打卡五院共通 · 进度各自独立。挑一座学院，点开今天的第一章。</div>
 
     <div id="acctLine" style="margin-bottom:14px"></div>
 
@@ -648,7 +648,7 @@ body{background:radial-gradient(1200px 600px at 20% -10%,var(--bg-glow,var(--car
     <div class="sec-title">ACADEMIES 学院</div>
     <div class="acgrid" id="acGrid"></div>
 
-    <div class="foot-note">学习进度按院独立记录 · 四院同一账号体系 · 源码公开于 GitHub<br>由鼠哥发起、拉里·佩奇搭建 · 有问题在学院里「留言」</div>
+    <div class="foot-note">学习进度按院独立记录 · 五院同一账号体系 · 源码公开于 GitHub<br>由鼠哥发起、拉里·佩奇搭建 · 有问题在学院里「留言」</div>
   </div></div>
 </div>
 <!-- 登录弹窗（环境光：毛玻璃遮罩 + 背景后退 + 弹簧上滑） -->
@@ -661,10 +661,11 @@ var ACADEMIES = [
   {id:'python',   file:'python.html?v=5',    icon:'🐍', bg:'linear-gradient(135deg,#34C759,#28A745)',  name:'Python 学院',  desc:'浏览器里写代码',         sub:'30 章渐进 · 动手即判题'},
   {id:'calculus', file:'calculus.html?v=5',  icon:'∫',  bg:'linear-gradient(135deg,#FF9F0A,#FF7A00)',  name:'微积分学院',   desc:'大一高数先修',           sub:'极限导数积分 · 公式即时批改'},
   {id:'chip',     file:'chip.html?v=5',      icon:'🧠', bg:'linear-gradient(135deg,#0A84FF,#5E5CE6)',   name:'芯片战争学院', desc:'米勒《芯片战争》36 章', sub:'材料、制造与地缘权力 · 随堂题点亮章节'},
-  {id:'c',        file:'c.html?v=5',         icon:'⚙',  bg:'linear-gradient(135deg,#FF453A,#D70015)',  name:'C 语言学院',   desc:'指针与内存',             sub:'50 章 · 讲义代码 + 判题'}
+  {id:'c',        file:'c.html?v=5',         icon:'⚙',  bg:'linear-gradient(135deg,#FF453A,#D70015)',  name:'C 语言学院',   desc:'指针与内存',             sub:'50 章 · 讲义代码 + 判题'},
+  {id:'phys',     file:'phys.html?v=1',      icon:'⚛',  bg:'linear-gradient(135deg,#AF52DE,#5E5CE6)',  name:'大学物理学院', desc:'吴百诗《大学物理学》',   sub:'力学到电磁 · 随堂题点亮章节'}
 ];
-var PRE = { chip:'chip_', calculus:'pjc_', python:'pyc_', c:'cc_' };
-var TOT = { chip:36, calculus:30, python:30, c:50 };
+var PRE = { chip:'chip_', calculus:'pjc_', python:'pyc_', c:'cc_', phys:'phy_' };
+var TOT = { chip:36, calculus:30, python:30, c:50, phys:23 };
 function cnt(prefix, key){
   try{ var v = JSON.parse(localStorage.getItem(prefix + key));
     return v ? (Array.isArray(v) ? v.length : (typeof v === 'number' ? v : Object.keys(v).length)) : 0; }
@@ -784,7 +785,7 @@ try{
   }
   var tch = 0, tt2 = 0;
   Object.keys(TOT).forEach(function(k){ tch += Math.min(cnt(PRE[k], 'ch'), TOT[k]); tt2 += TOT[k]; });
-  hp += '<span class="pill blue">四院合计已学 ' + tch + '/' + tt2 + ' 章</span>';
+  hp += '<span class="pill blue">五院合计已学 ' + tch + '/' + tt2 + ' 章</span>';
   var hl = document.getElementById('hubLine'); if(hl) hl.textContent = line;
   var pp = document.getElementById('hubPills'); if(pp) pp.innerHTML = hp;
 }catch(e){}
@@ -805,7 +806,7 @@ try{
   }
 }catch(e){}
 
-/* 云端同步：拉取四院云端进度（progress.data.{chip,calculus,python,c}），与本地取并集合并后重绘 */
+/* 云端同步：拉取五院云端进度（progress.data.{chip,calculus,python,c,phy}），与本地取并集合并后重绘 */
 /* 令牌自动续期（与学院端同语义）：仅服务器明确拒绝才清会话；网络/限流保留 */
 var _hubRefP = null;
 function hubTokenFresh(){
@@ -847,7 +848,7 @@ function hubSync(silent){
     if(!ok && !still){ if(!silent) hubToast('登录已过期：请重新登录（右上角）'); acctBar(); paintHub(); return false; }
     if(!ok){ if(!silent) hubToast('同步失败：网络或服务异常，请稍后再试'); return false; }
     var s = hubSess(); if(!s){ return false; }
-    if(!silent) hubToast('正在同步并合并四院进度…');
+    if(!silent) hubToast('正在同步并合并五院进度…');
     var h = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + s.access_token, 'Content-Type': 'application/json' };
     return fetch(SB_URL + '/rest/v1/progress?select=data&user_id=eq.' + s.user.id, { headers: h })
     .then(function(r){ if(r.status === 401){ if(!silent) hubToast('登录已过期：请重新登录（右上角）'); acctBar(); paintHub(); return null; } return r.json(); })
@@ -855,7 +856,7 @@ function hubSync(silent){
       if(rows === null) return false;
       var data = (rows && rows.length && rows[0] && rows[0].data && typeof rows[0].data === 'object') ? rows[0].data : null;
       if(!data){ if(!silent) hubToast('云端暂无进度记录'); return false; }
-      var PRE2 = { chip:'chip_', calculus:'pjc_', python:'pyc_', c:'cc_' };
+      var PRE2 = { chip:'chip_', calculus:'pjc_', python:'pyc_', c:'cc_', phy:'phy_' };
       var ARR = ['ch','hall','wrong','fixed','log'];
       var OBJ = ['quizStat','tstat','quizPick','settle'];
       var changed = false;
@@ -927,7 +928,7 @@ function closeAuth(){
   d.classList.remove('show');
   setTimeout(function(){ if(!d.classList.contains('show')) d.style.display='none'; },540);
 }
-/* ===== 总院账号（Supabase · 四院共享会话 acad_sb_session） ===== */
+/* ===== 总院账号（Supabase · 五院共享会话 acad_sb_session） ===== */
 var SB_URL='https://yycokuphczoxfntcwizi.supabase.co';
 var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl5Y29rdXBoY3pveGZudGN3aXppIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc0MDM3MzgsImV4cCI6MjEwMjk3OTczOH0.1vm61oyqeBmc2lL_q0-rgJT2x6TsOn_DXsQo1GQJbSM';
 var AVS=['🦊','🐼','🐸','🐙','🦄','🐯','🐨','🐰','🦁','🐢','🐳','🦉','🐭','🐿️'];
@@ -943,7 +944,7 @@ function paintAcctLine(){
   var gst=false; try{ gst=!!localStorage.getItem('acad_guest'); }catch(e){}
   var av=(s&&p&&p.avatar)?p.avatar:(gst?'🧭':'🐹');
   var nm=(s&&p&&p.username)?p.username:(gst?'游客模式':'未登录');
-  var sub=(s&&s.user&&s.user.email)?s.user.email:((s&&p&&p.username)?'云同步已开启 · 进度多端互通':(gst?'学习数据仅保存在这台设备':'登录后四院进度云端同步、多端互通'));
+  var sub=(s&&s.user&&s.user.email)?s.user.email:((s&&p&&p.username)?'云同步已开启 · 进度多端互通':(gst?'学习数据仅保存在这台设备':'登录后五院进度云端同步、多端互通'));
   var act=s?'账号管理':(gst?'登录 / 注册':'登录 / 注册');
   el.innerHTML='<div id="acctLineCard" style="display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--sep);border-radius:var(--r-l,18px);padding:12px 14px;box-shadow:var(--sh-card);cursor:pointer;-webkit-backdrop-filter:saturate(1.2) blur(8px);backdrop-filter:saturate(1.2) blur(8px)">'
     +'<span style="width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#0A84FF,#5E5CE6);display:flex;align-items:center;justify-content:center;font-size:21px;color:#fff;flex:none">'+av+'</span>'
@@ -983,8 +984,8 @@ function authModeView(){ /* 渲染 authCard 内容（Apple 精致版） */
     +'<button id="atFr"'+(window._authTab==='fr'?' class="on"':'')+'>找回</button></div>';
   var kick = window._authTab==='up' ? 'CREATE ACCOUNT · 注册' : (window._authTab==='fr' ? 'RECOVER · 找回' : 'WELCOME BACK · 欢迎回来');
   var title = window._authTab==='up' ? '创建账号' : (window._authTab==='fr' ? '找回密码' : '登录鼠哥学院');
-  var cap = window._authTab==='up' ? '四院同一账号 · 一处注册，全站通用'
-        : (window._authTab==='fr' ? '输入注册邮箱，重置链接会发到该邮箱' : '四院同一账号 · 一处登录，进度各自独立、多端同步');
+  var cap = window._authTab==='up' ? '五院同一账号 · 一处注册，全站通用'
+        : (window._authTab==='fr' ? '输入注册邮箱，重置链接会发到该邮箱' : '五院同一账号 · 一处登录，进度各自独立、多端同步');
   var inner='<div class="auth-kicker">'+kick+'</div>'
     +'<div class="auth-title">'+title+'</div>'
     +'<div class="auth-cap">'+cap+'</div>'
@@ -1110,7 +1111,7 @@ function hubAcctPanel(){
     +'<div style="display:flex;align-items:center;gap:22px"><div id="hubAvBig" style="width:96px;height:96px;border-radius:50%;background:'+hubAvColor(cur)+';display:flex;align-items:center;justify-content:center;font-size:48px;flex:none;box-shadow:0 4px 14px rgba(0,0,0,.12)">'+hubEsc(cur)+'</div>'
     +'<div style="flex:1;min-width:0"><b style="font-size:23px">'+hubEsc(uname)+'</b>'
     +'<div style="font-size:13.5px;color:var(--muted);margin-top:4px;overflow:hidden;text-overflow:ellipsis">'+hubEsc(email)+'</div>'
-    +'<div style="font-size:13px;color:var(--muted);margin-top:3px">四院同一账号 · 云同步已开启</div></div></div>'
+    +'<div style="font-size:13px;color:var(--muted);margin-top:3px">五院同一账号 · 云同步已开启</div></div></div>'
     +'<div style="margin-top:24px"><b style="font-size:16px">换头像</b><div id="hubAvRow" style="display:flex;gap:10px;overflow-x:auto;margin-top:10px;padding-bottom:8px"></div></div>'
     +'<div style="margin-top:22px"><b style="font-size:16px">昵称</b><div style="display:flex;gap:10px;margin-top:10px">'
     +'<input id="hubName" value="'+hubEsc(uname)+'" maxlength="16" style="'+inpCss+'" placeholder="昵称（2~16 位中文/字母/数字）">'

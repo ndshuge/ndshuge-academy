@@ -1,0 +1,76 @@
+/* ============================================================
+   统一按压语言（chip 内容层）：页面可点元素 = Dock 底栏同款动效
+   桌面：hover 上浮 + 阴影；触屏：按下高亮（无位移，iOS 语言）
+   仅作用于页面内容区 #view（topbar/dock 自带动效，不受影响）
+   ============================================================ */
+@media (hover:hover){
+  #view button:not(:disabled),
+  #view .opt:not([data-lock]),
+  #view .mh-card.lit{
+    transition:transform .22s var(--ease), box-shadow .22s var(--ease), filter .18s, background .18s, border-color .18s;
+  }
+  #view button:not(:disabled):hover,
+  #view .opt:not([data-lock]):hover{
+    transform:translateY(-2px);
+    box-shadow:0 4px 12px rgba(0,0,0,.07), 0 8px 20px rgba(0,0,0,.05);
+  }
+  #view button:not(:disabled):hover{
+    filter:brightness(.985);
+  }
+  #view button:not(:disabled):active,
+  #view .opt:not([data-lock]):active{
+    transform:translateY(0) scale(.985);
+    filter:brightness(.93);
+    box-shadow:0 1px 3px rgba(0,0,0,.05);
+  }
+  #view .mh-card.lit:active{
+    transform:translateY(0) scale(.985);
+    filter:brightness(.96);
+  }
+}
+@media (hover:none){
+  #view button:not(:disabled):active,
+  #view .opt:not([data-lock]):active{
+    filter:brightness(.85);
+  }
+  #view .mh-card.lit:active{
+    filter:brightness(.9);
+  }
+}
+/* 已锁定/不可点状态不参与按压 */
+#view .opt[data-lock]{pointer-events:none}
+#view button:disabled{pointer-events:none}
+
+/* ============ topbar 左右按钮：Dock 三键同款丝滑动效 ============ */
+#topbar .backbtn,#topbar .homebtn{
+  transition:transform .24s var(--ease-spring), background .18s, box-shadow .2s, color .15s;
+}
+@media (hover:hover){
+  #topbar .backbtn:hover,#topbar .homebtn:hover{
+    transform:translateY(-2px) scale(1.06);
+    background:var(--fill-soft);
+    box-shadow:0 3px 8px rgba(0,0,0,.06);
+    filter:none;
+  }
+  #topbar .backbtn:active,#topbar .homebtn:active{
+    transform:translateY(0) scale(.97);
+    filter:brightness(.92);
+    box-shadow:none;
+  }
+}
+@media (hover:none){
+  #topbar .backbtn:active,#topbar .homebtn:active{
+    background:var(--fill);
+    transform:scale(.96);
+    filter:none;
+  }
+}
+
+/* 首页：导读人卡 与 下一站 之间留出呼吸间距 */
+#view .hero-card{margin-top:26px}
+
+/* 导读人卡：名字加大（照片头像） */
+#view .tutor-card .tutor-name-big{font-size:22px;font-weight:800;letter-spacing:.3px;color:var(--ink);margin-top:1px;line-height:1.2}
+#view .tutor-card .tutor-quote{margin-top:6px}
+#view .tutor-card .tutor-photo{border-radius:16px}
+@media (min-width:640px){ #view .tutor-card .tutor-name-big{font-size:24px} }

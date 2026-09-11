@@ -9,14 +9,14 @@ if sys.platform == 'win32':
     except Exception:
         pass
 
-HERE = r'E:\Hanako的记忆\学习计划\learn-python'
-SRC = r'E:\Hanako的记忆\学习计划\四学院\python.html'
+HERE = r'E:\Hanako\学习计划\learn-python'
+SRC = r'E:\Hanako\学习计划\四学院\python.html'
 REPO = 'ndshuge-python-academy'
 
 def find_token():
     pat = re.compile(r'ghp_[A-Za-z0-9]{20,}')
-    for p in [r'E:\Hanako的记忆\学习计划\learn-c\部署备忘-C语言学院.md',
-              r'E:\Hanako的记忆\学习计划\学习\数学\高数教材\部署备忘-普林斯顿学院.md']:
+    for p in [r'E:\Hanako\学习计划\learn-c\部署备忘-C语言学院.md',
+              r'E:\Hanako\学习计划\学习\数学\高数教材\部署备忘-普林斯顿学院.md']:
         try:
             s = io.open(p, encoding='utf-8', errors='replace').read()
         except Exception:

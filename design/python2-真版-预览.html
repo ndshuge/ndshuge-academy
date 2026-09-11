@@ -657,7 +657,7 @@ function IC(name, cls){ return '<span class="ic '+(cls||'')+'">'+I[name]+'</span
 /* 注入静态图标 */
 function mountStaticIcons(){
   $('#backIco').innerHTML=I['back'];
-  $('#portalIco').innerHTML=I['home'];
+  var _pi=document.getElementById('portalIco'); if(_pi) _pi.innerHTML=I['home'];
   $('#cCheck').innerHTML=I['check'];
   document.querySelectorAll('.d-ico').forEach(function(el){ var n=el.getAttribute('data-i'); if(I[n]) el.innerHTML=I[n]; });
 }

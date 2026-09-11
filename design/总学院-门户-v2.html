@@ -506,21 +506,21 @@ body{background:radial-gradient(1200px 600px at 20% -10%,var(--bg-glow,var(--car
   </div>
   <div id="stage"><div id="scroller"><div class="view" id="view">
     <div class="kick">鼠哥学院</div>
-    <div class="h1">四门硬课，一起啃</div>
-    <div class="sub">账号互通、打卡四院共通、进度各自独立。点任一学院进入，读它的书、做它的题。</div>
+    <div class="h1">五门硬课，一起啃</div>
+    <div class="sub">账号互通、打卡五院共通、进度各自独立。点任一学院进入，读它的书、做它的题。</div>
 
     <div class="hero-card">
       <span class="hk">TODAY · 今天</span>
       <b class="next" style="padding-right:0">挑一座学院，点开今天的第一章。</b>
       <div class="foot" style="gap:6px">
-        <span class="pill gold">🔥 连签按四院打卡累计</span>
+        <span class="pill gold">🔥 连签按五院打卡累计</span>
         <span class="pill blue" id="hubStreak">…</span>
       </div>
     </div>
 
     <div class="sec-title">ACADEMIES 学院</div>
     <div class="acgrid" id="acGrid"></div>
-    <div class="hintbar">进度与账号四院同一体系 · 源码公开于 GitHub · 由鼠哥发起、拉里·佩奇搭建<br>（预览版：学院卡将打开当前目录的学院页面；看新版效果请直接打开 design/chip2-真版-预览.html）</div>
+    <div class="hintbar">进度与账号五院同一体系 · 源码公开于 GitHub · 由鼠哥发起、拉里·佩奇搭建<br>（预览版：学院卡将打开当前目录的学院页面；看新版效果请直接打开 design/chip2-真版-预览.html）</div>
   </div></div></div>
 </div>
 <script>
@@ -529,7 +529,8 @@ var ACADEMIES = [
   {id:'chip', file:'chip.html?v=1', name:'芯片战争学院', sub:'《芯片战争》36 章 · 材料、制造与地缘权力', icon:'🧠', bg:'linear-gradient(135deg,#0A84FF,#5E5CE6)', desc:'米勒读本 36 章 · 随堂题点亮章节'},
   {id:'calculus', file:'calculus.html?v=1', name:'微积分学院', sub:'大一高数先修 · 极限导数积分', icon:'∫', bg:'linear-gradient(135deg,#FF9F0A,#FF7A00)', desc:'讲义 + 即时批改 · 公式随时验证'},
   {id:'python', file:'python.html?v=1', name:'Python 学院', sub:'浏览器里写代码 · 30 章渐进', icon:'🐍', bg:'linear-gradient(135deg,#34C759,#28A745)', desc:'动手写、即时判题 · 从零到能写'},
-  {id:'c', file:'c.html?v=1', name:'C 语言学院', sub:'指针与内存 · 浏览器真编译', icon:'⚙', bg:'linear-gradient(135deg,#FF453A,#D70015)', desc:'50 章 · 真编译真运行真调试'}
+  {id:'c', file:'c.html?v=1', name:'C 语言学院', sub:'指针与内存 · 浏览器真编译', icon:'⚙', bg:'linear-gradient(135deg,#FF453A,#D70015)', desc:'50 章 · 真编译真运行真调试'},
+  {id:'phys', file:'phys.html?v=1', name:'大学物理学院', sub:'吴百诗《大学物理学》 · 力学到近代物理 51 章', icon:'⚛', bg:'linear-gradient(135deg,#AF52DE,#5E5CE6)', desc:'讲义 + 随堂 10 题 + 小卷 10 题'}
 ];
 document.getElementById('acGrid').innerHTML = ACADEMIES.map(function(a){
   return '<a class="card ac-card lift" href="'+a.file+'"><div class="ac-head">'

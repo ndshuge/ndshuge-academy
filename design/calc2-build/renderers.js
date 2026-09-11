@@ -610,3 +610,379 @@ function renderView(id, isBack){
   }
   doRenderView(id, isBack);
 }
+
+/* ============ 微积分实验室（旧版四大实验 · 原样搬入 apple 版面） ============ */
+renderers.lab=function(){
+  function ctl(rid, label, extra){
+    var mp = { epsS:'min="0.05" max="1.6" step="0.05" value="0.8"', aS:'min="0.2" max="4" step="0.1" value="2"', nS:'min="1" max="60" step="1" value="8"', thS:'min="0" max="360" step="1" value="45"' };
+    return '<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:10px 0">'
+      +'<span style="font-size:13px;color:var(--ink2)">'+label+'</span>'+extra
+      +'<input type="range" id="'+rid+'" style="flex:1;min-width:120px"'+(mp[rid]?(' '+mp[rid]):'')+'></div>';
+  }
+  var h='<div class="kick">CALCULUS LAB</div><div class="h1">微积分实验室</div>'
+    +'<div class="sub">不是看图，是动手。每张图都能拖，数值都由真实函数算出并自检。</div>';
+  h+='<div class="card" style="border-radius:var(--r-l)"><b style="font-size:15px">实验一 · ε-δ 定义极限</b>'
+    +'<div style="font-size:13px;color:var(--ink2);line-height:1.7;margin:8px 0">函数 <b>f(x)=x²</b> 在 x→2 时极限为 4。拖动 <b>ε</b> 收紧误差带，看 <b>δ</b> 窗口如何收缩。</div>'
+    +ctl('epsS','ε = <span id="epsV">0.80</span> · δ = <span id="delV">—</span>','')
+    +'<canvas id="cvEps" width="900" height="300" style="width:100%;height:auto;border-radius:10px"></canvas>'
+    +'<div id="stEps" style="font-size:12.5px;color:var(--ink2);margin-top:8px;line-height:1.6"></div></div>';
+  h+='<div class="card" style="border-radius:var(--r-l);margin-top:12px"><b style="font-size:15px">实验二 · 导数就是切线斜率</b>'
+    +'<div style="font-size:13px;color:var(--ink2);line-height:1.7;margin:8px 0">抛物线 <b>y=¼x²</b>。拖动 <b>a</b>，切线贴合曲线，斜率 y′(a)=a/2。</div>'
+    +ctl('aS','a = <span id="aV">2.00</span> · 斜率 = <span id="slopeV">1.00</span>','')
+    +'<canvas id="cvTan" width="900" height="300" style="width:100%;height:auto;border-radius:10px"></canvas>'
+    +'<div id="stTan" style="font-size:12.5px;color:var(--ink2);margin-top:8px;line-height:1.6"></div></div>';
+  h+='<div class="card" style="border-radius:var(--r-l);margin-top:12px"><b style="font-size:15px">实验三 · 定积分是矩形面积之和的极限</b>'
+    +'<div style="font-size:13px;color:var(--ink2);line-height:1.7;margin:8px 0">函数 <b>y=9−x²</b> 在 [0,3] 面积 = 18。拖动 <b>n</b> 增加分割，矩形和逼近真实面积。</div>'
+    +ctl('nS','n = <span id="nV">8</span> · 矩形和 = <span id="sumV">—</span> · 真实面积 = 18','')
+    +'<canvas id="cvRie" width="900" height="300" style="width:100%;height:auto;border-radius:10px"></canvas>'
+    +'<div id="stRie" style="font-size:12.5px;color:var(--ink2);margin-top:8px;line-height:1.6"></div></div>';
+  h+='<div class="card" style="border-radius:var(--r-l);margin-top:12px"><b style="font-size:15px">实验四 · 单位圆里藏着一族函数</b>'
+    +'<div style="font-size:13px;color:var(--ink2);line-height:1.7;margin:8px 0">拖动角度 <b>θ</b>，圆上一点扫出正弦、余弦；sin²+cos²=1 恒成立。</div>'
+    +ctl('thS','θ = <span id="thV">45°</span> · sin = <span id="sinV">—</span> · cos = <span id="cosV">—</span>','')
+    +'<canvas id="cvTri" width="900" height="300" style="width:100%;height:auto;border-radius:10px"></canvas>'
+    +'<div id="stTri" style="font-size:12.5px;color:var(--ink2);margin-top:8px;line-height:1.6"></div></div>';
+  setTimeout(function(){ try{ drawEps(); drawTan(); drawRie(); drawTri(); }catch(e){} },40);
+  return h;
+};
+
+function drawEps(){
+  var cv=document.getElementById('cvEps'); if(!cv) return;
+  var W=900,H=300; cv.width=W; cv.height=H;
+  var g=cv.getContext('2d'); g.clearRect(0,0,W,H);
+  var xmin=-0.6,xmax=4.6,ymin=-1,ymax=12;
+  labAxes(g,W,H,xmin,xmax,ymin,ymax);
+  labPlot(g,function(x){return x*x;},xmin,xmax,ymin,ymax,W,H,'#537D96');
+  var eps=+document.getElementById('epsS').value, x0v=2,y0v=4;
+  var d1=Math.sqrt(y0v)-Math.sqrt(Math.max(y0v-eps,0));
+  var d2=Math.sqrt(y0v+eps)-Math.sqrt(y0v);
+  var delta=Math.min(d1,d2);
+  var rw=2*delta*(W-45-20)/(xmax-xmin), rh=2*eps*(H-20-28)/(ymax-ymin);
+  g.fillStyle='rgba(157,95,77,0.12)';
+  g.fillRect(labPX(x0v-delta,xmin,xmax,W),labPY(y0v+eps,ymin,ymax,H),rw,rh);
+  g.setLineDash([4,3]);g.strokeStyle='#9D5F4D';g.lineWidth=1.2;
+  g.strokeRect(labPX(x0v-delta,xmin,xmax,W),labPY(y0v+eps,ymin,ymax,H),rw,rh);
+  g.setLineDash([]);
+  g.fillStyle='#9D5F4D';g.beginPath();g.arc(labPX(x0v,xmin,xmax,W),labPY(y0v,ymin,ymax,H),4,0,6.283);g.fill();
+  g.fillStyle='#4A433C';g.font='13px Georgia';
+  g.fillText('f(x)=x²  (2,4)',labPX(2.45,xmin,xmax,W),labPY(5,ymin,ymax,H));
+  g.fillStyle='#6B6158';g.font='12px Georgia';
+  g.fillText('ε='+eps.toFixed(2)+'   δ='+delta.toFixed(3),49,H-10);
+  document.getElementById('epsV').textContent=eps.toFixed(2);
+  document.getElementById('delV').textContent=delta.toFixed(3);
+  var err=Math.abs((x0v+delta)*(x0v+delta)-y0v-eps);
+  labCheck('stEps',err<1e-6,'δ='+delta.toFixed(3)+'。|(2+δ)²−4|−ε = '+err.toExponential(1)+' ≈ 0，ε-δ 成立。');
+}
+function drawTan(){
+  var cv=document.getElementById('cvTan'); if(!cv) return;
+  var W=900,H=300; cv.width=W; cv.height=H;
+  var g=cv.getContext('2d'); g.clearRect(0,0,W,H);
+  var xmin=-1.2,xmax=8.2,ymin=-1.5,ymax=17;
+  labAxes(g,W,H,xmin,xmax,ymin,ymax);
+  labPlot(g,function(x){return x*x/4;},xmin,xmax,ymin,ymax,W,H,'#537D96');
+  var a=+document.getElementById('aS').value, ya=a*a/4, slope=a/2;
+  var x1=Math.max(xmin,a-3),x2=Math.min(xmax,a+3);
+  g.strokeStyle='#9D5F4D';g.lineWidth=1.5;
+  g.beginPath();g.moveTo(labPX(x1,xmin,xmax,W),labPY(ya+slope*(x1-a),ymin,ymax,H));g.lineTo(labPX(x2,xmin,xmax,W),labPY(ya+slope*(x2-a),ymin,ymax,H));g.stroke();
+  g.fillStyle='#9D5F4D';g.beginPath();g.arc(labPX(a,xmin,xmax,W),labPY(ya,ymin,ymax,H),4,0,6.283);g.fill();
+  g.fillStyle='#4A433C';g.font='13px Georgia';
+  g.fillText('y=¼x²  切点 ('+a.toFixed(1)+', '+ya.toFixed(2)+')',labPX(a,xmin,xmax,W)+8,labPY(ya,ymin,ymax,H)-8);
+  document.getElementById('aV').textContent=a.toFixed(2);
+  document.getElementById('slopeV').textContent=slope.toFixed(2);
+  labCheck('stTan',Math.abs(ya-a*a/4)<1e-9&&Math.abs(slope-a/2)<1e-9,'切点 ('+a.toFixed(1)+', '+ya.toFixed(2)+') 由 y=¼a² 算出；斜率 y′=a/2='+slope.toFixed(2)+'，与 (¼x²)′=½x 一致。');
+}
+function drawRie(){
+  var cv=document.getElementById('cvRie'); if(!cv) return;
+  var W=900,H=300; cv.width=W; cv.height=H;
+  var g=cv.getContext('2d'); g.clearRect(0,0,W,H);
+  var xmin=-0.3,xmax=3.6,ymin=-1.5,ymax=10.5;
+  labAxes(g,W,H,xmin,xmax,ymin,ymax);
+  var n=+document.getElementById('nS').value, dt=3/n, sum=0;
+  for(var i=0;i<n;i++){
+    var xl=i*dt,xr=(i+1)*dt,fxl=9-xl*xl;
+    sum+=fxl*dt;
+    var rx=labPX(xl,xmin,xmax,W), ry=labPY(fxl,ymin,ymax,H), rw=(xr-xl)*(W-45-20)/(xmax-xmin), rh=fxl*(H-20-28)/(ymax-ymin);
+    g.fillStyle='rgba(83,125,150,0.15)';g.fillRect(rx,ry,rw,rh);
+    g.strokeStyle='rgba(83,125,150,0.25)';g.lineWidth=0.5;g.strokeRect(rx,ry,rw,rh);
+  }
+  labPlot(g,function(x){return 9-x*x;},xmin,xmax,ymin,ymax,W,H,'#537D96');
+  document.getElementById('nV').textContent=n;
+  document.getElementById('sumV').textContent=sum.toFixed(3);
+  var err=Math.abs(sum-18);
+  labCheck('stRie',err<20/n+0.01,'黎曼和 = '+sum.toFixed(3)+'，真实面积 18，误差 '+err.toFixed(3)+'（n 增大误差单调趋于 0）。');
+}
+function drawTri(){
+  var cv=document.getElementById('cvTri'); if(!cv) return;
+  var W=900,H=300; cv.width=W; cv.height=H;
+  var g=cv.getContext('2d'); g.clearRect(0,0,W,H);
+  var cx=130,cy=150,R=100;
+  g.strokeStyle='#D8CFBE';g.lineWidth=1;
+  g.beginPath();g.moveTo(45,cy);g.lineTo(W-20,cy);g.stroke();
+  g.beginPath();g.moveTo(cx,20);g.lineTo(cx,H-28);g.stroke();
+  g.strokeStyle='#C9C2B4';g.lineWidth=1;
+  g.beginPath();g.arc(cx,cy,R,0,6.283);g.stroke();
+  var th=+document.getElementById('thS').value*Math.PI/180;
+  var px=cx+R*Math.cos(th), py=cy-R*Math.sin(th);
+  var s=Math.sin(th),c=Math.cos(th);
+  g.fillStyle='rgba(83,125,150,0.10)';
+  g.beginPath();g.moveTo(cx,cy);g.lineTo(px,py);g.lineTo(px,cy);g.closePath();g.fill();
+  g.strokeStyle='#537D96';g.lineWidth=1.5;
+  g.beginPath();g.moveTo(cx,cy);g.lineTo(px,py);g.stroke();
+  g.strokeStyle='#9D5F4D';g.lineWidth=1.5;
+  g.beginPath();g.moveTo(px,py);g.lineTo(px,cy);g.stroke();
+  g.strokeStyle='#4A6B4A';g.lineWidth=1.5;
+  g.beginPath();g.moveTo(cx,cy);g.lineTo(px,cy);g.stroke();
+  g.fillStyle='#9D5F4D';g.beginPath();g.arc(px,py,4,0,6.283);g.fill();
+  g.fillStyle='#6B6158';g.font='12px Georgia';
+  g.fillText('sin = '+s.toFixed(2),px+10,py-6);
+  g.fillText('cos = '+c.toFixed(2),cx+6,cy+16);
+  document.getElementById('thV').textContent=Math.round(+document.getElementById('thS').value)+'°';
+  document.getElementById('sinV').textContent=s.toFixed(3);
+  document.getElementById('cosV').textContent=c.toFixed(3);
+  var p2=s*s+c*c;
+  document.getElementById('pythV').textContent=p2.toFixed(6);
+  labCheck('stTri',Math.abs(p2-1)<1e-9,'sin²+cos² = '+p2.toFixed(9)+' ≈ 1。勾股定理在单位圆上恒成立。');
+}
+function labPX(x,xmin,xmax,W){ return 45+(x-xmin)/(xmax-xmin)*(W-45-20); }
+function labPY(y,ymin,ymax,H){ return 20+(ymax-y)/(ymax-ymin)*(H-20-28); }
+/* ============ 微积分实验室（旧版整块原样 + framework 排布） ============ */
+renderers.lab=function(){
+  var css = JSON.parse("\".interact-desc{font-size:13.5px;color:var(--ink2);line-height:1.75;margin:8px 0}.controls{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:12px 0;font-size:13.5px;color:var(--ink2)}.controls .val{font-weight:700;font-variant-numeric:tabular-nums;color:var(--ink)}.controls input[type=range]{flex:1;min-width:160px;accent-color:var(--accent)}.status{font-size:12.5px;color:var(--ink2);margin-top:8px;line-height:1.7}.status b{color:var(--green)}canvas{border-radius:12px;background:var(--bg);width:100%;height:auto}:root{--ochre:#C77B3D}\"");
+  var h = '<div class="kick">CALCULUS LAB</div><div class="h1">微积分实验室</div>'
+    + '<div class="sub">不是看图，是动手。每张图都能拖，数值都由真实函数算出并自检，错了会标红。</div>'
+    + '<style>' + css + '</style>'
+    + JSON.parse("\"<div class=\\\"card\\\">\\n        <h3>\\u5b9e\\u9a8c\\u4e00 \\u00b7 \\u03b5-\\u03b4 \\u5b9a\\u4e49\\u6781\\u9650</h3>\\n        <p class=\\\"interact-desc\\\">\\u51fd\\u6570 <b>f(x)=x\\u00b2</b> \\u5728 x\\u21922 \\u65f6\\u6781\\u9650\\u4e3a 4\\u3002\\u62d6\\u52a8 <b>\\u03b5</b> \\u6536\\u7d27\\u8bef\\u5dee\\u5e26\\uff0c\\u770b <b>\\u03b4</b> \\u7a97\\u53e3\\u5982\\u4f55\\u6536\\u7f29\\uff1a\\u53ea\\u8981 |x\\u22122|&lt;\\u03b4\\uff0c\\u5c31\\u6709 |x\\u00b2\\u22124|&lt;\\u03b5\\u3002</p>\\n        <div class=\\\"controls\\\"><label>\\u03b5 = <span class=\\\"val\\\" id=\\\"epsV\\\">0.80</span></label><label>\\u03b4 = <span class=\\\"val\\\" id=\\\"delV\\\" style=\\\"color:var(--ochre)\\\">\\u2014</span></label><input type=\\\"range\\\" id=\\\"epsS\\\" min=\\\"0.05\\\" max=\\\"1.6\\\" step=\\\"0.05\\\" value=\\\"0.8\\\"></div>\\n        <canvas id=\\\"cvEps\\\" width=\\\"900\\\" height=\\\"300\\\"></canvas>\\n        <div class=\\\"status\\\" id=\\\"stEps\\\"></div>\\n      </div>\\n      <div class=\\\"card\\\">\\n        <h3>\\u5b9e\\u9a8c\\u4e8c \\u00b7 \\u5bfc\\u6570\\u5c31\\u662f\\u5207\\u7ebf\\u659c\\u7387</h3>\\n        <p class=\\\"interact-desc\\\">\\u629b\\u7269\\u7ebf <b>y=\\u00bcx\\u00b2</b>\\u3002\\u62d6\\u52a8 <b>a</b>\\uff0c\\u5207\\u7ebf\\u59cb\\u7ec8\\u8d34\\u5408\\u66f2\\u7ebf\\u5e76\\u7a7f\\u8fc7\\u5207\\u70b9\\uff0c\\u659c\\u7387\\u5b9e\\u65f6\\u663e\\u793a y\\u2032(a)=a/2\\u3002</p>\\n        <div class=\\\"controls\\\"><label>a = <span class=\\\"val\\\" id=\\\"aV\\\">2.00</span></label><label>\\u659c\\u7387 y\\u2032 = <span class=\\\"val\\\" id=\\\"slopeV\\\" style=\\\"color:var(--ochre)\\\">1.00</span></label><input type=\\\"range\\\" id=\\\"aS\\\" min=\\\"0.2\\\" max=\\\"4\\\" step=\\\"0.1\\\" value=\\\"2\\\"></div>\\n        <canvas id=\\\"cvTan\\\" width=\\\"900\\\" height=\\\"300\\\"></canvas>\\n        <div class=\\\"status\\\" id=\\\"stTan\\\"></div>\\n      </div>\\n      <div class=\\\"card\\\">\\n        <h3>\\u5b9e\\u9a8c\\u4e09 \\u00b7 \\u5b9a\\u79ef\\u5206\\u662f\\u77e9\\u5f62\\u9762\\u79ef\\u4e4b\\u548c\\u7684\\u6781\\u9650</h3>\\n        <p class=\\\"interact-desc\\\">\\u51fd\\u6570 <b>y=9\\u2212x\\u00b2</b> \\u5728 [0,3] \\u4e0a\\u7684\\u9762\\u79ef = 18\\u3002\\u62d6\\u52a8 <b>n</b> \\u589e\\u52a0\\u5206\\u5272\\u6570\\uff0c\\u84dd\\u8272\\u77e9\\u5f62\\u7684\\u548c\\u903c\\u8fd1\\u771f\\u5b9e\\u9762\\u79ef\\u3002</p>\\n        <div class=\\\"controls\\\"><label>\\u5206\\u5272\\u6570 n = <span class=\\\"val\\\" id=\\\"nV\\\">8</span></label><label>\\u77e9\\u5f62\\u548c = <span class=\\\"val\\\" id=\\\"sumV\\\" style=\\\"color:var(--ochre)\\\">\\u2014</span></label><label>\\u771f\\u5b9e\\u9762\\u79ef = <span class=\\\"val\\\" style=\\\"color:var(--green)\\\">18</span></label><input type=\\\"range\\\" id=\\\"nS\\\" min=\\\"1\\\" max=\\\"60\\\" step=\\\"1\\\" value=\\\"8\\\"></div>\\n        <canvas id=\\\"cvRie\\\" width=\\\"900\\\" height=\\\"300\\\"></canvas>\\n        <div class=\\\"status\\\" id=\\\"stRie\\\"></div>\\n      </div>\\n      <div class=\\\"card\\\">\\n        <h3>\\u5b9e\\u9a8c\\u56db \\u00b7 \\u5355\\u4f4d\\u5706\\u91cc\\u85cf\\u7740\\u4e00\\u65cf\\u51fd\\u6570</h3>\\n        <p class=\\\"interact-desc\\\">\\u62d6\\u52a8\\u89d2\\u5ea6 <b>\\u03b8</b>\\uff0c\\u5706\\u4e0a\\u4e00\\u70b9\\u540c\\u65f6\\u626b\\u51fa\\u6b63\\u5f26\\u3001\\u4f59\\u5f26\\u3002<b>sin\\u00b2\\u03b8+cos\\u00b2\\u03b8=1</b> \\u6052\\u6210\\u7acb\\u3002</p>\\n        <div class=\\\"controls\\\"><label>\\u03b8 = <span class=\\\"val\\\" id=\\\"thV\\\">45\\u00b0</span></label><label>sin = <span class=\\\"val\\\" id=\\\"sinV\\\" style=\\\"color:var(--ochre)\\\">\\u2014</span></label><label>cos = <span class=\\\"val\\\" id=\\\"cosV\\\" style=\\\"color:var(--ochre)\\\">\\u2014</span></label><label>sin\\u00b2+cos\\u00b2 = <span class=\\\"val\\\" id=\\\"pythV\\\" style=\\\"color:var(--green)\\\">\\u2014</span></label><input type=\\\"range\\\" id=\\\"thS\\\" min=\\\"0\\\" max=\\\"360\\\" step=\\\"1\\\" value=\\\"45\\\"></div>\\n        <canvas id=\\\"cvTri\\\" width=\\\"900\\\" height=\\\"300\\\"></canvas>\\n        <div class=\\\"status\\\" id=\\\"stTri\\\"></div>\\n      </div>\"")
+    + '<div id="labDynamic"></div>';
+  setTimeout(function(){ try{ renderLab(); }catch(e){} }, 60);
+  return h;
+};
+
+function renderLab(){
+  drawEps(); drawTan(); drawRie(); drawTri();
+  // 动态：遍历所有带 story.interact 的章节，生成同款小实验
+  var wrap = document.getElementById('labDynamic');
+  if(!wrap) return;
+  var chs = CHAPTERS.filter(function(c){ return c.story && c.story.interact; });
+  if(!chs.length){ wrap.innerHTML=''; return; }
+  var html = '<div style="border-top:1px solid var(--line);margin:10px 0 16px;padding-top:6px"></div>' +
+    '<h2 style="font-family:Georgia,\'Songti SC\',serif;font-weight:500;font-size:19px;margin:0 0 4px">章节小实验</h2>' +
+    '<p class="interact-desc" style="margin-bottom:14px">每章讲义里能上手试的那个实验，这里集中放一份，随时回来玩。</p>';
+  chs.forEach(function(c){
+    var it = c.story.interact;
+    var ix0=(it.xmin!=null)?it.xmin:-4, ix1=(it.xmax!=null)?it.xmax:4;
+    html += '<div class="card"><h3>第'+c.id+'章 · '+esc(it.title)+'</h3>' +
+      '<p class="interact-desc">'+esc(it.desc)+'</p>' +
+      '<div class="controls">x = <span class="val" id="lfnXV'+c.id+'">0.00</span>　<span class="val" style="color:var(--ochre)">f(x) = <span id="lfnYV'+c.id+'">—</span></span>' +
+      '<input type="range" id="lfnXS'+c.id+'" min="'+ix0+'" max="'+ix1+'" step="0.1" value="0"></div>' +
+      '<canvas id="lcvFn'+c.id+'" width="900" height="280"></canvas><div class="status" id="lstFn'+c.id+'"></div></div>';
+  });
+  wrap.innerHTML = html;
+  chs.forEach(function(c){
+    drawFnCard('lcvFn'+c.id, c.story.interact, 'lfnXV'+c.id, 'lfnYV'+c.id, 'lfnXS'+c.id, 'lstFn'+c.id);
+    var sl = document.getElementById('lfnXS'+c.id);
+    if(sl) sl.addEventListener('input', function(){ drawFnCard('lcvFn'+c.id, c.story.interact, 'lfnXV'+c.id, 'lfnYV'+c.id, 'lfnXS'+c.id, 'lstFn'+c.id); });
+  });
+}
+
+function drawEps(){
+  var cv=document.getElementById('cvEps'); if(!cv) return;
+  var W=900,H=300; cv.width=W; cv.height=H;
+  var g=cv.getContext('2d'); g.clearRect(0,0,W,H);
+  var xmin=-0.6,xmax=4.6,ymin=-1,ymax=12;
+  labAxes(g,W,H,xmin,xmax,ymin,ymax);
+  labPlot(g,function(x){return x*x;},xmin,xmax,ymin,ymax,W,H,'#537D96');
+  var eps=+document.getElementById('epsS').value, x0v=2,y0v=4;
+  var d1=Math.sqrt(y0v)-Math.sqrt(Math.max(y0v-eps,0));
+  var d2=Math.sqrt(y0v+eps)-Math.sqrt(y0v);
+  var delta=Math.min(d1,d2);
+  var rw=2*delta*(W-45-20)/(xmax-xmin), rh=2*eps*(H-20-28)/(ymax-ymin);
+  g.fillStyle='rgba(157,95,77,0.12)';
+  g.fillRect(labPX(x0v-delta,xmin,xmax,W),labPY(y0v+eps,ymin,ymax,H),rw,rh);
+  g.setLineDash([4,3]);g.strokeStyle='#9D5F4D';g.lineWidth=1.2;
+  g.strokeRect(labPX(x0v-delta,xmin,xmax,W),labPY(y0v+eps,ymin,ymax,H),rw,rh);
+  g.setLineDash([]);
+  g.fillStyle='#9D5F4D';g.beginPath();g.arc(labPX(x0v,xmin,xmax,W),labPY(y0v,ymin,ymax,H),4,0,6.283);g.fill();
+  g.fillStyle='#4A433C';g.font='13px Georgia';
+  g.fillText('f(x)=x²  (2,4)',labPX(2.45,xmin,xmax,W),labPY(5,ymin,ymax,H));
+  g.fillStyle='#6B6158';g.font='12px Georgia';
+  g.fillText('ε='+eps.toFixed(2)+'   δ='+delta.toFixed(3),49,H-10);
+  document.getElementById('epsV').textContent=eps.toFixed(2);
+  document.getElementById('delV').textContent=delta.toFixed(3);
+  var err=Math.abs((x0v+delta)*(x0v+delta)-y0v-eps);
+  labCheck('stEps',err<1e-6,'δ='+delta.toFixed(3)+'。|(2+δ)²−4|−ε = '+err.toExponential(1)+' ≈ 0，ε-δ 成立。');
+}
+
+function drawTan(){
+  var cv=document.getElementById('cvTan'); if(!cv) return;
+  var W=900,H=300; cv.width=W; cv.height=H;
+  var g=cv.getContext('2d'); g.clearRect(0,0,W,H);
+  var xmin=-1.2,xmax=8.2,ymin=-1.5,ymax=17;
+  labAxes(g,W,H,xmin,xmax,ymin,ymax);
+  labPlot(g,function(x){return x*x/4;},xmin,xmax,ymin,ymax,W,H,'#537D96');
+  var a=+document.getElementById('aS').value, ya=a*a/4, slope=a/2;
+  var x1=Math.max(xmin,a-3),x2=Math.min(xmax,a+3);
+  g.strokeStyle='#9D5F4D';g.lineWidth=1.5;
+  g.beginPath();g.moveTo(labPX(x1,xmin,xmax,W),labPY(ya+slope*(x1-a),ymin,ymax,H));g.lineTo(labPX(x2,xmin,xmax,W),labPY(ya+slope*(x2-a),ymin,ymax,H));g.stroke();
+  g.fillStyle='#9D5F4D';g.beginPath();g.arc(labPX(a,xmin,xmax,W),labPY(ya,ymin,ymax,H),4,0,6.283);g.fill();
+  g.fillStyle='#4A433C';g.font='13px Georgia';
+  g.fillText('y=¼x²  切点 ('+a.toFixed(1)+', '+ya.toFixed(2)+')',labPX(a,xmin,xmax,W)+8,labPY(ya,ymin,ymax,H)-8);
+  document.getElementById('aV').textContent=a.toFixed(2);
+  document.getElementById('slopeV').textContent=slope.toFixed(2);
+  labCheck('stTan',Math.abs(ya-a*a/4)<1e-9&&Math.abs(slope-a/2)<1e-9,'切点 ('+a.toFixed(1)+', '+ya.toFixed(2)+') 由 y=¼a² 算出；斜率 y′=a/2='+slope.toFixed(2)+'，与 (¼x²)′=½x 一致。');
+}
+
+function drawRie(){
+  var cv=document.getElementById('cvRie'); if(!cv) return;
+  var W=900,H=300; cv.width=W; cv.height=H;
+  var g=cv.getContext('2d'); g.clearRect(0,0,W,H);
+  var xmin=-0.3,xmax=3.6,ymin=-1.5,ymax=10.5;
+  labAxes(g,W,H,xmin,xmax,ymin,ymax);
+  var n=+document.getElementById('nS').value, dt=3/n, sum=0;
+  for(var i=0;i<n;i++){
+    var xl=i*dt,xr=(i+1)*dt,fxl=9-xl*xl;
+    sum+=fxl*dt;
+    var rx=labPX(xl,xmin,xmax,W), ry=labPY(fxl,ymin,ymax,H), rw=(xr-xl)*(W-45-20)/(xmax-xmin), rh=fxl*(H-20-28)/(ymax-ymin);
+    g.fillStyle='rgba(83,125,150,0.15)';g.fillRect(rx,ry,rw,rh);
+    g.strokeStyle='rgba(83,125,150,0.25)';g.lineWidth=0.5;g.strokeRect(rx,ry,rw,rh);
+  }
+  labPlot(g,function(x){return 9-x*x;},xmin,xmax,ymin,ymax,W,H,'#537D96');
+  document.getElementById('nV').textContent=n;
+  document.getElementById('sumV').textContent=sum.toFixed(3);
+  var err=Math.abs(sum-18);
+  labCheck('stRie',err<20/n+0.01,'黎曼和 = '+sum.toFixed(3)+'，真实面积 18，误差 '+err.toFixed(3)+'（n 增大误差单调趋于 0）。');
+}
+
+function drawTri(){
+  var cv=document.getElementById('cvTri'); if(!cv) return;
+  var W=900,H=300; cv.width=W; cv.height=H;
+  var g=cv.getContext('2d'); g.clearRect(0,0,W,H);
+  var cx=130,cy=150,R=100;
+  g.strokeStyle='#D8CFBE';g.lineWidth=1;
+  g.beginPath();g.moveTo(45,cy);g.lineTo(W-20,cy);g.stroke();
+  g.beginPath();g.moveTo(cx,20);g.lineTo(cx,H-28);g.stroke();
+  g.strokeStyle='#C9C2B4';g.lineWidth=1;
+  g.beginPath();g.arc(cx,cy,R,0,6.283);g.stroke();
+  var th=+document.getElementById('thS').value*Math.PI/180;
+  var px=cx+R*Math.cos(th), py=cy-R*Math.sin(th);
+  var s=Math.sin(th),c=Math.cos(th);
+  g.fillStyle='rgba(83,125,150,0.10)';
+  g.beginPath();g.moveTo(cx,cy);g.lineTo(px,py);g.lineTo(px,cy);g.closePath();g.fill();
+  g.strokeStyle='#537D96';g.lineWidth=1.5;
+  g.beginPath();g.moveTo(cx,cy);g.lineTo(px,py);g.stroke();
+  g.strokeStyle='#9D5F4D';g.lineWidth=1.5;
+  g.beginPath();g.moveTo(px,py);g.lineTo(px,cy);g.stroke();
+  g.strokeStyle='#4A6B4A';g.lineWidth=1.5;
+  g.beginPath();g.moveTo(cx,cy);g.lineTo(px,cy);g.stroke();
+  g.fillStyle='#9D5F4D';g.beginPath();g.arc(px,py,4,0,6.283);g.fill();
+  g.fillStyle='#6B6158';g.font='12px Georgia';
+  g.fillText('sin = '+s.toFixed(2),px+10,py-6);
+  g.fillText('cos = '+c.toFixed(2),cx+6,cy+16);
+  document.getElementById('thV').textContent=Math.round(+document.getElementById('thS').value)+'°';
+  document.getElementById('sinV').textContent=s.toFixed(3);
+  document.getElementById('cosV').textContent=c.toFixed(3);
+  var p2=s*s+c*c;
+  document.getElementById('pythV').textContent=p2.toFixed(6);
+  labCheck('stTri',Math.abs(p2-1)<1e-9,'sin²+cos² = '+p2.toFixed(9)+' ≈ 1。勾股定理在单位圆上恒成立。');
+}
+
+function labPX(x,xmin,xmax,W){ return 45+(x-xmin)/(xmax-xmin)*(W-45-20); }
+
+function labPY(y,ymin,ymax,H){ return 20+(ymax-y)/(ymax-ymin)*(H-20-28); }
+
+function drawFnInteract(){
+  var it = (curCh && curCh.story && curCh.story.interact) ? curCh.story.interact : null;
+  drawFnCard('cvFn', it, 'fnXV', 'fnYV', 'fnXS', 'stFn');
+}
+
+function drawFnCard(cvId, it, xvId, yvId, sliderId, stId){
+  var cv = document.getElementById(cvId);
+  if(!cv) return;
+  var fnStr = (it && it.fn) ? it.fn : 'x*x/4+1';
+  var xmin=(it&&it.xmin!=null)?it.xmin:-4, xmax=(it&&it.xmax!=null)?it.xmax:4;
+  var ymin=(it&&it.ymin!=null)?it.ymin:-1, ymax=(it&&it.ymax!=null)?it.ymax:7;
+  var label=(it&&it.label)?it.label:'y = f(x)';
+  var fn;
+  try{ fn = new Function('x','return ('+fnStr+');'); }catch(e){ fn = function(x){return x*x/4+1;}; }
+  var W=860,H=280, PADL=45,PADR=20,PADT=20,PADB=28;
+  cv.width=W; cv.height=H;
+  var g=cv.getContext('2d');
+  g.clearRect(0,0,W,H);
+  function px(x){return PADL+(x-xmin)/(xmax-xmin)*(W-PADL-PADR);}
+  function py(y){return PADT+(ymax-y)/(ymax-ymin)*(H-PADT-PADB);}
+  g.strokeStyle='#D8CFBE';g.lineWidth=1;
+  g.beginPath();g.moveTo(PADL,py(0));g.lineTo(W-PADR,py(0));g.stroke();
+  g.beginPath();g.moveTo(px(0),PADT);g.lineTo(px(0),H-PADB);g.stroke();
+  g.fillStyle='#6B6158';g.font='12px Georgia';
+  g.fillText('x',W-PADR+2,py(0)+14);g.fillText('y',px(0)-14,PADT+4);
+  for(var i=0;i<=8;i++){var x=xmin+(xmax-xmin)*i/8,pxx=px(x);g.beginPath();g.moveTo(pxx,py(0)-3);g.lineTo(pxx,py(0)+3);g.stroke();if(Math.abs(x)>1e-9)g.fillText(String(Math.round(x*10)/10),pxx-6,py(0)+14);}
+  g.strokeStyle='#537D96';g.lineWidth=2;g.beginPath();
+  var N=200,first=true;
+  for(var j=0;j<=N;j++){var xv=xmin+(xmax-xmin)*j/N, yv=fn(xv);
+    if(yv==null||!isFinite(yv)){first=true;continue;}
+    if(yv<ymin-1||yv>ymax+1){first=true;continue;}
+    var pxv=px(xv),pyv=py(yv);
+    if(first){g.moveTo(pxv,pyv);first=false;}else g.lineTo(pxv,pyv);}
+  g.stroke();
+  // 第二条曲线（it.fn2，用于泰勒逼近、极限目标线等）
+  if(it && it.fn2){
+    var fn2;
+    try{ fn2 = new Function('x','return ('+it.fn2+');'); }catch(e){ fn2 = null; }
+    if(fn2){
+      g.strokeStyle='#B07C46'; g.lineWidth=1.6; g.setLineDash([6,4]);
+      g.beginPath(); var first2=true;
+      for(var j2=0;j2<=N;j2++){
+        var xv3=xmin+(xmax-xmin)*j2/N, yv3=fn2(xv3);
+        if(yv3==null||!isFinite(yv3)||yv3<ymin-1||yv3>ymax+1){first2=true;continue;}
+        var pxv3=px(xv3),pyv3=py(yv3);
+        if(first2){g.moveTo(pxv3,pyv3);first2=false;}else g.lineTo(pxv3,pyv3);
+      }
+      g.stroke(); g.setLineDash([]);
+    }
+  }
+  var sEl=document.getElementById(sliderId);
+  var xv2 = sEl ? +sEl.value : 0;
+  var yv2=fn(xv2);
+  var finite = yv2 != null && isFinite(yv2);
+  if(finite){
+    g.fillStyle='#9D5F4D';g.beginPath();g.arc(px(xv2),py(yv2),5,0,6.283);g.fill();
+    g.strokeStyle='#9D5F4D';g.lineWidth=1.2;g.setLineDash([3,3]);
+    g.beginPath();g.moveTo(px(xv2),py(yv2));g.lineTo(px(xv2),py(0));g.stroke();
+    g.beginPath();g.moveTo(px(xv2),py(yv2));g.lineTo(px(0),py(yv2));g.stroke();
+    g.setLineDash([]);
+    // 切线（it.tangent 时，数值差分求斜率）
+    if(it && it.tangent){
+      var h2 = Math.max((xmax-xmin)/400, 1e-6);
+      var ya1 = fn(xv2-h2), ya2 = fn(xv2+h2);
+      if(isFinite(ya1) && isFinite(ya2)){
+        var m = (ya2-ya1)/(2*h2);
+        g.strokeStyle='#B8860B'; g.lineWidth=1.6; g.setLineDash([]);
+        g.beginPath();
+        g.moveTo(px(xmin), py(yv2 + m*(xmin-xv2)));
+        g.lineTo(px(xmax), py(yv2 + m*(xmax-xv2)));
+        g.stroke();
+        g.fillStyle='#B8860B'; g.font='12px Georgia';
+        g.fillText('切线斜率 m ≈ '+m.toFixed(3), px(xv2)+8, py(yv2)+18);
+      }
+    }
+    g.fillStyle='#3F6179';g.font='13px Georgia';
+    g.fillText('('+xv2.toFixed(2)+', '+yv2.toFixed(2)+')',px(xv2)+8,py(yv2)-6);
+  } else {
+    // 该点无定义：画一条竖直标记提示
+    g.strokeStyle='#9D5F4D';g.lineWidth=1.2;g.setLineDash([4,4]);
+    g.beginPath();g.moveTo(px(xv2),PADT);g.lineTo(px(xv2),H-PADB);g.stroke();
+    g.setLineDash([]);
+    g.fillStyle='#9D5F4D';g.font='13px Georgia';
+    g.fillText('此处函数无定义（0/0 或根号内为负等）', px(xv2)+8, PADT+16);
+  }
+  g.fillStyle='#6B6158';g.font='12px Georgia';
+  g.fillText(label,px((xmin+xmax)/2),py(ymax-1));
+  var xvEl=document.getElementById(xvId); if(xvEl) xvEl.textContent=xv2.toFixed(2);
+  var yvEl=document.getElementById(yvId); if(yvEl) yvEl.textContent = finite ? yv2.toFixed(2) : '—';
+  var st=document.getElementById(stId);
+  if(st){
+    if(finite){
+      st.innerHTML = '<span style="color:var(--green)">✓ 自检通过</span> 点 ('+xv2.toFixed(2)+', '+yv2.toFixed(2)+') 由 '+label+' 算出，精确落在曲线上。'+(it && it.tangent ? ' 金色虚线即该点切线。' : '');
+    } else {
+      st.innerHTML = '<span style="color:var(--ochre)">⚠ 注意</span> x='+xv2.toFixed(2)+' 处 '+label+' 无定义（分母为零/根号内为负等）。这在微积分里常常正是「极限」要讨论的地方。';
+    }
+  }
+}

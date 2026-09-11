@@ -465,3 +465,14 @@ function showLeaveGuard(){
   };
 }
 function hideLeaveGuard(){ var w = document.getElementById('lgWrap'); if (w) w.remove(); }
+
+/* 实验室滑块委托 */
+scroller.addEventListener('input', function(ev){
+  var t = ev.target; if(!t || t.type !== 'range') return;
+  try{
+    if(t.id === 'epsS'){ var ev0 = document.getElementById('epsV'); if(ev0) ev0.textContent = (+t.value).toFixed(2); drawEps(); }
+    else if(t.id === 'aS'){ var av = document.getElementById('aV'); if(av) av.textContent = (+t.value).toFixed(2); drawTan(); }
+    else if(t.id === 'nS'){ var nv = document.getElementById('nV'); if(nv) nv.textContent = t.value; drawRie(); }
+    else if(t.id === 'thS'){ var tv = document.getElementById('thV'); if(tv) tv.textContent = t.value + '°'; drawTri(); }
+  }catch(e){}
+});

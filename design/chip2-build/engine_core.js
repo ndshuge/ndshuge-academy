@@ -198,6 +198,7 @@ function answerQuestion(c,i,oi){
   logStudy('quiz',c.id,c.title);
   sessionLog('lesson',c,k,ok);
   return ok;
+  try{ if(typeof sbNotify==='function') sbNotify(); }catch(_e){}
 }
 function answerVol(c,i,oi){
   var q=c.exam[i], k='e'+c.id+'_'+i;
@@ -208,6 +209,7 @@ function answerVol(c,i,oi){
   todayRecord(ok); statRecordQ(ok);
   logStudy('quiz',c.id,c.title);
   return ok;
+  try{ if(typeof sbNotify==='function') sbNotify(); }catch(_e){}
 }
 /* ---------- 结算：全答即通过（不要求全对），首次点亮打卡与完成 ---------- */
 function settleChapter(c, mode){
@@ -217,13 +219,15 @@ function settleChapter(c, mode){
   if(first){
     chDone.push(c.id); store('ch',chDone);
     dailyGoal('l');
-    settleStore['settle_'+c.id]={ts:Date.now(),pct:Math.round(sm.correct/sm.total*100),allCorrect:sm.allCorrect};
+    var _durS=0; try{ _durS=Math.max(0, Math.round(((typeof TIMER!=='undefined'?TIMER:1800)-(typeof timerLeft!=='undefined'?timerLeft:0)))); }catch(_e){}
+    settleStore['settle_'+c.id]={ts:Date.now(),pct:Math.round(sm.correct/sm.total*100),correct:sm.correct,total:sm.total,dur:_durS,allCorrect:sm.allCorrect};
     store('settle',settleStore);
     stopTimer();
     $('#cTitle').textContent='第 '+c.id+' 章完成！';
     $('#cSub').textContent=(sm.allCorrect?'随堂全对通关 · ':'答完即结算 · ')+'今日打卡 +1';
     $('#celebrate').classList.add('show');
     tap();
+    try{ if(typeof sbNotify==='function') sbNotify(); }catch(_e){}
     return true;
   }
   toast('本章已结算过，可去下一章');
@@ -236,13 +240,15 @@ function settleVol(c){
   var first = !settleStore[k];
   if(first){
     dailyGoal('e');
-    settleStore[k]={ts:Date.now(),correct:st.correct};
+    var _dv=0; try{ _dv=Math.max(0, Math.round(((typeof TIMER!=='undefined'?TIMER:1800)-(typeof timerLeft!=='undefined'?timerLeft:0)))); }catch(_x){}
+    settleStore[k]={ts:Date.now(),correct:st.correct,total:st.total,dur:_dv};
     store('settle',settleStore);
     stopTimer();
     $('#cTitle').textContent='第 '+c.id+' 章小卷完成！';
     $('#cSub').textContent='卷子已点亮 · 今日打卡 +1';
     $('#celebrate').classList.add('show');
     tap();
+    try{ if(typeof sbNotify==='function') sbNotify(); }catch(_e){}
     return true;
   }
   toast('这份卷子已结算过');

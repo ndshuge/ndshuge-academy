@@ -7,7 +7,7 @@ import io, re, os
 
 _HERE   = os.path.dirname(os.path.abspath(__file__))
 DESIGN  = os.path.dirname(_HERE)                      # .../四学院/design
-ACAD    = r'E:\Hanako的记忆\学习计划\学院工厂\academy-shell'
+ACAD    = r'E:\Hanako\学习计划\学院工厂\academy-shell'
 YANG    = os.path.join(DESIGN, '对齐样张-芯片学院-三Tab体验版.html')
 CHIP    = os.path.join(os.path.dirname(DESIGN), 'c.html')
 OUT     = os.path.join(DESIGN, 'c2-真版-预览.html')
