@@ -48,22 +48,51 @@ input[type=text],input[type=email],input[type=password],input[type=number],input
   15%{opacity:1}
   100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(1.15) rotate(var(--rot,40deg))}
 }
+/* ===== 答错反馈 v2（2026-09-15）：收束式四段编排，与答对的「外放」形成语义对照
+   1 沉入：从上方轻轻落下 + 一次极轻下压回弹，删掉原来的大幅抖动
+   2 涟漪：一圈淡红由内向外的扩散，替代答对的星星粒子（收 vs 放）
+   3 图标：✕ 描边画出 + 一次微呼吸
+   4 离场：慢半拍，先提亮再淡出，给认知留时间 ===== */
 .toast.no{
-  background:linear-gradient(135deg,#FF4D4D,#D70015);
-  color:#fff;border-radius:16px;
-  animation:noShake .5s cubic-bezier(.36,.07,.19,.97), noPulse 1.2s ease .5s;
+  background:linear-gradient(135deg,#FF5B52,#E0301E);
+  color:#fff;border-radius:16px;padding:13px 22px;
+  box-shadow:0 8px 24px rgba(224,48,30,.32),0 2px 6px rgba(0,0,0,.1);
+  border:1px solid rgba(255,255,255,.22);
+  animation:noSink .46s cubic-bezier(.25,.9,.35,1), noPulse 1.6s ease .5s;
+  position:relative;overflow:visible;
 }
-.toast.no .t-ic{color:#fff}
-@keyframes noShake{
-  0%,100%{transform:translateX(0)}
-  20%{transform:translateX(-7px) rotate(-1deg)}
-  40%{transform:translateX(6px) rotate(1deg)}
-  60%{transform:translateX(-4px)}
-  80%{transform:translateX(3px)}
+.toast.no .t-ic{color:#fff;animation:noIconIn .5s cubic-bezier(.34,1.3,.64,1) .08s backwards}
+@keyframes noSink{
+  0%{transform:translateY(-16px) scale(.97);opacity:0}
+  62%{transform:translateY(2px) scale(1.004);opacity:1}
+  100%{transform:translateY(0) scale(1)}
+}
+@keyframes noIconIn{
+  0%{transform:scale(.5);opacity:0}
+  60%{transform:scale(1.12);opacity:1}
+  100%{transform:scale(1);opacity:1}
+}
+/* 涟漪：答错后的「事情已经过去」收束语汇，只跑一次 */
+.toast.no .ripple{
+  position:absolute;left:50%;top:50%;width:36px;height:36px;margin:-18px 0 0 -18px;
+  border-radius:50%;border:2px solid rgba(255,255,255,.75);
+  pointer-events:none;opacity:0;
+  animation:noRipple .62s cubic-bezier(.2,.7,.3,1) .06s forwards;
+}
+@keyframes noRipple{
+  0%{opacity:.7;transform:scale(.5)}
+  100%{opacity:0;transform:scale(2.3)}
 }
 @keyframes noPulse{
-  0%,100%{box-shadow:0 10px 26px rgba(255,77,77,.4)}
-  50%{box-shadow:0 12px 34px rgba(255,77,77,.7)}
+  0%,100%{box-shadow:0 8px 24px rgba(224,48,30,.32)}
+  50%{box-shadow:0 10px 30px rgba(224,48,30,.5)}
+}
+/* 离场：慢半拍 + 先提亮再淡，替换默认下沉 */
+.toast.no.leaving{animation:noLeave .34s var(--ease) forwards}
+@keyframes noLeave{
+  0%{transform:translateY(0);opacity:1;filter:brightness(1)}
+  35%{filter:brightness(1.12)}
+  100%{transform:translateY(-8px);opacity:0;filter:brightness(1)}
 }
 /* ============================================================
    UI 动效强化（chip 内容层 · 不删任何内容，纯增强）
@@ -293,8 +322,21 @@ input[type=text],input[type=email],input[type=password],input[type=number],input
 /* 选项对/错/淡（framework 判题写 correct/wrong/muted，映射为旧版 ok/bad 观感） */
 #legacy-chapter .opt.lock{pointer-events:none}
 #legacy-chapter .opt.correct{border-color:var(--green); color:var(--green); font-weight:600}
-#legacy-chapter .opt.wrong{border-color:var(--red); color:var(--red)}
+#legacy-chapter .opt.wrong{border-color:var(--red); color:var(--red); animation:optRecede .34s cubic-bezier(.3,.8,.4,1) forwards}
 #legacy-chapter .opt.muted{border-color:var(--green); background:#f6fbf4; color:var(--green); opacity:.75; font-weight:500}
+/* 答题后的视线引导（2026-09-15）：错选项先退到后景（褪色 + 微缩），正确项延后 120ms
+   呼吸式提到全亮并扩散一圈绿色光晕 —— 让眼睛自动沿「你的错 → 正确答案」走一趟。
+   前后时序差就是「高级」与「廉价」的分水岭。*/
+.opt.muted,#legacy-chapter .opt.muted{animation:optIgnite .56s cubic-bezier(.34,1.28,.64,1) .12s backwards}
+@keyframes optRecede{
+  from{opacity:1;transform:scale(1)}
+  to{opacity:.72;transform:scale(.985)}
+}
+@keyframes optIgnite{
+  0%{opacity:.34;transform:scale(.985);box-shadow:0 0 0 0 rgba(52,199,89,0)}
+  55%{opacity:1;transform:scale(1.012);box-shadow:0 0 0 4px rgba(52,199,89,.18)}
+  100%{opacity:1;transform:scale(1);box-shadow:0 0 0 0 rgba(52,199,89,.1)}
+}
 #legacy-chapter .opt .mark{display:none!important}
 #legacy-chapter .quiz .why-note{margin-bottom:0}
 /* ============================================================
@@ -486,6 +528,21 @@ input[type=text],input[type=email],input[type=password],input[type=number],input
 /* 2) 悬停语言 v2（Dock 款：上浮+微 scale+阴影，鼠哥 2026-09-04 定稿）
    只对可点元素生效：ch-row/grow 必须带 data-go* 才有点击语义；不可点静态行一律无 hover */
 .ch-row{transition:transform .2s var(--ease),background .16s var(--ease)}
+/* 章节完成态（2026-09-15）：一圈安静的绿色内描边。状态是长期存在的，
+   长期存在的东西不该反复表演 —— 所以这里只给静态标记，不挂动画。 */
+.ch-row.done{box-shadow:var(--sh-card),inset 0 0 0 1px rgba(52,199,89,.22)}
+.ch-row.done .ch-num{box-shadow:0 0 0 3px rgba(52,199,89,.14)}
+/* Dock 滑动高亮片（2026-09-15）：Tab 切换时一块玻璃高亮滑过去，而不是颜色硬切。
+   位置/宽度由 JS 按当前按钮实时测量。 */
+.dock-glider{
+  position:absolute;z-index:0;pointer-events:none;border-radius:20px;
+  background:var(--fill-soft);
+  box-shadow:inset 0 1px 0 var(--glass-edge,transparent);
+  transition:transform .32s cubic-bezier(.32,.72,0,1),width .32s cubic-bezier(.32,.72,0,1);
+  opacity:0;
+}
+.dock-glider.ready{opacity:1}
+.dock-btn{position:relative;z-index:1}
 .ch-row[data-go],.ch-row[data-go-ch],.ch-row[data-go-drill],.ch-row[data-go-exam]{cursor:pointer}
 .ch-row[data-go]{cursor:pointer}
 .grow{cursor:default}
@@ -565,7 +622,7 @@ input[type=text],input[type=email],input[type=password],input[type=number],input
   document.addEventListener('gestureend', blockG);
 })();
 </script>
-</head><body><div id="app">  <div id="topbar">    <button class="backbtn" id="btnBack"><span class="ic" id="backIco"></span><span id="backTxt">总学院</span></button>    <div class="brand"><b id="brandName">大学物理学院</b><span>PHYSICS ACADEMY</span></div>  </div>  <div id="stage">    <div id="timerBar" style="display:none"><i></i></div>    <div id="timerChip" style="display:none"></div>    <div id="scroller"><div class="view" id="view"></div></div>  </div>  <div id="dock">    <div class="dockbar">      <button class="dock-btn on" data-tab="learn"><span class="ic d-ico" data-i="bookopen"></span><span>学习</span></button>      <button class="dock-btn" data-tab="drill"><span class="ic d-ico" data-i="pen"></span><span>练习</span></button>      <button class="dock-btn" data-tab="mine"><span class="ic d-ico" data-i="person"></span><span>我的</span></button>    </div>  </div></div><div id="toastBox"></div><div id="confirmBox">  <div class="c-title">⏳ 计时学习还没完成</div>  <div class="c-msg" id="confirmMsg"></div>  <div class="btn-row">    <button class="btn-line" id="confirmStay">继续学习</button>    <button class="btn-solid" id="confirmLeave">离开</button>  </div></div><div id="celebrate">  <div class="c-card">    <div class="c-ring"><i></i><b><span class="ic" id="cCheck"></span></b></div>    <h3 id="cTitle">章节完成！</h3>    <p id="cSub"></p>    <button class="btn-solid" id="cClose">收下</button>  </div></div><div id="demoTag">对齐样张 v2 · 演示数据</div><script>/* ============================================================   对齐样张 v2 · 芯片战争学院（方向验证版）   升级点见 CSS 头注释。核心逻辑同 v1：三 Tab / 真历史栈 /   右滑返回 / 倒计时 / 结算动画 / toast / 震动闸门。   ============================================================ */var $=function(s){return document.querySelector(s)};var view=$('#view'), scroller=$('#scroller');/* ---------- 线性图标库（SF Symbols 气质：圆头、统一线宽、24 网格） ---------- */var I={};function defI(name, inner){  I[name]='<svg viewBox="0 0 24 24" aria-hidden="true"><g stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none">'+inner+'</g></svg>';}/* 图标 path 全部采用 Lucide（ISC 协议）官方数据，非手绘 */defI('back','<path d="m15 18-6-6 6-6"/>');defI('home','<path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>');defI('book','<path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20"/>');defI('bookopen','<path d="M12 5v16"/><path d="M20.001 19A2 2 0 0 0 22 17V5a2 2 0 0 0-1.999-2L16 3.002A5 5 0 0 0 12 5a5 5 0 0 0-4-2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 1.999 2H8a5 5 0 0 1 4 2 5 5 0 0 1 4-2z"/>');defI('bookx','<path d="m14.5 7.5-5 5"/><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20"/><path d="m9.5 7.5 5 5"/>');defI('pen','<path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/>');defI('person','<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>');defI('doc','<path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/><path d="M14 2v5a1 1 0 0 0 1 1h5"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/>');defI('trophy','<path d="m15.477 12.89 1.515 8.526a.5.5 0 0 1-.81.47l-3.58-2.687a1 1 0 0 0-1.197 0l-3.586 2.686a.5.5 0 0 1-.81-.469l1.514-8.526"/><circle cx="12" cy="8" r="6"/>');defI('target','<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>');defI('calendar','<path d="M8 2v3"/><path d="M16 2v3"/><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/>');defI('flag','<path d="M4 22V4a1 1 0 0 1 .4-.8A6 6 0 0 1 8 2c3 0 5 2 7.333 2q2 0 3.067-.8A1 1 0 0 1 20 4v10a1 1 0 0 1-.4.8A6 6 0 0 1 16 16c-3 0-5-2-8-2a6 6 0 0 0-4 1.528"/>');defI('flask','<path d="m16 18 6-6-6-6"/><path d="m8 6-6 6 6 6"/>');  /* code：芯片实验室 */defI('chat','<path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719"/>');defI('trash','<path d="M10 11v6"/><path d="M14 11v6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>');defI('moon','<path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401"/>');defI('phone','<rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/>');defI('info','<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>');defI('chev-r','<path d="m9 18 6-6-6-6"/>');defI('check','<path d="M20 6 9 17l-5-5"/>');defI('bolt','<path d="M15.914 4a1.5 1.5 0 0 0-2.474-1.561l-9 9A1.5 1.5 0 0 0 5.5 14h4.002a.5.5 0 0 1 .471.666L8.086 20a1.5 1.5 0 0 0 2.475 1.56l9-9A1.5 1.5 0 0 0 18.5 10h-3.997a.5.5 0 0 1-.472-.667z"/>');defI('arrow-r','<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>');function IC(name, cls){ return '<span class="ic '+(cls||'')+'">'+I[name]+'</span>'; }/* 注入静态图标 */function mountStaticIcons(){  $('#backIco').innerHTML=I['back'];  var _pi=document.getElementById('portalIco'); if(_pi) _pi.innerHTML=I['home'];  $('#cCheck').innerHTML=I['check'];  document.querySelectorAll('.d-ico').forEach(function(el){ var n=el.getAttribute('data-i'); if(I[n]) el.innerHTML=I[n]; });}function toast(msg){  var box=$('#toastBox'); var el=document.createElement('div');  el.className='toast'; el.innerHTML='<span class="ic t-ic">'+I['check']+'</span><span>'+msg+'</span>';  box.appendChild(el);  if(box.children.length>2) box.removeChild(box.firstChild);  setTimeout(function(){ el.classList.add('leaving'); setTimeout(function(){el.remove()},300); },2400);}var isDesktop=matchMedia('(hover:hover) and (pointer:fine)').matches;var isWin=/win/i.test(navigator.platform||(navigator.userAgentData&&navigator.userAgentData.platform)||'');var canVibrate=matchMedia('(hover:none) and (pointer:coarse)').matches && !isWin && typeof navigator.vibrate==='function';function tap(){ if(canVibrate){ try{navigator.vibrate(10)}catch(e){} } }/* ---------- 路由：真历史栈 + 推入转场 + 返回键显示上一级标题 ---------- */var STACK=[];var META={  home:{n:'首页',tab:'learn'},plan:{n:'学习计划',tab:'learn'},chapter:{n:'第 3 章 · 集成电路',tab:'learn'},  hall:{n:'练习大厅',tab:'drill'},vol:{n:'小卷',tab:'drill'},wrong:{n:'错题集',tab:'drill'},fixed:{n:'已订正',tab:'drill'},  mine:{n:'我的',tab:'mine'},rank:{n:'排行榜',tab:'mine'},calendar:{n:'打卡日历',tab:'mine'},  honor:{n:'荣誉墙',tab:'mine'},lab:{n:'实验室',tab:'mine'},about:{n:'关于',tab:'mine'},manage:{n:'管理',tab:'mine'}};function renderView(id,isBack){  var v=view;  v.className='view '+(isBack?'pushBack':'push');  v.innerHTML=renderers[id]?renderers[id]():'<div class="cap">页面不存在</div>';  scroller.scrollTop=0;  paintDock(id);  var m=META[id]||{n:'芯片战争学院'};  $('#brandName').textContent=m.n;  /* 返回键：iOS 语义，显示上一级标题 */  var prev=STACK.length?STACK[STACK.length-1]:null;  if(prev && META[prev]){    $('#backTxt').textContent=META[prev].n;    $('#btnBack').disabled=false;  }else{    $('#backTxt').textContent='返回';    $('#btnBack').disabled=true;  }  window._cur=id;}function go(id){  if(window._cur===id) return;  STACK.push(window._cur||'home');  history.pushState({view:id},'');  renderView(id,false);}function goBack(){  if(!STACK.length){ toast('已经在最前面了'); return; }  history.back();}window.addEventListener('popstate',function(e){  var id=(e.state&&e.state.view)||'home';  /* 学习计时中被浏览器回退/手势带走：推回本章并提示 */  if(id!=='chapter' && window._cur==='chapter' && timerRunning){    history.forward();    toast('学习中：已回到章节，离开请点左上「返回」确认');    return;  }  if(STACK.length && STACK[STACK.length-1]===id) STACK.pop();  renderView(id,true);});/* 右滑返回 */(function(){  var sx=0,sy=0,swiping=false;  scroller.addEventListener('touchstart',function(e){    var t=e.touches[0]; sx=t.clientX; sy=t.clientY;    swiping=(sx<window.innerWidth*0.3);  },{passive:true});  scroller.addEventListener('touchend',function(e){    if(!swiping) return;    var t=e.changedTouches[0]; var dx=t.clientX-sx,dy=t.clientY-sy;    if(dx>70 && Math.abs(dy)<80){ tap(); guardedBack(); }    swiping=false;  },{passive:true});})();function paintDock(id){  var m=META[id]||{}; var curTab=m.tab||'learn';  document.querySelectorAll('.dock-btn').forEach(function(b){    b.classList.toggle('on',b.getAttribute('data-tab')===curTab);  });}/* ---------- 渲染器 ---------- */
+</head><body><div id="app">  <div id="topbar">    <button class="backbtn" id="btnBack"><span class="ic" id="backIco"></span><span id="backTxt">总学院</span></button>    <div class="brand"><b id="brandName">大学物理学院</b><span>PHYSICS ACADEMY</span></div>  </div>  <div id="stage">    <div id="timerBar" style="display:none"><i></i></div>    <div id="timerChip" style="display:none"></div>    <div id="scroller"><div class="view" id="view"></div></div>  </div>  <div id="dock">    <div class="dockbar">      <span class="dock-glider"></span>      <button class="dock-btn on" data-tab="learn"><span class="ic d-ico" data-i="bookopen"></span><span>学习</span></button>      <button class="dock-btn" data-tab="drill"><span class="ic d-ico" data-i="pen"></span><span>练习</span></button>      <button class="dock-btn" data-tab="mine"><span class="ic d-ico" data-i="person"></span><span>我的</span></button>    </div>  </div></div><div id="toastBox"></div><div id="confirmBox">  <div class="c-title">⏳ 计时学习还没完成</div>  <div class="c-msg" id="confirmMsg"></div>  <div class="btn-row">    <button class="btn-line" id="confirmStay">继续学习</button>    <button class="btn-solid" id="confirmLeave">离开</button>  </div></div><div id="celebrate">  <div class="c-card">    <div class="c-ring"><i></i><b><span class="ic" id="cCheck"></span></b></div>    <h3 id="cTitle">章节完成！</h3>    <p id="cSub"></p>    <button class="btn-solid" id="cClose">收下</button>  </div></div><div id="demoTag">对齐样张 v2 · 演示数据</div><script>/* ============================================================   对齐样张 v2 · 芯片战争学院（方向验证版）   升级点见 CSS 头注释。核心逻辑同 v1：三 Tab / 真历史栈 /   右滑返回 / 倒计时 / 结算动画 / toast / 震动闸门。   ============================================================ */var $=function(s){return document.querySelector(s)};var view=$('#view'), scroller=$('#scroller');/* ---------- 线性图标库（SF Symbols 气质：圆头、统一线宽、24 网格） ---------- */var I={};function defI(name, inner){  I[name]='<svg viewBox="0 0 24 24" aria-hidden="true"><g stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none">'+inner+'</g></svg>';}/* 图标 path 全部采用 Lucide（ISC 协议）官方数据，非手绘 */defI('back','<path d="m15 18-6-6 6-6"/>');defI('home','<path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>');defI('book','<path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20"/>');defI('bookopen','<path d="M12 5v16"/><path d="M20.001 19A2 2 0 0 0 22 17V5a2 2 0 0 0-1.999-2L16 3.002A5 5 0 0 0 12 5a5 5 0 0 0-4-2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 1.999 2H8a5 5 0 0 1 4 2 5 5 0 0 1 4-2z"/>');defI('bookx','<path d="m14.5 7.5-5 5"/><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20"/><path d="m9.5 7.5 5 5"/>');defI('pen','<path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/>');defI('person','<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>');defI('doc','<path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/><path d="M14 2v5a1 1 0 0 0 1 1h5"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/>');defI('trophy','<path d="m15.477 12.89 1.515 8.526a.5.5 0 0 1-.81.47l-3.58-2.687a1 1 0 0 0-1.197 0l-3.586 2.686a.5.5 0 0 1-.81-.469l1.514-8.526"/><circle cx="12" cy="8" r="6"/>');defI('target','<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>');defI('calendar','<path d="M8 2v3"/><path d="M16 2v3"/><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/>');defI('flag','<path d="M4 22V4a1 1 0 0 1 .4-.8A6 6 0 0 1 8 2c3 0 5 2 7.333 2q2 0 3.067-.8A1 1 0 0 1 20 4v10a1 1 0 0 1-.4.8A6 6 0 0 1 16 16c-3 0-5-2-8-2a6 6 0 0 0-4 1.528"/>');defI('flask','<path d="m16 18 6-6-6-6"/><path d="m8 6-6 6 6 6"/>');  /* code：芯片实验室 */defI('chat','<path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719"/>');defI('trash','<path d="M10 11v6"/><path d="M14 11v6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>');defI('moon','<path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401"/>');defI('phone','<rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/>');defI('info','<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>');defI('chev-r','<path d="m9 18 6-6-6-6"/>');defI('check','<path d="M20 6 9 17l-5-5"/>');defI('bolt','<path d="M15.914 4a1.5 1.5 0 0 0-2.474-1.561l-9 9A1.5 1.5 0 0 0 5.5 14h4.002a.5.5 0 0 1 .471.666L8.086 20a1.5 1.5 0 0 0 2.475 1.56l9-9A1.5 1.5 0 0 0 18.5 10h-3.997a.5.5 0 0 1-.472-.667z"/>');defI('arrow-r','<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>');function IC(name, cls){ return '<span class="ic '+(cls||'')+'">'+I[name]+'</span>'; }/* 注入静态图标 */function mountStaticIcons(){  $('#backIco').innerHTML=I['back'];  var _pi=document.getElementById('portalIco'); if(_pi) _pi.innerHTML=I['home'];  $('#cCheck').innerHTML=I['check'];  document.querySelectorAll('.d-ico').forEach(function(el){ var n=el.getAttribute('data-i'); if(I[n]) el.innerHTML=I[n]; });}function toast(msg){  var box=$('#toastBox'); var el=document.createElement('div');  el.className='toast'; el.innerHTML='<span class="ic t-ic">'+I['check']+'</span><span>'+msg+'</span>';  box.appendChild(el);  if(box.children.length>2) box.removeChild(box.firstChild);  setTimeout(function(){ el.classList.add('leaving'); setTimeout(function(){el.remove()},300); },2400);}var isDesktop=matchMedia('(hover:hover) and (pointer:fine)').matches;var isWin=/win/i.test(navigator.platform||(navigator.userAgentData&&navigator.userAgentData.platform)||'');var canVibrate=matchMedia('(hover:none) and (pointer:coarse)').matches && !isWin && typeof navigator.vibrate==='function';function tap(){ if(canVibrate){ try{navigator.vibrate(10)}catch(e){} } }/* ---------- 路由：真历史栈 + 推入转场 + 返回键显示上一级标题 ---------- */var STACK=[];var META={  home:{n:'首页',tab:'learn'},plan:{n:'学习计划',tab:'learn'},chapter:{n:'第 3 章 · 集成电路',tab:'learn'},  hall:{n:'练习大厅',tab:'drill'},vol:{n:'小卷',tab:'drill'},wrong:{n:'错题集',tab:'drill'},fixed:{n:'已订正',tab:'drill'},  mine:{n:'我的',tab:'mine'},rank:{n:'排行榜',tab:'mine'},calendar:{n:'打卡日历',tab:'mine'},  honor:{n:'荣誉墙',tab:'mine'},lab:{n:'实验室',tab:'mine'},about:{n:'关于',tab:'mine'},manage:{n:'管理',tab:'mine'}};function renderView(id,isBack){  var v=view;  v.className='view '+(isBack?'pushBack':'push');  v.innerHTML=renderers[id]?renderers[id]():'<div class="cap">页面不存在</div>';  scroller.scrollTop=0;  paintDock(id);  var m=META[id]||{n:'芯片战争学院'};  $('#brandName').textContent=m.n;  /* 返回键：iOS 语义，显示上一级标题 */  var prev=STACK.length?STACK[STACK.length-1]:null;  if(prev && META[prev]){    $('#backTxt').textContent=META[prev].n;    $('#btnBack').disabled=false;  }else{    $('#backTxt').textContent='返回';    $('#btnBack').disabled=true;  }  window._cur=id;}function go(id){  if(window._cur===id) return;  STACK.push(window._cur||'home');  history.pushState({view:id},'');  renderView(id,false);}function goBack(){  if(!STACK.length){ toast('已经在最前面了'); return; }  history.back();}window.addEventListener('popstate',function(e){  var id=(e.state&&e.state.view)||'home';  /* 学习计时中被浏览器回退/手势带走：推回本章并提示 */  if(id!=='chapter' && window._cur==='chapter' && timerRunning){    history.forward();    toast('学习中：已回到章节，离开请点左上「返回」确认');    return;  }  if(STACK.length && STACK[STACK.length-1]===id) STACK.pop();  renderView(id,true);});/* 右滑返回 */(function(){  var sx=0,sy=0,swiping=false;  scroller.addEventListener('touchstart',function(e){    var t=e.touches[0]; sx=t.clientX; sy=t.clientY;    swiping=(sx<window.innerWidth*0.3);  },{passive:true});  scroller.addEventListener('touchend',function(e){    if(!swiping) return;    var t=e.changedTouches[0]; var dx=t.clientX-sx,dy=t.clientY-sy;    if(dx>70 && Math.abs(dy)<80){ tap(); guardedBack(); }    swiping=false;  },{passive:true});})();function paintDock(id){  var m=META[id]||{}; var curTab=m.tab||'learn';  document.querySelectorAll('.dock-btn').forEach(function(b){    b.classList.toggle('on',b.getAttribute('data-tab')===curTab);  });}/* ---------- 渲染器 ---------- */
 /* ============================================================
    大学物理学院 · 第 1 章数据
    章名：质点 · 参考系 · 坐标系
@@ -8709,7 +8766,7 @@ renderers.stats=function(){
   D.forEach(function(d){
     h+='<div style="background:var(--card);border-radius:18px;padding:12px 6px;text-align:center;box-shadow:var(--sh-card);border:1px solid var(--sep)">'
       +'<div style="font-size:20px;line-height:1">'+d.ico+'</div>'
-      +'<b style="font-size:17px;display:block;margin-top:5px">'+d.v+'</b>'
+      +'<b class="stat-v" data-v="'+String(d.v).replace(/"/g,'&quot;')+'" style="font-size:17px;display:block;margin-top:5px">'+d.v+'</b>'
       +'<span class="cap" style="display:block;margin-top:2px">'+d.l+'</span></div>';
   });
   h+='</div>';
@@ -9011,6 +9068,32 @@ function sessDone(){
 function renderView(id, isBack){
   /* 退出确认统一走 requestNav → confirmBox（calc2 同款）；页面渲染直通 */
   doRenderView(id, isBack);
+  try{ animateStats(); }catch(e){}
+}
+/* 统计数字滚动（2026-09-15）：纯数字的统计项从 0 滚到目标值。
+   数字跳动是投入产出比最高的一种动效 —— 它把「冷冰冰的一行字」变成「在长的东西」。*/
+function animateStats(){
+  var els=document.querySelectorAll('.stat-v[data-v]');
+  for(var i=0;i<els.length;i++){
+    (function(el){
+      var raw=el.getAttribute('data-v');
+      if(!/^\d+$/.test(raw)) return;
+      var target=parseInt(raw,10);
+      if(!target || target>99999) return;
+      var dur=560, t0=(window.performance&&performance.now)?performance.now():Date.now();
+      function step(){
+        var now=(window.performance&&performance.now)?performance.now():Date.now();
+        var p=Math.min(1,(now-t0)/dur);
+        var e=p===1?1:1-Math.pow(2,-10*p);
+        el.textContent=Math.round(target*e);
+        if(p<1) requestAnimationFrame(step);
+        else el.textContent=target;
+      }
+      el.style.fontVariantNumeric='tabular-nums';
+      el.textContent='0';
+      requestAnimationFrame(step);
+    })(els[i]);
+  }
 }
 
 /* ============================================================
@@ -9044,7 +9127,9 @@ function toast(msg, type){
     }
   } else {
     el.className = type==='no' ? 'toast no' : 'toast';
-    el.innerHTML='<span class="ic t-ic">'+(type==='no'?'✕':'✓')+'</span><span>'+msg+'</span>';
+    /* 答错：加一圈收束涟漪（与答对的星星粒子形成一收一放的语义对照） */
+    var ripple = type==='no' ? '<span class="ripple"></span>' : '';
+    el.innerHTML='<span class="ic t-ic">'+(type==='no'?'✕':'✓')+'</span><span>'+msg+'</span>'+ripple;
   }
   box.appendChild(el);
   setTimeout(function(){ el.classList.add('leaving'); setTimeout(function(){ if(el.parentNode) el.parentNode.removeChild(el); },320); }, isOk?1900:2200);
@@ -9431,7 +9516,33 @@ function paintDock(id){
     if(sc) sc.style.paddingBottom = root ? '' : '72px';
   }catch(e){}
   var btns=document.querySelectorAll('.dock-btn');
-  for(var i=0;i<btns.length;i++){ btns[i].classList.toggle('on', btns[i].getAttribute('data-tab')===curTab); }
+  var activeBtn=null;
+  for(var i=0;i<btns.length;i++){
+    var on=btns[i].getAttribute('data-tab')===curTab;
+    btns[i].classList.toggle('on', on);
+    if(on) activeBtn=btns[i];
+  }
+  /* 滑动高亮片：实时量当前按钮的位置与宽度，让玻璃片滑过去（首次直接就位不滑） */
+  var gl=document.querySelector('.dock-glider');
+  if(gl && activeBtn){
+    gl.style.width=activeBtn.offsetWidth+'px';
+    gl.style.height=activeBtn.offsetHeight+'px';
+    gl.style.top=activeBtn.offsetTop+'px';
+    var x=activeBtn.offsetLeft;
+    if(gl._x===undefined){
+      gl.style.transition='none';
+      gl.style.transform='translateX('+x+'px)';
+      gl._x=x;
+      requestAnimationFrame(function(){
+        gl.style.transition='';
+        gl.classList.add('ready');
+      });
+    } else if(gl._x!==x){
+      gl._x=x;
+      gl.style.transform='translateX('+x+'px)';
+      gl.classList.add('ready');
+    }
+  }
 }
 
 /* 实验室滑块委托 */

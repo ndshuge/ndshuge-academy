@@ -390,7 +390,7 @@ img{max-width:100%;display:block}
 .rank-scale{margin-top:12px}
 .rank-scale .rbar{height:8px;border-radius:4px;background:var(--fill);overflow:hidden}
 .rank-scale .rbar i{display:block;height:100%;background:linear-gradient(90deg,#FFD60A,#FF9500);
-  border-radius:4px;transition:width .8s var(--ease)}
+  border-radius:4px;transition:width .9s cubic-bezier(.34,1.28,.64,1)}
 .rank-scale .rrow{display:flex;justify-content:space-between;font-size:13px;margin-top:6px;color:var(--muted)}
 .rank-steps{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
 .rank-step{font-size:12px;padding:4px 10px;border-radius:14px;background:var(--fill);color:var(--muted)}
@@ -528,7 +528,16 @@ body{background:radial-gradient(1200px 600px at 20% -10%,var(--bg-glow,var(--car
 #hubscroller{position:absolute;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:62px 16px 60px;scrollbar-width:thin}
 .acgrid{display:grid;grid-template-columns:1fr;gap:14px;margin-top:6px}
 @media(min-width:760px){.acgrid{grid-template-columns:1fr 1fr}}
-.ac-card{display:flex;flex-direction:column;gap:13px;width:100%;padding:18px;text-align:left}
+.ac-card{display:flex;flex-direction:column;gap:13px;width:100%;padding:18px;text-align:left;
+  animation:acCascade .52s cubic-bezier(.22,.9,.3,1) both;animation-delay:var(--i,0ms)}
+/* 错峰入场：从下方 14px 浮入 + 微缩，依次落座（2026-09-15） */
+@keyframes acCascade{
+  from{opacity:0;transform:translateY(14px) scale(.985)}
+  to{opacity:1;transform:none}
+}
+@media(prefers-reduced-motion:reduce){.ac-card{animation:none}}
+/* 重渲染（如点星标）时不重播入场，避免整页「重新打印」的啁闹感 */
+.acgrid.no-anim .ac-card{animation:none}
 .ac-head{display:flex;align-items:center;gap:13px}
 .ac-name{font-size:17px;font-weight:700}
 .ac-stat{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:2px}
@@ -537,9 +546,12 @@ body{background:radial-gradient(1200px 600px at 20% -10%,var(--bg-glow,var(--car
 .wish-btn:hover{transform:scale(1.16)}
 .wish-btn:active{transform:scale(.86)}
 .wish-btn.off{opacity:.5;filter:grayscale(1)}
-.ac-card.ac-off{opacity:.45;filter:grayscale(.92);transition:opacity .25s,filter .25s}
+.ac-card.ac-off{opacity:.45;filter:grayscale(.92);
+  transition:opacity .32s cubic-bezier(.32,.72,0,1),filter .32s cubic-bezier(.32,.72,0,1),transform .32s cubic-bezier(.32,.72,0,1)}
+/* 停用态「沉下去」：缩一点 + 降饱和，而不是直接蒸发（2026-09-15） */
+.ac-card.ac-off{transform:scale(.978)}
 .ac-card.ac-off .ac-name,.ac-card.ac-off .cap{color:var(--muted)}
-.ac-card.ac-off:hover{transform:none}
+.ac-card.ac-off:hover{transform:scale(.978)}
 .foot-note{text-align:center;color:var(--muted);font-size:12px;line-height:1.9;margin-top:24px}
 /* ===== 账号栏 / 账号面板 Apple 动效（门户） ===== */
 #acctLineCard{transition:transform .26s cubic-bezier(.34,1.56,.64,1),box-shadow .22s,filter .15s}
@@ -728,15 +740,22 @@ function toggleWish(id){
 function paintHub(){
   var wish = acWish();
   var order = ACADEMIES.slice().sort(function(a,b){ return (wish[a.id]?0:1)-(wish[b.id]?0:1); });
-  document.getElementById('acGrid').innerHTML = order.map(function(a){
+  /* 级联入场只在首次进门户时播一次（2026-09-15）：
+     点星标会整页重渲染，若每次都重播，卡片的剧烈消失会显得像页面被刷新。 */
+  if(window._acCascaded) document.getElementById('acGrid').classList.add('no-anim');
+  window._acCascaded = 1;
+  document.getElementById('acGrid').innerHTML = order.map(function(a, _i){
   var ch = cnt(PRE[a.id], 'ch'), ex = cnt(PRE[a.id], 'examDone'), tt = TOT[a.id];
   var doneC = Math.min(ch, tt);
   var fullAc = tt > 0 && ch >= tt;
   var sd = acStreak(a.id), gd = acToday(a.id);
   var wd = wish[a.id];
+  /* 错峰入场（2026-09-15）：每张卡按次序延后 45ms 浮入，整页从「打印出来」变成「依次落座」。
+     上限 8 张，再多就统一收尾，避免后面的卡等太久。 */
+  var _d = Math.min(_i, 8) * 45;
   var cardStyle = (gd && wd)
-    ? 'style="position:relative;border-color:var(--green);box-shadow:0 0 0 1.5px var(--green-soft),0 3px 14px rgba(52,199,89,.16);background:linear-gradient(180deg,rgba(52,199,89,.07),var(--card) 48%)"'
-    : 'style="position:relative"';
+    ? 'style="--i:' + _d + 'ms;position:relative;border-color:var(--green);box-shadow:0 0 0 1.5px var(--green-soft),0 3px 14px rgba(52,199,89,.16);background:linear-gradient(180deg,rgba(52,199,89,.07),var(--card) 48%)"'
+    : 'style="--i:' + _d + 'ms;position:relative"';
   var pill = sd > 0
     ? '<span class="pill" style="font-size:11.5px;background:linear-gradient(135deg,#FFD900,#FFB300);color:#6b4600">🔥 打卡连签 ' + sd + ' 天</span>'
     : '<span class="pill" style="font-size:11.5px;background:rgba(120,120,128,.1);color:var(--muted)">今日待打卡</span>';
