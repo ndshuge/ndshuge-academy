@@ -7,3 +7,50 @@ push_academy.py
 修复推送.bat
 *.bak-*
 *.bak
+
+# ===== managed by fix-gitignore script =====
+# backup files (historical mess - rules were added too late)
+*.bak
+*.bak-*
+*.bak.*
+
+# temp / logs
+err1.txt
+_repo.txt
+*_e.js
+*.tmp
+*.old
+*~
+
+# local scripts
+_fix_*.py
+push_academy.py
+*.bat
+*.ps1
+*.lnk
+*.hta
+
+# editor / os
+.vscode/
+.idea/
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# deps / cache
+node_modules/
+npm-cache/
+__pycache__/
+*.pyc
+.venv/
+venv/
+pip-*/
+uv-cache/
+.uv-cache/
+
+# secrets - never commit
+.env
+.env.*
+*.pem
+*.key
+*token*.txt
