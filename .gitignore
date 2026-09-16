@@ -1,13 +1,3 @@
-err1.txt
-_repo.txt
-*_e.js
-_fix_*.py
-push_academy.py
-部署备忘*.md
-修复推送.bat
-*.bak-*
-*.bak
-
 # ===== managed by fix-gitignore script =====
 # backup files (historical mess - rules were added too late)
 *.bak
@@ -29,6 +19,7 @@ push_academy.py
 *.ps1
 *.lnk
 *.hta
+部署备忘*.md
 
 # editor / os
 .vscode/
