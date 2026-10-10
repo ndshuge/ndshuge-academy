@@ -2930,10 +2930,70 @@ function parseMath(s){
 }
 function numEq(a,b){
   function val(x){
-    if(typeof x==='number') return x;
-    var s=String(x).replace(/×/g,'*').replace(/√/g,'Math.sqrt(').replace(/π/g,'Math.PI').trim();
-    if(/[a-zA-Z]/.test(s.replace(/Math\./g,''))) return NaN;
-    try{ return eval(s); }catch(e){ return NaN; }
+    if(typeof x==='number') return Number.isFinite(x)?x:NaN;
+    var s=String(x).replace(/×/g,'*').replace(/÷/g,'/').replace(/−/g,'-')
+      .replace(/π/g,'Math.PI').replace(/√\s*\(/g,'Math.sqrt(').trim();
+    if(!s||s.length>160) return NaN;
+    var i=0,budget=0;
+    function ws(){
+      while(i<s.length && /\s/.test(s.charAt(i))) i++;
+      if(++budget>350) throw new Error('Expression too complex');
+    }
+    function primary(){
+      ws();
+      if(s.slice(i,i+7)==='Math.PI'){i+=7;return Math.PI;}
+      if(s.slice(i,i+10)==='Math.sqrt('){
+        i+=10;var v=addition();ws();
+        if(s.charAt(i)!==')') throw new Error('Unclosed square root');
+        i++;return Math.sqrt(v);
+      }
+      if(s.charAt(i)==='('){
+        i++;var v=addition();ws();
+        if(s.charAt(i)!==')') throw new Error('Unclosed parentheses');
+        i++;return v;
+      }
+      var m=/^(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?/.exec(s.slice(i));
+      if(!m) throw new Error('Invalid number');
+      i+=m[0].length;
+      return Number(m[0]);
+    }
+    function power(){
+      var left=primary();ws();
+      if(s.slice(i,i+2)==='**'){i+=2;return Math.pow(left,unary());}
+      if(s.charAt(i)==='^'){i++;return Math.pow(left,unary());}
+      return left;
+    }
+    function unary(){
+      ws();
+      if(s.charAt(i)==='+'){i++;return unary();}
+      if(s.charAt(i)==='-'){i++;return -unary();}
+      return power();
+    }
+    function product(){
+      var v=unary();
+      while(true){
+        ws();if(s.slice(i,i+2)==='**') return v;
+        var op=s.charAt(i);
+        if(op!=='*'&&op!=='/')return v;
+        i++;
+        var b=unary();
+        v=op==='*'?v*b:v/b;
+      }
+    }
+    function addition(){
+      var v=product();
+      while(true){
+        ws();var op=s.charAt(i);
+        if(op!=='+'&&op!=='-')return v;
+        i++;
+        var b=product();
+        v=op==='+'?v+b:v-b;
+      }
+    }
+    try{
+      var out=addition();ws();
+      return i===s.length&&Number.isFinite(out)?out:NaN;
+    }catch(e){return NaN;}
   }
   var A=val(a),B=val(b);
   if(isNaN(A)||isNaN(B)) return String(a).replace(/\s/g,'').toLowerCase()===String(b).replace(/\s/g,'').toLowerCase();
