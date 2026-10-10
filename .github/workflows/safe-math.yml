@@ -1,0 +1,37 @@
+name: Academy safe math parser
+
+on:
+  push:
+    paths:
+      - 'c.html'
+      - 'calculus.html'
+      - 'chip.html'
+      - 'phys.html'
+      - 'python.html'
+      - 'tests/safe-math.test.cjs'
+      - '.github/workflows/safe-math.yml'
+  pull_request:
+    paths:
+      - 'c.html'
+      - 'calculus.html'
+      - 'chip.html'
+      - 'phys.html'
+      - 'python.html'
+      - 'tests/safe-math.test.cjs'
+      - '.github/workflows/safe-math.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-math-parser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate math answer parsing across five academies
+        run: node tests/safe-math.test.cjs
