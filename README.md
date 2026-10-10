@@ -7,6 +7,8 @@
 
 👉 **https://ndshuge.github.io/ndshuge-academy/**
 
+![五学院门户真实网页截图](docs/screenshots/academy.png)
+
 手机、电脑、平板直接打开就能学，不用下载、不用装环境、不用登录即可体验。注册账号可使用跨学院登录与云端进度同步功能；建议定期导出学习进度备份。
 
 | 学院 | 子页直达 | 内容 |
