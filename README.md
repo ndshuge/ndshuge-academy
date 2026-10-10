@@ -42,6 +42,10 @@
 | 2026-09-02 | **体验打磨**：四院统一「🚪 退出学院」入口；手机端 ☰ 菜单胶囊按钮呼出侧栏；芯片学院入站（36 章全解锁）。 |
 | 未来 | 新书随时加入：门户加一张卡片 + 新子页，沿用「学院工厂」模板化流程（引擎 + 内容数据分层，构建 SOP 见本地《学院工厂手册》）。 |
 
+## 旧版本归档资料
+
+原 [独立微积分学院](https://github.com/ndshuge/ndshuge-calculus-academy) 的历史学习计划与说明已保存至 [docs/legacy-calculus](docs/legacy-calculus/INDEX.md)。旧版和当前学院的 HTML 并非完全相同，因此独立仓库仍保存完整旧版代码、Git 历史与旧站点。
+
 ## 🛠 技术
 
 - 以独立 HTML 页面交付各学院，门户统一入口；部分页面依赖 Pyodide、CodeMirror 或 Supabase 等外部组件
