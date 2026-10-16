@@ -19,6 +19,18 @@
 | 🔌 芯片战争学院 | https://ndshuge.github.io/ndshuge-academy/chip.html | 克里斯·米勒《芯片战争》· 36 章（选择题读透一本书） |
 | ⚛️ 大学物理学院 | https://ndshuge.github.io/ndshuge-academy/phys.html | 基于《大学物理学》的力学到电磁学交互课程 |
 
+## 新访客如何开始
+
+| 想学什么 | 入口 | 体验内容 |
+| --- | --- | --- |
+| 微积分 | [微积分学院](https://ndshuge.github.io/ndshuge-academy/calculus.html) | 讲义、图像、互动练习 |
+| Python | [Python 学院](https://ndshuge.github.io/ndshuge-academy/python.html) | 浏览器写代码、逐章练习 |
+| C 语言 | [C 语言学院](https://ndshuge.github.io/ndshuge-academy/c.html) | 指针、基础语法与编程题 |
+| 芯片 | [芯片战争学院](https://ndshuge.github.io/ndshuge-academy/chip.html) | 芯片产业和历史交互学习 |
+| 大学物理 | [大学物理学院](https://ndshuge.github.io/ndshuge-academy/phys.html) | 力学及电磁学基础 |
+
+**先体验，再注册。** 各学院的本地学习记录与云端同步依赖具体模块实现；正式使用前建议自行导出进度备份。旧版独立微积分站点保留用于历史对照，并不代表与当前课程完全一致。
+
 ## ✨ 特色
 
 - **📖 交互式学习**：每章讲义 + 练习 + 小卷 + 错题本 + 订正闭环，打开网页就学
